@@ -1,0 +1,7 @@
+packages:
+  - ChuChartManager/Front
+  - MuNET-UI
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - esbuild

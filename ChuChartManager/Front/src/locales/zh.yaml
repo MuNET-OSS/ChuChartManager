@@ -1,0 +1,415 @@
+sidebar:
+  charts: 谱面
+  course: 段位
+  resources: 资源
+  mods: Mod
+  loginBonus: 登录奖励
+  event: 活动
+  emote: Emote
+  batch: 批量
+  tools: 工具
+  settings: 设置
+  refresh: 刷新数据
+settings:
+  title: 设置
+  appearance: 外观
+  theme: 主题
+  themeAuto: 自动
+  themeLight: 浅色
+  themeDark: 深色
+  themeHue: 主题色相
+  reset: 重置
+  zoom: 界面缩放
+  zoomAuto: 自动
+  gameDirectory: 游戏目录
+  currentPath: 当前路径
+  changeDirectory: 切换目录
+  changingDirectory: 正在切换...
+  changeDirectoryFailed: 切换目录失败
+  switchedTo: "已切换: {path}"
+  historyPath: 历史路径
+  noHistory: 暂无历史记录
+  about: 关于
+  appName: ChuChartManager
+  appDesc: CHUNITHM 谱面管理工具
+  language: 语言
+  switchMode: 切换工作模式
+oobe:
+  welcomeMessage: 欢迎使用 ChuChartManager
+  selectGameDir: 选择游戏目录
+  selectGameDirDesc: 请选择 CHUNITHM 的游戏目录
+  browse: 浏览...
+  selectedPath: 已选择
+  pathNotValid: 路径无效
+  selectMode: 选择模式
+  localMode: 本机模式
+  localModeDesc: 在本机上管理谱面
+  remoteMode: 远程模式
+  remoteModeDesc: 通过局域网访问
+  username: 用户名
+  password: 密码
+  enableAuth: 启用认证
+  complete: 完成
+  completing: 正在完成设置...
+  remoteReady: 远程访问已就绪
+  lanAddresses: 局域网地址
+  openMainUI: 打开主界面
+  initializingData: 正在初始化游戏数据...
+optionDir:
+  title: Option 目录管理
+  create: 创建 Option 目录
+  dirName: 目录名称
+  dirExists: 该目录已存在
+  import: 导入本地目录
+  importing: 导入中…
+  importSuccess: 导入成功
+  deleteConfirm: 确认删除此目录？
+  musicCount: "{count} 首曲目"
+  noOptions: 暂无 option 目录
+  manageOptions: 管理 Option
+  back: 返回列表
+  storingCustom: 存放自制谱
+  storingOfficial: 存放官谱
+  markCustom: 标记为自制谱
+  unmarkCustom: 取消自制谱标记
+  custom: 自制谱
+  importDesc: 选择包含 music 子目录的 option 文件夹
+  checkConflict: 检查冲突
+  conflictCheck: 资源冲突检查
+  checking: 检查中…
+  noConflict: 没有发现冲突
+  conflictName: 曲目名称
+  conflictWith: 冲突目录
+common:
+  save: 保存
+  cancel: 取消
+  confirm: 确认
+  delete: 删除
+  create: 创建
+  import: 导入
+  loading: 加载中…
+  error: 错误
+music:
+  sortById: ID
+  sortByName: 名称
+  allGenres: 全部流派
+  allDifficulties: 全部难度
+  hasUltima: 含 ULTIMA
+  worldsEnd: "WORLD'S END"
+  trackCount: "{count} 首"
+  statusLine: "{tracks} 首曲目 | {options} 个 option"
+  saved: "已保存: {name}"
+  copiedTo: "已复制到 {dir}"
+  copyFailed: "复制失败: {error}"
+  jacketImported: 封面已导入
+  chartImported: "谱面[{diff}]已导入{suffix}"
+  noData: 暂无数据
+  selectHint: 选择一首曲目查看详情
+  a000Hint: 请选择一个 A000 以外的目录来编辑
+  play: 播放
+  exportMp3: 导出 MP3
+  importJacket: 导入封面
+  songTitle: 曲名
+  artist: 曲师
+  genre: 流派
+  enableDiff: 启用此难度
+  level: 等级
+  notesDesigner: 谱面设计
+  replaceChart: 替换谱面
+  importChart: 导入谱面
+  exportC2S: 导出 C2S
+  exportUGC: 导出 UGC
+  save: 保存修改
+  copyToOption: 复制到其他 Option
+  copy: 复制
+mods:
+  wip: 正在加载...
+  loaderNotInstalled: ChuModLoader 未安装
+  loaderInstalled: ChuModLoader 已安装
+  noMods: 未检测到 Mod
+  search: 搜索功能...
+  on: 开
+  off: 关
+  installed: 已安装
+  notInstalled: 未安装
+  install: 安装
+  installing: 安装中...
+  installAll: 一键安装全部
+  installAllHint: 会复制 ChuModLoader 与 AppleChu 到当前游戏目录
+  installHint: 安装 Loader 与 AppleChu 后即可在这里编辑 Mod 配置。
+  installSuccess: 安装完成
+  installLoader: 安装 Loader
+  reinstallLoader: 重新安装 Loader
+  installMod: 安装 AppleChu
+  reinstallMod: 重新安装 AppleChu
+  reinstall: 重新安装
+  needInstall: 需要安装
+  installedVersion: 已安装版本
+  latestVersion: 最新版本
+  saving: 保存中
+  configMissingTitle: 配置文件尚未生成
+  configMissingHint: 请启动一次游戏以生成配置文件，然后回到此页面继续编辑。
+  saveSuccess: 配置已保存
+  saveFailed: 保存失败
+tools:
+  title: 工具
+  experimentalWarning: 以下功能为实验性，可能存在问题
+  createTrophy: 创建称号
+  createNamePlate: 创建名牌
+  createMapIcon: 创建地图图标
+  createChara: 创建角色
+  createSystemVoice: 创建系统语音
+  createFrame: 创建底框
+  createAvatarAccessory: 创建衣装
+  accessoryCategory: 部位
+  categoryHead: 头部
+  categoryFace: 面部
+  categoryBody: 身体
+  categoryBack: 背部
+  iconImage: 图标图片
+  textureImage: 贴图图片
+  targetDir: 目标 Option 目录
+  resourceId: 资源 ID
+  resourceName: 名称
+  explainText: 说明文字
+  rareType: 类型
+  rareNormal: 普通
+  rareBronze: 铜
+  rareSilver: 银
+  rareGold: 金
+  rareGoldPlus: 金+
+  rarePlatinum: 白金
+  rarePlatinumPlus: 白金+
+  rareRainbow: 彩虹
+  rareRainbowPlus: 彩虹+
+  rareStaff: Staff
+  rareOngeki: Ongeki
+  rareMaimai: Maimai
+  rareIrodoriSilver: 彩银
+  rareIrodoriGold: 彩金
+  rareIrodoriRainbow: 彩虹(彩)
+  rareImage: 图片称号
+  trophyImage: 称号图片 (608×148)
+  namePlateImage: 名牌图片（自动缩放至 576×228）
+  selectImage: 选择图片
+  noImageSelected: 未选择图片
+  works: 作品
+  illustrator: 插画师
+  createSuccess: 创建成功
+  createFailed: 创建失败
+  checkConflict: 检查冲突
+  idConflictWarning: 此 ID 已被使用，继续创建将覆盖已有资源
+  charaFullImage: 全身图 (1080×1080)
+  charaMidImage: 半身图 (512×512)
+  charaSmallImage: 头像图 (128×128)
+  createCharaVariant: 添加角色升格
+  variantBaseId: 主角色 Base ID
+  variantSlot: 升格槽位
+  variantRank: 解锁好感度
+  variants: 升格形态（可选）
+  addVariant: 添加升格
+  noVariants: 无升格形态，点击上方按钮添加
+  charaImagesRequired: 请选择三张角色图片
+  charaBase: 主形态
+  charaBaseHint: 点击右侧卡片选择主角色的三张图片
+  removeVariant: 删除此升格
+  convertChart: 谱面格式转换
+  sourceFormat: 源格式
+  targetFormat: 目标格式
+  inputChart: 输入谱面
+  outputChart: 输出结果
+  uploadFile: 上传文件
+  inputChartPlaceholder: 粘贴谱面内容，或点击右上角上传文件…
+  doConvert: 转换
+  convertSuccess: 转换成功
+  convertFailed: 转换失败
+  convertEmpty: 请输入谱面内容
+  convertSameFormat: 源格式和目标格式不能相同
+  convertAlerts: 转换警告
+  downloadResult: 下载结果
+course:
+  title: 段位认定
+  createCourse: 创建段位
+  noCourses: 暂无段位数据
+  selectCourse: 选择一个段位查看详情
+  name: 名称
+  difficulty: 难度
+  assetDir: 所属目录
+  musicList: 曲目列表
+  tracks: 首
+  addMusic: 添加曲目
+  clickToSelect: 点击选择曲目
+  selectMusic: 选择曲目
+  searchMusic: 搜索曲目名称/ID…
+  noResults: 没有匹配结果
+  needMusic: 至少需要一首曲目
+resource:
+  title: 资源管理
+  trophy: 称号
+  namePlate: 名牌
+  frame: 底框
+  mapIcon: 地图图标
+  avatarAccessory: 衣装
+  chara: 角色
+  systemVoice: 系统语音
+  stage: 舞台背景
+  search: 搜索名称/ID…
+  items: 项
+  noItems: 没有找到资源
+  deleteConfirm: 确认删除
+  deleteMessage: "确定删除「{name}」(ID: {id}) 吗？此操作不可撤销。"
+loginBonus:
+  title: 登录奖励
+  presets: 奖励方案
+  noPresets: 暂无奖励方案
+  bonusCount: "{count} 条奖励"
+  disabled: 已禁用
+  editPreset: 编辑方案
+  addBonus: 添加奖励
+  bonusId: 奖励 ID
+  bonusName: 奖励名称
+  presentId: 赠品 ID
+  presentName: 赠品名称
+  itemNum: 数量
+  needLoginDays: 需登录天数
+  categoryType: 类别
+  categoryRegular: 通常
+  categoryCumulative: 累計
+  categoryLimited: 期間限定
+  createPreset: 创建方案
+  presetId: 方案 ID
+  presetName: 方案名称
+  deletePreset: 删除方案
+  deletePresetMessage: "确定删除方案「{name}」(ID: {id}) 吗？"
+batch:
+  title: 批量操作
+  selectMusic: 选择曲目
+  selectAll: 全选
+  deselectAll: 取消全选
+  selected: "已选 {count} 首"
+  action: 操作
+  setGenre: 设置分类
+  exportJackets: 导出封面
+  exportMp3: 导出 MP3
+  genre: 分类
+  execute: 执行
+  executing: 执行中…
+  noMusicSelected: 请先选择曲目
+  done: 完成
+  downloading: 正在下载…
+  next: 下一步
+  previous: 上一步
+  chooseAction: 选择操作
+  editProps: 编辑属性
+  notChange: 不更改
+  a000Warning: 包含 A000 的曲目不能编辑/删除
+  searchPlaceholder: 搜索名称 / 作曲 / ID
+  colJacket: 封面
+  colTitle: 标题
+  colGenre: 流派
+  colCharts: 谱面
+  colJump: 跳转
+  totalMusic: 首曲目
+event:
+  title: 活动管理
+  events: 活动
+  maps: 地图
+  noEvents: 暂无活动数据
+  noMaps: 暂无地图数据
+  editEvent: 编辑活动
+  editMap: 编辑地图
+  eventName: 活动名称
+  eventText: 活动说明
+  eventId: 活动 ID
+  substanceType: 内容类型
+  periodDispType: 显示周期类型
+  priority: 优先级
+  flagValue: 标志值
+  infoImage: 广告图
+  importInfoImage: 导入广告图
+  replaceInfoImage: 替换广告图
+  infoImageImported: 广告图已导入
+  alwaysOpen: 常时开放
+  teamOnly: 仅团队
+  isKop: KOP
+  readOnly: A000 只读
+  dataName: 数据名
+  assetDir: 所属目录
+  createEvent: 创建活动
+  deleteEvent: 删除活动
+  deleteEventMessage: "确定删除活动「{name}」(ID: {id}) 吗？"
+  mapTitle: 地图管理
+  mapName: 地图名称
+  mapId: 地图 ID
+  mapType: 地图类型
+  hiddenType: 隐藏类型
+  unlockText: 解锁条件
+  netDispPeriod: 显示在线期间
+  mapFilter: 过滤分类
+  category: 所属分类
+  areaCount: "{count} 个区域"
+  addArea: 添加区域
+  mapAreaId: 区域 ID
+  mapAreaName: 区域名称
+  ddsMapId: 地图贴图 ID
+  ddsMapName: 地图贴图名称
+  importDdsMap: 导入地图背景
+  replaceDdsMap: 替换地图背景
+  ddsMapImported: 地图背景已生成
+  rewardId: 奖励 ID
+  rewardName: 奖励名称
+  pageIndex: 页码
+  indexInPage: 页内序号
+  requiredAchievement: 所需达成数
+  gaugeId: 进度条 ID
+  isHard: 困难模式
+  createMap: 创建地图
+  deleteMap: 删除地图
+  deleteMapMessage: "确定删除地图「{name}」(ID: {id}) 吗？"
+  refMap: 关联地图
+  refDailyBonus: 关联日替奖励
+  refLinkedVerse: 关联 LinkedVerse
+  refCmission: 关联任务
+  refPlayRewardSet: 关联游玩奖励
+  refUnlockChallenge: 关联解锁挑战
+  substType:
+    information: 信息公告
+    map: 地图
+    music: 曲目
+    advertiseMovie: 广告影片
+    recommendMusic: 推荐曲目
+    release: 解放
+    course: 段位
+    quest: 任务
+    duel: 对战
+    cmission: C任务
+    changeSurfBoardUI: 界面变更
+    avatarAccessoryGacha: 头像挂件扭蛋
+    rightsInfo: 版权信息
+    dailyBonusPreset: 日替奖励
+    matchingBonus: 匹配加成
+    unlockChallenge: 解锁挑战
+    playRewardSet: 游玩奖励
+    linkedVerse: LinkedVerse
+ddsExtractor:
+  title: DDS 提取器
+  desc: 从 AFB/SVO 文件中提取 DDS 纹理
+  selectFile: 选择文件
+  selectFolder: 选择文件夹
+  noPath: 请先选择文件或文件夹
+  noPathHint: 未选择文件
+  extract: 提取
+  done: "提取完成：{count} 个 DDS，来自 {files} 个文件"
+  failed: 提取失败
+emote:
+  title: Emote 模型
+  data: Emote 模型
+  noData: 暂无模型数据
+  preview: 预览动画
+  id: ID
+  fileName: 文件名
+  fileSize: 文件大小
+  assetDir: 所属目录
+  viewerNotFound: FreeMoteViewer.exe 未找到
+  viewerLaunched: 已启动 Emote Viewer
+  launchFailed: 启动失败

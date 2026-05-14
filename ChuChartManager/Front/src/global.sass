@@ -1,0 +1,78 @@
+html
+  user-select: none
+
+body
+  font-family: 'Quicksand', 'Noto Sans SC', sans-serif
+  font-size: 1rem
+  line-height: 1.5
+  margin: 0
+  padding: 0
+  overflow: hidden
+
+*
+  -webkit-user-drag: none
+
+*:focus
+  outline: none
+
+.n-button__border, .n-button__state-border, .n-base-wave
+  display: none !important
+
+.n-button
+  color: #303133 !important
+
+.n-base-select-menu, .n-input, .n-base-selection
+  --n-color: rgba(255, 255, 255, 0.8) !important
+  backdrop-filter: blur(10px)
+
+  .n-base-select-option--pending::before
+    background: color-mix(in srgb, gray, transparent 85%) !important
+
+.trophy-preview
+  position: relative
+  height: 32px
+  flex-shrink: 0
+
+  .trophy-preview-bg
+    display: block
+    height: 100%
+    width: auto
+
+  .trophy-preview-text
+    position: absolute
+    inset: 0
+    display: flex
+    align-items: center
+    justify-content: center
+    overflow: hidden
+    // 文字区域约占总宽 48%（游戏中宽度 283/591），两侧各 26% 是圆角装饰
+    padding: 0 26%
+
+  .trophy-preview-text-inner
+    white-space: nowrap
+    font-size: 11px
+    font-weight: 700
+    color: #000 !important
+    display: inline-block
+
+    &.is-overflow
+      animation: trophy-scroll var(--scroll-duration, 4s) linear infinite
+
+@keyframes trophy-scroll
+  0%, 10%
+    transform: translateX(0)
+  45%, 55%
+    transform: translateX(var(--scroll-distance, -50px))
+  90%, 100%
+    transform: translateX(0)
+
+.fade-enter-active, .fade-leave-active
+  transition: opacity 0.2s ease, transform 0.2s ease
+
+.fade-enter-from
+  opacity: 0
+  transform: translateY(6px)
+
+.fade-leave-to
+  opacity: 0
+  transform: translateY(-6px)

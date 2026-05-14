@@ -1,0 +1,406 @@
+sidebar:
+  charts: 譜面
+  course: 段位
+  resources: リソース
+  mods: Mod
+  loginBonus: ログインボーナス
+  event: イベント
+  emote: Emote
+  batch: 一括
+  tools: ツール
+  settings: 設定
+  refresh: データ更新
+settings:
+  title: 設定
+  appearance: 外観
+  theme: テーマ
+  themeAuto: 自動
+  themeLight: ライト
+  themeDark: ダーク
+  themeHue: テーマ色相
+  reset: リセット
+  zoom: UI スケール
+  zoomAuto: 自動
+  gameDirectory: ゲームディレクトリ
+  currentPath: 現在のパス
+  changeDirectory: ディレクトリ変更
+  changingDirectory: 切り替え中...
+  changeDirectoryFailed: ディレクトリの切り替えに失敗しました
+  switchedTo: "切り替え完了: {path}"
+  historyPath: 履歴
+  noHistory: 履歴なし
+  about: について
+  appName: ChuChartManager
+  appDesc: CHUNITHM 譜面管理ツール
+  language: 言語
+  switchMode: モード切替
+oobe:
+  welcomeMessage: ChuChartManager へようこそ
+  selectGameDir: ゲームディレクトリを選択
+  selectGameDirDesc: CHUNITHM のゲームディレクトリを選択してください
+  browse: 参照...
+  selectedPath: 選択済み
+  pathNotValid: 無効なパス
+  selectMode: モードを選択
+  localMode: ローカルモード
+  localModeDesc: このPCで譜面を管理
+  remoteMode: リモートモード
+  remoteModeDesc: LAN経由でアクセス
+  username: ユーザー名
+  password: パスワード
+  enableAuth: 認証を有効にする
+  complete: 完了
+  completing: セットアップ完了中...
+  remoteReady: リモートアクセス準備完了
+  lanAddresses: LANアドレス
+  openMainUI: メインUIを開く
+  initializingData: ゲームデータを初期化中...
+optionDir:
+  title: Optionディレクトリ管理
+  create: Optionディレクトリ作成
+  dirName: ディレクトリ名
+  dirExists: ディレクトリは既に存在します
+  import: ローカルディレクトリをインポート
+  importing: インポート中...
+  importSuccess: インポート成功
+  deleteConfirm: このディレクトリを削除しますか？
+  musicCount: "{count} 曲"
+  noOptions: Optionディレクトリなし
+  manageOptions: Option管理
+  back: リストに戻る
+  storingCustom: カスタム譜面を格納
+  storingOfficial: 公式譜面を格納
+  markCustom: カスタム譜面としてマーク
+  unmarkCustom: カスタムマークを解除
+  custom: カスタム
+  importDesc: musicサブディレクトリを含むoptionフォルダを選択
+  checkConflict: 競合チェック
+  conflictCheck: リソース競合チェック
+  checking: チェック中...
+  noConflict: 競合は見つかりませんでした
+  conflictName: 曲名
+  conflictWith: 競合ディレクトリ
+common:
+  save: 保存
+  cancel: キャンセル
+  confirm: 確認
+  delete: 削除
+  create: 作成
+  import: インポート
+  loading: 読み込み中…
+  error: エラー
+music:
+  sortById: ID
+  sortByName: 名前
+  allGenres: 全ジャンル
+  allDifficulties: 全難易度
+  hasUltima: ULTIMA あり
+  worldsEnd: "WORLD'S END"
+  trackCount: "{count} 曲"
+  statusLine: "{tracks} 曲 | {options} オプション"
+  saved: "保存しました: {name}"
+  copiedTo: "{dir} にコピーしました"
+  copyFailed: "コピー失敗: {error}"
+  jacketImported: ジャケットをインポートしました
+  chartImported: "譜面[{diff}]をインポートしました{suffix}"
+  noData: データなし
+  selectHint: 曲を選択して詳細を表示
+  a000Hint: 編集するには A000 以外のディレクトリを選択してください
+  play: 再生
+  exportMp3: MP3 エクスポート
+  importJacket: ジャケットインポート
+  songTitle: 曲名
+  artist: アーティスト
+  genre: ジャンル
+  enableDiff: この難易度を有効にする
+  level: レベル
+  notesDesigner: 譜面デザイナー
+  replaceChart: 譜面を差し替え
+  importChart: 譜面をインポート
+  exportC2S: C2S エクスポート
+  exportUGC: UGC エクスポート
+  save: 変更を保存
+  copyToOption: 他のオプションにコピー
+  copy: コピー
+mods:
+  wip: 読み込み中...
+  loaderNotInstalled: ChuModLoader は未インストールです
+  loaderInstalled: ChuModLoader はインストール済みです
+  noMods: Mod が検出されません
+  search: 機能を検索...
+  on: オン
+  off: オフ
+  installed: インストール済み
+  notInstalled: 未インストール
+  install: インストール
+  installing: インストール中...
+  installAll: すべてインストール
+  installAllHint: ChuModLoader と AppleChu を現在のゲームディレクトリへコピーします
+  installHint: Loader と AppleChu をインストールすると、ここで Mod 設定を編集できます。
+  installSuccess: インストール完了
+  configMissingTitle: 設定ファイルがまだ生成されていません
+  configMissingHint: 一度ゲームを起動して設定ファイルを生成してから、このページに戻って編集してください。
+  saveSuccess: 設定を保存しました
+  saveFailed: 保存に失敗しました
+tools:
+  title: ツール
+  experimentalWarning: 以下の機能は実験的であり、問題が発生する可能性があります
+  createTrophy: 称号作成
+  createNamePlate: ネームプレート作成
+  createMapIcon: マップアイコン作成
+  createChara: キャラクター作成
+  createSystemVoice: システムボイス作成
+  createFrame: フレーム作成
+  createAvatarAccessory: 衣装作成
+  accessoryCategory: 装着部位
+  categoryHead: 頭
+  categoryFace: 顔
+  categoryBody: 体
+  categoryBack: 背中
+  iconImage: アイコン画像
+  textureImage: テクスチャ画像
+  targetDir: 対象Optionディレクトリ
+  resourceId: リソースID
+  resourceName: 名前
+  explainText: 説明テキスト
+  rareType: タイプ
+  rareNormal: ノーマル
+  rareBronze: ブロンズ
+  rareSilver: シルバー
+  rareGold: ゴールド
+  rareGoldPlus: ゴールド+
+  rarePlatinum: プラチナ
+  rarePlatinumPlus: プラチナ+
+  rareRainbow: レインボー
+  rareRainbowPlus: レインボー+
+  rareStaff: Staff
+  rareOngeki: オンゲキ
+  rareMaimai: maimai
+  rareIrodoriSilver: 彩シルバー
+  rareIrodoriGold: 彩ゴールド
+  rareIrodoriRainbow: 彩レインボー
+  rareImage: 画像称号
+  trophyImage: 称号画像 (608×148)
+  namePlateImage: ネームプレート画像（576×228に自動リサイズ）
+  selectImage: 画像を選択
+  noImageSelected: 画像未選択
+  works: 作品
+  illustrator: イラストレーター
+  createSuccess: 作成成功
+  createFailed: 作成失敗
+  checkConflict: 競合チェック
+  idConflictWarning: このIDは既に使用されています。作成すると既存リソースが上書きされます。
+  charaFullImage: 全身画像 (1080×1080)
+  charaMidImage: 半身画像 (512×512)
+  charaSmallImage: アイコン画像 (128×128)
+  createCharaVariant: キャラクター変形追加
+  variantBaseId: ベースキャラクターID
+  variantSlot: バリアントスロット
+  variantRank: 解放ランク
+  variants: バリアント（任意）
+  addVariant: バリアント追加
+  noVariants: バリアントなし。上のボタンで追加できます。
+  charaImagesRequired: キャラクター画像を3枚選択してください
+  charaBase: ベース形態
+  charaBaseHint: 右側のカードをクリックしてベースキャラクターの画像を選択
+  removeVariant: バリアント削除
+  convertChart: 譜面フォーマット変換
+  sourceFormat: 変換元フォーマット
+  targetFormat: 変換先フォーマット
+  inputChart: 入力譜面
+  outputChart: 出力結果
+  uploadFile: ファイルアップロード
+  inputChartPlaceholder: 譜面内容を貼り付け、または右上のアップロードをクリック…
+  doConvert: 変換
+  convertSuccess: 変換成功
+  convertFailed: 変換失敗
+  convertEmpty: 譜面内容を入力してください
+  convertSameFormat: 変換元と変換先が同じです
+  convertAlerts: 変換警告
+  downloadResult: 結果をダウンロード
+course:
+  title: 段位認定
+  createCourse: 段位作成
+  noCourses: 段位データなし
+  selectCourse: 段位を選択して詳細を表示
+  name: 名前
+  difficulty: 難易度
+  assetDir: ディレクトリ
+  musicList: 楽曲リスト
+  tracks: 曲
+  addMusic: 楽曲を追加
+  clickToSelect: クリックして楽曲を選択
+  selectMusic: 楽曲を選択
+  searchMusic: 曲名/IDで検索…
+  noResults: 結果なし
+  needMusic: 少なくとも1曲必要です
+resource:
+  title: リソース管理
+  trophy: 称号
+  namePlate: ネームプレート
+  frame: フレーム
+  mapIcon: マップアイコン
+  avatarAccessory: 衣装
+  chara: キャラクター
+  systemVoice: システムボイス
+  stage: ステージ
+  search: 名前/IDで検索…
+  items: 件
+  noItems: リソースが見つかりません
+  deleteConfirm: 削除確認
+  deleteMessage: "「{name}」(ID: {id}) を削除しますか？この操作は取り消せません。"
+loginBonus:
+  title: ログインボーナス
+  presets: ボーナスプリセット
+  noPresets: プリセットがありません
+  bonusCount: "{count} 件の報酬"
+  disabled: 無効
+  editPreset: プリセット編集
+  addBonus: 報酬追加
+  bonusId: 報酬ID
+  bonusName: 報酬名
+  presentId: プレゼントID
+  presentName: プレゼント名
+  itemNum: 数量
+  needLoginDays: 必要ログイン日数
+  categoryType: カテゴリ
+  categoryRegular: 通常
+  categoryCumulative: 累計
+  categoryLimited: 期間限定
+  createPreset: プリセット作成
+  presetId: プリセットID
+  presetName: プリセット名
+  deletePreset: プリセット削除
+  deletePresetMessage: "プリセット「{name}」(ID: {id}) を削除しますか？"
+batch:
+  title: 一括操作
+  selectMusic: 楽曲選択
+  selectAll: 全選択
+  deselectAll: 選択解除
+  selected: "{count} 曲選択中"
+  action: 操作
+  setGenre: ジャンル設定
+  exportJackets: ジャケット書き出し
+  exportMp3: MP3書き出し
+  genre: ジャンル
+  execute: 実行
+  executing: 実行中…
+  noMusicSelected: 楽曲を選択してください
+  done: 完了
+  downloading: ダウンロード中…
+  next: 次へ
+  previous: 戻る
+  chooseAction: 操作選択
+  editProps: プロパティ編集
+  notChange: 変更しない
+  a000Warning: A000の楽曲は編集/削除できません
+  searchPlaceholder: 名前 / 作曲者 / ID で検索
+  colJacket: ジャケット
+  colTitle: タイトル
+  colGenre: ジャンル
+  colCharts: 譜面
+  colJump: 移動
+  totalMusic: 曲
+event:
+  title: イベント管理
+  events: イベント
+  maps: マップ
+  noEvents: イベントデータなし
+  noMaps: マップデータなし
+  editEvent: イベント編集
+  editMap: マップ編集
+  eventName: イベント名
+  eventText: イベント説明
+  eventId: イベントID
+  substanceType: コンテンツタイプ
+  periodDispType: 期間表示タイプ
+  priority: 優先度
+  flagValue: フラグ値
+  infoImage: 告知画像
+  importInfoImage: 告知画像をインポート
+  replaceInfoImage: 告知画像を差し替え
+  infoImageImported: 告知画像をインポートしました
+  alwaysOpen: 常時開放
+  teamOnly: チーム限定
+  isKop: KOP
+  readOnly: A000 読み取り専用
+  dataName: データ名
+  assetDir: ディレクトリ
+  createEvent: イベント作成
+  deleteEvent: イベント削除
+  deleteEventMessage: "イベント「{name}」(ID: {id}) を削除しますか？"
+  mapTitle: マップ管理
+  mapName: マップ名
+  mapId: マップID
+  mapType: マップタイプ
+  hiddenType: 非表示タイプ
+  unlockText: 解放条件
+  netDispPeriod: オンライン期間表示
+  mapFilter: フィルタ分類
+  category: カテゴリ
+  areaCount: "{count} エリア"
+  addArea: エリア追加
+  mapAreaId: エリアID
+  mapAreaName: エリア名
+  ddsMapId: マップテクスチャID
+  ddsMapName: マップテクスチャ名
+  importDdsMap: マップ背景をインポート
+  replaceDdsMap: マップ背景を差し替え
+  ddsMapImported: マップ背景を生成しました
+  rewardId: 報酬ID
+  rewardName: 報酬名
+  pageIndex: ページ番号
+  indexInPage: ページ内順番
+  requiredAchievement: 必要達成数
+  gaugeId: ゲージID
+  isHard: ハードモード
+  createMap: マップ作成
+  deleteMap: マップ削除
+  deleteMapMessage: "マップ「{name}」(ID: {id}) を削除しますか？"
+  refMap: 関連マップ
+  refDailyBonus: 関連日替わりボーナス
+  refLinkedVerse: 関連LinkedVerse
+  refCmission: 関連ミッション
+  refPlayRewardSet: 関連プレイ報酬
+  refUnlockChallenge: 関連解放チャレンジ
+  substType:
+    information: お知らせ
+    map: マップ
+    music: 楽曲
+    advertiseMovie: 広告映像
+    recommendMusic: おすすめ楽曲
+    release: 解放
+    course: 段位
+    quest: クエスト
+    duel: デュエル
+    cmission: Cミッション
+    changeSurfBoardUI: UI変更
+    avatarAccessoryGacha: アクセサリーガチャ
+    rightsInfo: 権利情報
+    dailyBonusPreset: 日替わりボーナス
+    matchingBonus: マッチングボーナス
+    unlockChallenge: 解放チャレンジ
+    playRewardSet: プレイ報酬
+    linkedVerse: LinkedVerse
+ddsExtractor:
+  title: DDS エクストラクター
+  desc: AFB/SVO ファイルから DDS テクスチャを抽出
+  selectFile: ファイル選択
+  selectFolder: フォルダ選択
+  noPath: ファイルまたはフォルダを選択してください
+  noPathHint: ファイル未選択
+  extract: 抽出
+  done: "抽出完了：{count} DDS、{files} ファイルから"
+  failed: 抽出失敗
+emote:
+  title: Emote モデル
+  data: Emote モデル
+  noData: モデルデータなし
+  preview: アニメーションプレビュー
+  id: ID
+  fileName: ファイル名
+  fileSize: ファイルサイズ
+  assetDir: ディレクトリ
+  viewerNotFound: FreeMoteViewer.exe が見つかりません
+  viewerLaunched: Emote Viewer を起動しました
+  launchFailed: 起動に失敗しました

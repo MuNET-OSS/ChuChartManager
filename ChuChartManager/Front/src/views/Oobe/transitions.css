@@ -1,0 +1,47 @@
+/* Forward: old exits left, new enters from right */
+.oobe-slide-forward-enter-active,
+.oobe-slide-forward-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: absolute;
+  inset: 0;
+}
+.oobe-slide-forward-enter-from {
+  transform: translateX(50%);
+  opacity: 0;
+}
+.oobe-slide-forward-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+.oobe-slide-forward-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.oobe-slide-forward-leave-to {
+  transform: translateX(-50%);
+  opacity: 0;
+}
+
+/* Backward: old exits right, new enters from left */
+.oobe-slide-backward-enter-active,
+.oobe-slide-backward-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: absolute;
+  inset: 0;
+}
+.oobe-slide-backward-enter-from {
+  transform: translateX(-50%);
+  opacity: 0;
+}
+.oobe-slide-backward-enter-to {
+  transform: translateX(0);
+  opacity: 1;
+}
+.oobe-slide-backward-leave-from {
+  transform: translateX(0);
+  opacity: 1;
+}
+.oobe-slide-backward-leave-to {
+  transform: translateX(50%);
+  opacity: 0;
+}

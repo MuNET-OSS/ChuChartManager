@@ -1,0 +1,43 @@
+<Window x:Class="ChuChartManager.StartupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ChuChartManager" Width="500" Height="360"
+        WindowStartupLocation="CenterScreen"
+        Background="Transparent" ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="32" GlassFrameThickness="-1" CornerRadius="0" ResizeBorderThickness="0"/>
+    </WindowChrome.WindowChrome>
+
+    <Grid Background="#08FFFFFF">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="360">
+            <TextBlock Text="ChuChartManager" FontSize="26" FontWeight="Bold"
+                       Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center"/>
+            <TextBlock Text="Chunithm 谱面管理器" FontSize="12" Margin="0,6,0,30"
+                       Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+
+            <TextBlock Text="选择游戏根目录" FontSize="12" Margin="0,0,0,8"
+                       Foreground="{StaticResource TextSecondaryBrush}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TxtPath" Grid.Column="0" IsReadOnly="True"
+                         Style="{StaticResource DarkTextBox}" FontSize="11.5"/>
+                <Button Grid.Column="1" Content="浏览..." Style="{StaticResource RoundButton}"
+                        Margin="8,0,0,0" Padding="14,7" Click="OnBrowse"
+                        WindowChrome.IsHitTestVisibleInChrome="True"/>
+            </Grid>
+
+            <TextBlock x:Name="TxtHint" Text="请选择包含 bin 和 data 文件夹的目录" FontSize="10.5"
+                       Foreground="{StaticResource TextTertiaryBrush}" Margin="0,8,0,0"/>
+
+            <Button x:Name="BtnStart" Content="启动" Style="{StaticResource RoundButton}"
+                    HorizontalAlignment="Stretch" Margin="0,24,0,0" Padding="0,10"
+                    FontSize="14" FontWeight="SemiBold" IsEnabled="False" Click="OnStart"
+                    WindowChrome.IsHitTestVisibleInChrome="True"/>
+        </StackPanel>
+    </Grid>
+</Window>

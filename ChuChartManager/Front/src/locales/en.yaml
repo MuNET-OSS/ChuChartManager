@@ -1,0 +1,415 @@
+sidebar:
+  charts: Charts
+  course: Course
+  resources: Resources
+  mods: Mods
+  loginBonus: Login Bonus
+  event: Events
+  emote: Emote
+  batch: Batch
+  tools: Tools
+  settings: Settings
+  refresh: Refresh Data
+settings:
+  title: Settings
+  appearance: Appearance
+  theme: Theme
+  themeAuto: Auto
+  themeLight: Light
+  themeDark: Dark
+  themeHue: Theme Hue
+  reset: Reset
+  zoom: UI Scale
+  zoomAuto: Auto
+  gameDirectory: Game Directory
+  currentPath: Current Path
+  changeDirectory: Change Directory
+  changingDirectory: Switching...
+  changeDirectoryFailed: Failed to switch directory
+  switchedTo: "Switched to: {path}"
+  historyPath: History
+  noHistory: No history
+  about: About
+  appName: ChuChartManager
+  appDesc: CHUNITHM Chart Management Tool
+  language: Language
+  switchMode: Switch Mode
+oobe:
+  welcomeMessage: Welcome to ChuChartManager
+  selectGameDir: Select Game Directory
+  selectGameDirDesc: Please select the CHUNITHM game directory
+  browse: Browse...
+  selectedPath: Selected
+  pathNotValid: Invalid path
+  selectMode: Select Mode
+  localMode: Local Mode
+  localModeDesc: Manage charts on this computer
+  remoteMode: Remote Mode
+  remoteModeDesc: Access via LAN
+  username: Username
+  password: Password
+  enableAuth: Enable Authentication
+  complete: Complete
+  completing: Completing setup...
+  remoteReady: Remote access is ready
+  lanAddresses: LAN Addresses
+  openMainUI: Open Main UI
+  initializingData: Initializing game data...
+optionDir:
+  title: Option Directory Management
+  create: Create Option Directory
+  dirName: Directory Name
+  dirExists: Directory already exists
+  import: Import Local Directory
+  importing: Importing...
+  importSuccess: Import successful
+  deleteConfirm: Confirm delete this directory?
+  musicCount: "{count} tracks"
+  noOptions: No option directories
+  manageOptions: Manage Options
+  back: Back to List
+  storingCustom: Storing custom charts
+  storingOfficial: Storing official charts
+  markCustom: Mark as custom charts
+  unmarkCustom: Unmark custom charts
+  custom: Custom
+  importDesc: Select an option folder containing a music subdirectory
+  checkConflict: Check Conflicts
+  conflictCheck: Resource Conflict Check
+  checking: Checking...
+  noConflict: No conflicts found
+  conflictName: Track Name
+  conflictWith: Conflicting Directory
+common:
+  save: Save
+  cancel: Cancel
+  confirm: Confirm
+  delete: Delete
+  create: Create
+  import: Import
+  loading: Loading...
+  error: Error
+music:
+  sortById: ID
+  sortByName: Name
+  allGenres: All Genres
+  allDifficulties: All Difficulties
+  hasUltima: With ULTIMA
+  worldsEnd: "WORLD'S END"
+  trackCount: "{count} tracks"
+  statusLine: "{tracks} tracks | {options} options"
+  saved: "Saved: {name}"
+  copiedTo: "Copied to {dir}"
+  copyFailed: "Copy failed: {error}"
+  jacketImported: Jacket imported
+  chartImported: "Chart [{diff}] imported{suffix}"
+  noData: No data
+  selectHint: Select a track to view details
+  a000Hint: Select a directory other than A000 to edit
+  play: Play
+  exportMp3: Export MP3
+  importJacket: Import Jacket
+  songTitle: Title
+  artist: Artist
+  genre: Genre
+  enableDiff: Enable this difficulty
+  level: Level
+  notesDesigner: Notes Designer
+  replaceChart: Replace Chart
+  importChart: Import Chart
+  exportC2S: Export C2S
+  exportUGC: Export UGC
+  save: Save Changes
+  copyToOption: Copy to other Option
+  copy: Copy
+mods:
+  wip: Loading...
+  loaderNotInstalled: ChuModLoader is not installed
+  loaderInstalled: ChuModLoader is installed
+  noMods: No Mods detected
+  search: Search features...
+  on: On
+  off: Off
+  installed: Installed
+  notInstalled: Not installed
+  install: Install
+  installing: Installing...
+  installAll: Install all
+  installAllHint: Copies ChuModLoader and AppleChu into the current game directory
+  installHint: Install the loader and AppleChu to edit Mod settings here.
+  installSuccess: Installed successfully
+  installLoader: Install Loader
+  reinstallLoader: Reinstall Loader
+  installMod: Install AppleChu
+  reinstallMod: Reinstall AppleChu
+  reinstall: Reinstall
+  needInstall: Installation needed
+  installedVersion: Installed version
+  latestVersion: Latest version
+  saving: Saving
+  configMissingTitle: Config file has not been generated
+  configMissingHint: Please start the game once to generate the config file, then return here to edit it.
+  saveSuccess: Config saved
+  saveFailed: Save failed
+tools:
+  title: Tools
+  experimentalWarning: The following features are experimental and may have issues
+  createTrophy: Create Trophy
+  createNamePlate: Create Name Plate
+  createMapIcon: Create Map Icon
+  createChara: Create Character
+  createSystemVoice: Create System Voice
+  createFrame: Create Frame
+  createAvatarAccessory: Create Costume
+  accessoryCategory: Accessory Slot
+  categoryHead: Head
+  categoryFace: Face
+  categoryBody: Body
+  categoryBack: Back
+  iconImage: Icon Image
+  textureImage: Texture Image
+  targetDir: Target Option Directory
+  resourceId: Resource ID
+  resourceName: Name
+  explainText: Description
+  rareType: Type
+  rareNormal: Normal
+  rareBronze: Bronze
+  rareSilver: Silver
+  rareGold: Gold
+  rareGoldPlus: Gold+
+  rarePlatinum: Platinum
+  rarePlatinumPlus: Platinum+
+  rareRainbow: Rainbow
+  rareRainbowPlus: Rainbow+
+  rareStaff: Staff
+  rareOngeki: Ongeki
+  rareMaimai: Maimai
+  rareIrodoriSilver: Irodori Silver
+  rareIrodoriGold: Irodori Gold
+  rareIrodoriRainbow: Irodori Rainbow
+  rareImage: Image Trophy
+  trophyImage: Trophy Image (608×148)
+  namePlateImage: Name Plate Image (auto-resized to 576×228)
+  selectImage: Select Image
+  noImageSelected: No image selected
+  works: Works
+  illustrator: Illustrator
+  createSuccess: Created successfully
+  createFailed: Creation failed
+  checkConflict: Check Conflict
+  idConflictWarning: This ID is already in use. Creating will overwrite the existing resource.
+  charaFullImage: Full Body (1080×1080)
+  charaMidImage: Half Body (512×512)
+  charaSmallImage: Avatar (128×128)
+  createCharaVariant: Add Character Variant
+  variantBaseId: Base Character ID
+  variantSlot: Variant Slot
+  variantRank: Unlock Rank
+  variants: Variants (optional)
+  addVariant: Add Variant
+  noVariants: No variants. Click the button above to add one.
+  charaImagesRequired: Please select all three character images
+  charaBase: Base Form
+  charaBaseHint: Click the cards on the right to select the base character images
+  removeVariant: Remove Variant
+  convertChart: Chart Format Converter
+  sourceFormat: Source Format
+  targetFormat: Target Format
+  inputChart: Input Chart
+  outputChart: Output Result
+  uploadFile: Upload File
+  inputChartPlaceholder: Paste chart content, or click upload...
+  doConvert: Convert
+  convertSuccess: Conversion successful
+  convertFailed: Conversion failed
+  convertEmpty: Please input chart content
+  convertSameFormat: Source and target format cannot be the same
+  convertAlerts: Conversion Warnings
+  downloadResult: Download Result
+course:
+  title: Course
+  createCourse: Create Course
+  noCourses: No courses found
+  selectCourse: Select a course to view details
+  name: Name
+  difficulty: Difficulty
+  assetDir: Directory
+  musicList: Music List
+  tracks: tracks
+  addMusic: Add Music
+  clickToSelect: Click to select music
+  selectMusic: Select Music
+  searchMusic: Search by name or ID...
+  noResults: No results
+  needMusic: At least one music is required
+resource:
+  title: Resource Manager
+  trophy: Trophy
+  namePlate: Name Plate
+  frame: Frame
+  mapIcon: Map Icon
+  avatarAccessory: Costume
+  chara: Character
+  systemVoice: System Voice
+  stage: Stage
+  search: Search by name or ID...
+  items: items
+  noItems: No resources found
+  deleteConfirm: Confirm Delete
+  deleteMessage: "Delete \"{name}\" (ID: {id})? This cannot be undone."
+loginBonus:
+  title: Login Bonus
+  presets: Bonus Presets
+  noPresets: No presets found
+  bonusCount: "{count} bonuses"
+  disabled: Disabled
+  editPreset: Edit Preset
+  addBonus: Add Bonus
+  bonusId: Bonus ID
+  bonusName: Bonus Name
+  presentId: Present ID
+  presentName: Present Name
+  itemNum: Quantity
+  needLoginDays: Required Login Days
+  categoryType: Category
+  categoryRegular: Regular
+  categoryCumulative: Cumulative
+  categoryLimited: Limited Period
+  createPreset: Create Preset
+  presetId: Preset ID
+  presetName: Preset Name
+  deletePreset: Delete Preset
+  deletePresetMessage: "Delete preset \"{name}\" (ID: {id})?"
+batch:
+  title: Batch Actions
+  selectMusic: Select Music
+  selectAll: Select All
+  deselectAll: Deselect All
+  selected: "{count} selected"
+  action: Action
+  setGenre: Set Genre
+  exportJackets: Export Jackets
+  exportMp3: Export MP3
+  genre: Genre
+  execute: Execute
+  executing: Executing…
+  noMusicSelected: Please select music first
+  done: Done
+  downloading: Downloading…
+  next: Next
+  previous: Previous
+  chooseAction: Choose Action
+  editProps: Edit Properties
+  notChange: No Change
+  a000Warning: A000 music cannot be edited/deleted
+  searchPlaceholder: Search name / artist / ID
+  colJacket: Jacket
+  colTitle: Title
+  colGenre: Genre
+  colCharts: Charts
+  colJump: Jump
+  totalMusic: songs
+event:
+  title: Event Manager
+  events: Events
+  maps: Maps
+  noEvents: No events found
+  noMaps: No maps found
+  editEvent: Edit Event
+  editMap: Edit Map
+  eventName: Event Name
+  eventText: Event Text
+  eventId: Event ID
+  substanceType: Substance Type
+  periodDispType: Period Display Type
+  priority: Priority
+  flagValue: Flag Value
+  infoImage: Info Image
+  importInfoImage: Import Info Image
+  replaceInfoImage: Replace Info Image
+  infoImageImported: Info image imported
+  alwaysOpen: Always Open
+  teamOnly: Team Only
+  isKop: KOP
+  readOnly: A000 Read-only
+  dataName: Data Name
+  assetDir: Directory
+  createEvent: Create Event
+  deleteEvent: Delete Event
+  deleteEventMessage: "Delete event \"{name}\" (ID: {id})?"
+  mapTitle: Map Manager
+  mapName: Map Name
+  mapId: Map ID
+  mapType: Map Type
+  hiddenType: Hidden Type
+  unlockText: Unlock Condition
+  netDispPeriod: Show Online Period
+  mapFilter: Filter Category
+  category: Category
+  areaCount: "{count} areas"
+  addArea: Add Area
+  mapAreaId: Area ID
+  mapAreaName: Area Name
+  ddsMapId: Map Texture ID
+  ddsMapName: Map Texture Name
+  importDdsMap: Import Map Background
+  replaceDdsMap: Replace Map Background
+  ddsMapImported: Map background generated
+  rewardId: Reward ID
+  rewardName: Reward Name
+  pageIndex: Page Index
+  indexInPage: Index in Page
+  requiredAchievement: Required Achievements
+  gaugeId: Gauge ID
+  isHard: Hard Mode
+  createMap: Create Map
+  deleteMap: Delete Map
+  deleteMapMessage: "Delete map \"{name}\" (ID: {id})?"
+  refMap: Linked Map
+  refDailyBonus: Linked Daily Bonus
+  refLinkedVerse: Linked Verse
+  refCmission: Linked Mission
+  refPlayRewardSet: Linked Play Reward
+  refUnlockChallenge: Linked Unlock Challenge
+  substType:
+    information: Information
+    map: Map
+    music: Music
+    advertiseMovie: Advertisement
+    recommendMusic: Recommended Music
+    release: Release
+    course: Course
+    quest: Quest
+    duel: Duel
+    cmission: C-Mission
+    changeSurfBoardUI: UI Change
+    avatarAccessoryGacha: Accessory Gacha
+    rightsInfo: Rights Info
+    dailyBonusPreset: Daily Bonus
+    matchingBonus: Matching Bonus
+    unlockChallenge: Unlock Challenge
+    playRewardSet: Play Reward
+    linkedVerse: LinkedVerse
+ddsExtractor:
+  title: DDS Extractor
+  desc: Extract DDS textures from AFB/SVO files
+  selectFile: Select File
+  selectFolder: Select Folder
+  noPath: Please select a file or folder first
+  noPathHint: No file selected
+  extract: Extract
+  done: "Extraction complete: {count} DDS from {files} file(s)"
+  failed: Extraction failed
+emote:
+  title: Emote Models
+  data: Emote Models
+  noData: No model data
+  preview: Preview Animation
+  id: ID
+  fileName: File Name
+  fileSize: File Size
+  assetDir: Directory
+  viewerNotFound: FreeMoteViewer.exe not found
+  viewerLaunched: Emote Viewer launched
+  launchFailed: Launch failed

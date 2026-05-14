@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ChuChartManager": {
+      "commandName": "Project",
+      "launchBrowser": false
+    }
+  }
+}

@@ -1,0 +1,27 @@
+[submodule "SonicAudioTools"]
+	path = SonicAudioTools
+	url = https://github.com/clansty/SonicAudioTools.git
+[submodule "MuNET-UI"]
+	path = MuNET-UI
+	url = https://github.com/MuNET-OSS/MuNET-UI.git
+[submodule "XV2-Tools"]
+	path = XV2-Tools
+	url = https://github.com/Clansty/XV2-Tools.git
+[submodule "MuConvert"]
+	path = MuConvert
+	url = https://github.com/MuNET-OSS/MuConvert
+[submodule "DDSExtractor"]
+	path = DDSExtractor
+	url = https://github.com/Applesaber/DDSExtractor.git
+[submodule "FreeMote"]
+	path = FreeMote
+	url = https://github.com/UlyssesWu/FreeMote.git
+[submodule "FreeMote-SDK"]
+	path = FreeMote-SDK
+	url = https://github.com/Project-AZUSA/FreeMote-SDK.git
+[submodule "ChuModLoader"]
+	path = ChuModLoader
+	url = https://github.com/MuNET-OSS/ChuModLoader.git
+[submodule "AppleChu"]
+	path = AppleChu
+	url = https://github.com/MuNET-OSS/AppleChu.git

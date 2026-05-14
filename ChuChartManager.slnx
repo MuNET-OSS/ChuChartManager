@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="ChuChartManager/ChuChartManager.csproj" />
+  <Project Path="ChuChartManager.CLI/ChuChartManager.CLI.csproj" />
+  <Project Path="MuConvert/MuConvert.csproj" />
+  <Project Path="DDSExtractor/DDSExtractor/DDSExtractor.vbproj" />
+  <Project Path="SonicAudioTools/Source/SonicAudioLib/SonicAudioLib.csproj" Id="63138773-1f47-474c-9345-15eb6183ecc6" />
+  <Project Path="XV2-Tools/LB_Common/LB_Common.csproj" Id="513b1851-4576-45ec-8f8e-400a38b05502" />
+  <Project Path="XV2-Tools/Xv2CoreLib/Xv2CoreLib.csproj" Id="fdb88e51-0d73-47b9-a342-e574ec0ba583" />
+</Solution>

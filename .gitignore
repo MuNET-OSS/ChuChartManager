@@ -1,0 +1,23 @@
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.cache
+packages/
+nul
+
+# 运行时工具（构建后生成）
+ChuChartManager/tools/
+
+# 前端
+node_modules/
+ChuChartManager/wwwroot/
+pnpm-lock.yaml
+
+# 临时文件
+*.psb
+*.pure.psb
+*.emtbytes
+
