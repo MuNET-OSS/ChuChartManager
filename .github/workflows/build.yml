@@ -1,95 +1,112 @@
-name: Build & Release
+name: CI
 
 on:
   push:
-    tags: ['v*']
-  workflow_dispatch:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
 
 jobs:
-  build-frontend:
-    name: Build Frontend
+  check-frontend:
+    name: Check Frontend
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '22'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 10
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-    - name: Install and Build
-      working-directory: ChuChartManager/Front
-      run: |
-        pnpm install
-        pnpm build
+      - name: Install
+        working-directory: ChuChartManager/Front
+        run: pnpm install
 
-    - name: Upload wwwroot
-      uses: actions/upload-artifact@v4
-      with:
-        name: wwwroot
-        path: ChuChartManager/wwwroot
+      - name: Type Check
+        working-directory: ChuChartManager/Front
+        run: pnpm vue-tsc --noEmit
 
-  build-backend:
-    name: Build Backend
+      - name: Build
+        working-directory: ChuChartManager/Front
+        run: pnpm build
+
+  check-backend:
+    name: Check Backend
     runs-on: windows-latest
-    needs: build-frontend
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '10.0.x'
-        dotnet-quality: 'preview'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          dotnet-quality: "preview"
 
-    - name: Download wwwroot
-      uses: actions/download-artifact@v4
-      with:
-        name: wwwroot
-        path: ChuChartManager/wwwroot
+      - name: Build
+        run: dotnet build ChuChartManager/ChuChartManager.csproj -c Release
 
-    - name: Publish
-      run: |
-        dotnet publish ChuChartManager/ChuChartManager.csproj -c Release -r win-x64 --self-contained -o publish /p:PublishSingleFile=false
+  build:
+    name: Build
+    runs-on: windows-latest
+    needs: [check-frontend, check-backend]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-    - name: Package
-      shell: pwsh
-      run: |
-        Compress-Archive -Path publish/* -DestinationPath ChuChartManager-win-x64.zip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ChuChartManager-win-x64
-        path: ChuChartManager-win-x64.zip
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          dotnet-quality: "preview"
+
+      - name: Build Frontend
+        working-directory: ChuChartManager/Front
+        run: |
+          pnpm install
+          pnpm build
+
+      - name: Publish
+        run: dotnet publish ChuChartManager/ChuChartManager.csproj -c Release -r win-x64 --self-contained -o publish /p:PublishSingleFile=false
+
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path publish/* -DestinationPath ChuChartManager-win-x64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChuChartManager-win-x64
+          path: ChuChartManager-win-x64.zip
 
   release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    needs: build-backend
+    name: Release
     if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: ChuChartManager-win-x64
+      - uses: actions/download-artifact@v4
+        with:
+          name: ChuChartManager-win-x64
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: ChuChartManager-win-x64.zip
-        generate_release_notes: true
-        prerelease: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: ChuChartManager-win-x64.zip
+          generate_release_notes: true
+          prerelease: false
