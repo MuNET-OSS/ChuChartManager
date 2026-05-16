@@ -6,7 +6,7 @@ authors = ["Applesaber"]
 description = { zh = "CHUNITHM Mod", en = "CHUNITHM Mod" }
 homepage = "https://github.com/MuNET-OSS/AppleChu"
 license = "Apache-2.0"
-min_loader_version = "3.0.0"
+min_loader_version = "1.0.0"
 game_versions = ["2.45"]
 
 [ui]
@@ -17,6 +17,7 @@ groups = [
     { id = "audio", label = { zh = "音频", en = "Audio" }, sections = ["ForceSharedAudio", "Force2chAudio"] },
     { id = "network", label = { zh = "网络", en = "Network" }, sections = ["DisableEncryption", "DisableTLS"] },
     { id = "compatibility", label = { zh = "兼容", en = "Compatibility" }, sections = ["BypassAppUser"] },
+    { id = "ux", label = { zh = "体验", en = "UX" }, sections = ["ExitConfirm", "DeviceLostFix"] },
 ]
 
 [[config.sections]]
