@@ -152,7 +152,7 @@ jobs:
           Write-Host "Upload complete: $remotePath"
 
       - name: Update AppInstaller Config
-        shell: pwsh
+        shell: powershell
         run: |
           $appxFile = Get-ChildItem -Path "Packaging" -Filter "ChuChartManager_Canary_*.appx" | Select-Object -First 1
           if (-not $appxFile) { throw "Appx file not found for version extraction!" }
