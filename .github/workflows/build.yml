@@ -122,11 +122,46 @@ jobs:
         # self-hosted runner 已配 .NET SDK / Windows SDK / D:\Sign\signcode.cmd
         run: .\Packaging\Build.ps1 -Mode Canary
 
-      - name: Upload Appx
+      - name: Upload Appx artifact
         uses: actions/upload-artifact@v4
         with:
           name: ChuChartManager-Canary-Appx
           path: Packaging/ChuChartManager_Canary_*.appx
+
+      - name: Upload to Alist
+        shell: pwsh
+        env:
+          ALIST_TOKEN: ${{ secrets.ALIST_TOKEN }}
+        run: |
+          $alistUrl = "https://alist.c5y.moe"
+
+          $appxFile = Get-ChildItem -Path "Packaging" -Filter "ChuChartManager_Canary_*.appx" | Select-Object -First 1
+          if (-not $appxFile) { throw "No appx file found!" }
+
+          Write-Host "Uploading $($appxFile.Name)..."
+
+          $remotePath = "/SBGA/ChuChartManager Canary/$($appxFile.Name)"
+          $encodedPath = [System.Uri]::EscapeDataString($remotePath)
+
+          $headers = @{
+            "Authorization" = $env:ALIST_TOKEN
+            "File-Path" = $encodedPath
+          }
+
+          Invoke-RestMethod -Uri "$alistUrl/api/fs/put" -Method Put -InFile $appxFile.FullName -Headers $headers
+          Write-Host "Upload complete: $remotePath"
+
+      - name: Update AppInstaller Config
+        shell: pwsh
+        run: |
+          $appxFile = Get-ChildItem -Path "Packaging" -Filter "ChuChartManager_Canary_*.appx" | Select-Object -First 1
+          if (-not $appxFile) { throw "Appx file not found for version extraction!" }
+
+          # 从 ChuChartManager_Canary_X.Y.Z.W.appx 提取版本号
+          $version = $appxFile.Name -replace 'ChuChartManager_Canary_', '' -replace '\.appx$', ''
+          Write-Host "Detected Version: $version"
+
+          & "D:\sign\ccm-canary-update.ps1" -Version $version
 
   release:
     name: Release

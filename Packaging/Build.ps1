@@ -143,7 +143,7 @@ $xml.Package.Identity.Version = $BuildVersion
 
 if ($Mode -eq "Canary") {
     # Canary 用自签证书 + 独立 Identity，避免覆盖未来的商店版
-    $xml.Package.Identity.Name = $xml.Package.Identity.Name + ".Canary"
+    $xml.Package.Identity.Name = "MuNET.ChuChartManager.Canary"
     $xml.Package.Identity.Publisher = $CanaryPublisher
     $xml.Package.Properties.DisplayName = "ChuChartManager (Canary)"
     $xml.Package.Properties.PublisherDisplayName = "凌莞"

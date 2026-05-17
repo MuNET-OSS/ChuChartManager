@@ -6,8 +6,8 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   IgnorableNamespaces="win32dependencies">
-  <!-- Identity 中 Name/Publisher 为占位符，发布到微软商店前由实际值替换 -->
-  <Identity Name="PLACEHOLDER.ChuChartManager"
+  <!-- Identity 中 Name/Publisher 为占位符，发布到微软商店前由实际值替换；Canary 用 MuNET.ChuChartManager (自动加 .Canary 后缀) -->
+  <Identity Name="MuNET.ChuChartManager"
             Publisher="CN=PLACEHOLDER-MS-STORE"
             Version="0.1.0.0"
             ProcessorArchitecture="x64" />
