@@ -44,7 +44,7 @@ export default defineComponent({
         <div class="flex gap-2">
           <div class="flex-1">
             <Select value={props.value} options={options.value}
-              onUpdate:value={(v: string) => emit('update:value', v)} />
+              onChange={(v: string) => emit('update:value', v)} />
           </div>
           <Button onClick={() => { showCreate.value = true; newDirId.value = 1 }}>
             <span class="i-mdi-plus text-3.5" />
@@ -54,7 +54,7 @@ export default defineComponent({
           show={showCreate.value}
           title={t('optionDir.create')}
           width="min(90vw, 20em)"
-          onClose={() => { showCreate.value = false }}
+          onUpdateShow={(v) => { if (!v) showCreate.value = false }}
         >
           <div class="p-4 flex flex-col gap-3">
             <div class="flex gap-2 items-center">

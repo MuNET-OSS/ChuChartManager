@@ -22,6 +22,16 @@ const numericValue = computed({
   get: () => Number(value.value ?? 0),
   set: (next: number) => { value.value = next },
 })
+
+const boolValue = computed({
+  get: () => Boolean(value.value),
+  set: (next: boolean) => { value.value = next },
+})
+
+const stringValue = computed({
+  get: () => String(value.value ?? ''),
+  set: (next: string) => { value.value = next },
+})
 </script>
 
 <template>
@@ -29,8 +39,8 @@ const numericValue = computed({
     <div class="w-9em shrink-0 text-sm">{{ label }}</div>
     <div class="flex flex-col gap-2 w-full">
       <div class="flex gap-2 h-28px items-center">
-        <CheckBox v-if="entry.type === 'bool'" v-model:value="value">
-          {{ value ? $t('mods.on') : $t('mods.off') }}
+        <CheckBox v-if="entry.type === 'bool'" v-model:value="boolValue">
+          {{ boolValue ? $t('mods.on') : $t('mods.off') }}
         </CheckBox>
         <NumberInput
           v-else-if="entry.type === 'int'"
@@ -48,7 +58,7 @@ const numericValue = computed({
           :decimal="4"
           :step="0.1"
         />
-        <TextInput v-else v-model:value="value" class="w-full" />
+        <TextInput v-else v-model:value="stringValue" class="w-full" />
       </div>
       <div v-if="description" class="text-sm op-80">{{ description }}</div>
     </div>

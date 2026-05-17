@@ -4,7 +4,7 @@ import { Button, TextInput } from '@munet/ui'
 import { useI18n } from 'vue-i18n'
 import { getJacketUrl, type MusicListItem } from '@/api'
 import { sidebarActive, selectedSource, selectMusicId } from '@/store/refs'
-import _ from 'lodash-es'
+import * as _ from 'lodash-es'
 
 const LEVEL_COLORS = ['#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#1e1e1e', '#6366f1']
 
@@ -37,7 +37,7 @@ export default defineComponent({
       {
         title: 'Opt', key: 'assetDir', width: 100,
         filterOptions: _.uniq(props.musicList.map(m => m.assetDir)).map(v => ({ label: v, value: v })),
-        filter(value: string, row: MusicListItem) { return row.assetDir === value },
+        filter(value, row: MusicListItem) { return row.assetDir === value },
       },
       {
         title: 'ID', key: 'id', width: 100,
@@ -46,7 +46,7 @@ export default defineComponent({
           { label: 'Standard (0-7999)', value: 'std' },
           { label: "World's End (8000+)", value: 'we' },
         ],
-        filter(value: string, row: MusicListItem) {
+        filter(value, row: MusicListItem) {
           return value === 'std' ? row.id < 8000 : row.id >= 8000
         },
       },
@@ -71,8 +71,8 @@ export default defineComponent({
       {
         title: t('batch.colCharts'), key: 'charts', width: '16em',
         filterOptions: ['BASIC', 'ADVANCED', 'EXPERT', 'MASTER', 'ULTIMA', "WORLD'S END"].map((label, value) => ({ label, value })),
-        filter(value: number, row: MusicListItem) {
-          const f = row.fumens[value]
+        filter(value, row: MusicListItem) {
+          const f = row.fumens[value as number]
           return f != null && f.enable
         },
         render: (row: MusicListItem) => (

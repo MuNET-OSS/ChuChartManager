@@ -302,7 +302,7 @@ export default defineComponent({
             show={activeModal.value !== null}
             title={modalTitle.value}
             width="min(50vw, 36em)"
-            onClose={closeModal}
+            onUpdateShow={(v) => { if (!v) closeModal() }}
           >
             {activeModal.value === 'ddsExtractor' ? (
               <div class="flex flex-col gap-3 p-2">

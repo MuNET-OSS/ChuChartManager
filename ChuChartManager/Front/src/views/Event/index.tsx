@@ -703,7 +703,7 @@ export default defineComponent({
           show={showCreateEvent.value}
           title={t('event.createEvent')}
           width="min(90vw, 28em)"
-          onClose={() => { showCreateEvent.value = false }}
+          onUpdateShow={(v) => { if (!v) showCreateEvent.value = false }}
         >
           <div class="p-4 flex flex-col gap-3">
             <div>
@@ -733,7 +733,7 @@ export default defineComponent({
           show={showCreateMap.value}
           title={t('event.createMap')}
           width="min(90vw, 28em)"
-          onClose={() => { showCreateMap.value = false }}
+          onUpdateShow={(v) => { if (!v) showCreateMap.value = false }}
         >
           <div class="p-4 flex flex-col gap-3">
             <div>
@@ -759,7 +759,7 @@ export default defineComponent({
           show={showDeleteEvent.value}
           title={t('event.deleteEvent')}
           width="min(90vw, 24em)"
-          onClose={() => { showDeleteEvent.value = false }}
+          onUpdateShow={(v) => { if (!v) showDeleteEvent.value = false }}
         >
           <div class="p-2">
             <p class="text-sm mb-4">
@@ -779,7 +779,7 @@ export default defineComponent({
           show={showDeleteMap.value}
           title={t('event.deleteMap')}
           width="min(90vw, 24em)"
-          onClose={() => { showDeleteMap.value = false }}
+          onUpdateShow={(v) => { if (!v) showDeleteMap.value = false }}
         >
           <div class="p-2">
             <p class="text-sm mb-4">

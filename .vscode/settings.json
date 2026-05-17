@@ -1,0 +1,7 @@
+{
+    "i18n-ally.localesPaths": [
+        "MuConvert/i18n",
+        "MuNET-UI/src/i18n",
+        "ChuChartManager/Front/src/locales"
+    ]
+}

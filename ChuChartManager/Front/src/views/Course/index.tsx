@@ -339,7 +339,7 @@ export default defineComponent({
           show={showCreateModal.value}
           title={t('course.createCourse')}
           width="min(60vw, 42em)"
-          onClose={() => { showCreateModal.value = false }}
+          onUpdateShow={(v) => { if (!v) showCreateModal.value = false }}
         >
           <div class="flex flex-col gap-3 p-2">
             <div>
@@ -373,7 +373,7 @@ export default defineComponent({
           show={showMusicPicker.value}
           title={t('course.selectMusic')}
           width="min(70vw, 48em)"
-          onClose={() => { showMusicPicker.value = false }}
+          onUpdateShow={(v) => { if (!v) showMusicPicker.value = false }}
         >
           <div class="flex flex-col gap-3 p-2">
             <TextInput v-model:value={musicSearch.value} placeholder={t('course.searchMusic')} />

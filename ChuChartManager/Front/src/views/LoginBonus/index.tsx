@@ -275,7 +275,7 @@ export default defineComponent({
           show={showCreateModal.value}
           title={t('loginBonus.createPreset')}
           width="min(90vw, 28em)"
-          onClose={() => { showCreateModal.value = false }}
+          onUpdateShow={(v) => { if (!v) showCreateModal.value = false }}
         >
           <div class="p-4 flex flex-col gap-3">
             <div>
@@ -301,7 +301,7 @@ export default defineComponent({
           show={showDeleteConfirm.value}
           title={t('loginBonus.deletePreset')}
           width="min(90vw, 24em)"
-          onClose={() => { showDeleteConfirm.value = false }}
+          onUpdateShow={(v) => { if (!v) showDeleteConfirm.value = false }}
         >
           <div class="p-2">
             <p class="text-sm mb-4">

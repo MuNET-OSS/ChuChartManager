@@ -132,6 +132,7 @@ export default defineComponent({
             assetDir: s.assetDir,
             dirPath: '',
             hasImage: s.hasImage,
+            rareType: 0,
           }))
         } else {
           resources.value = await getResourceList(activeType.value)
@@ -308,7 +309,7 @@ export default defineComponent({
           show={deleteTarget.value !== null}
           title={t('resource.deleteConfirm')}
           width="min(90vw, 24em)"
-          onClose={() => { deleteTarget.value = null }}
+          onUpdateShow={(v) => { if (!v) deleteTarget.value = null }}
         >
           <div class="p-2">
             <p class="text-sm mb-4">
