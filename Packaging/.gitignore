@@ -1,0 +1,6 @@
+*.pri
+*.appx
+*.msix
+*.pfx
+*.cer
+Pack/

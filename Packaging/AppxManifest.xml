@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:win32dependencies="http://schemas.microsoft.com/appx/manifest/externaldependencies"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  IgnorableNamespaces="win32dependencies">
+  <!-- Identity 中 Name/Publisher 为占位符，发布到微软商店前由实际值替换 -->
+  <Identity Name="PLACEHOLDER.ChuChartManager"
+            Publisher="CN=PLACEHOLDER-MS-STORE"
+            Version="0.1.0.0"
+            ProcessorArchitecture="x64" />
+  <Properties>
+    <DisplayName>ChuChartManager</DisplayName>
+    <PublisherDisplayName>MuNET</PublisherDisplayName>
+    <Logo>StoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0"
+      MaxVersionTested="10.0.22621.0" />
+    <win32dependencies:ExternalDependency Name="Microsoft.WebView2"
+      Publisher="CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+      MinVersion="100.0.1185.39" Optional="true" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="zh-cn" />
+    <Resource Language="zh-tw" />
+    <Resource Language="en" />
+    <Resource Language="ja" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="ChuChartManager.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="ChuChartManager" Description="ChuChartManager"
+        BackgroundColor="transparent" Square150x150Logo="Square150x150Logo.png"
+        Square44x44Logo="Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Wide310x150Logo.png" ShortName="ChuChartManager"
+          Square310x310Logo="LargeTile.png" Square71x71Logo="SmallTile.png" />
+        <uap:SplashScreen Image="SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+
+    <Application Id="CliTool"
+      Executable="ChuChartManager.CLI.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        AppListEntry="none"
+        DisplayName="ChuChartManager CLI"
+        Description="ChuChartManager Command line tool"
+        BackgroundColor="transparent"
+        Square150x150Logo="Square150x150Logo.png"
+        Square44x44Logo="Square44x44Logo.png" />
+      <Extensions>
+        <uap3:Extension Category="windows.appExecutionAlias">
+          <uap3:AppExecutionAlias>
+            <desktop:ExecutionAlias Alias="ccm.exe" />
+          </uap3:AppExecutionAlias>
+        </uap3:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

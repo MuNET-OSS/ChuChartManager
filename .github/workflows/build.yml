@@ -3,9 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   check-frontend:
@@ -36,6 +36,12 @@ jobs:
         working-directory: ChuChartManager/Front
         run: pnpm build
 
+      - name: Upload wwwroot
+        uses: actions/upload-artifact@v4
+        with:
+          name: wwwroot
+          path: ChuChartManager/wwwroot
+
   check-backend:
     name: Check Backend
     runs-on: windows-latest
@@ -53,7 +59,7 @@ jobs:
         run: dotnet build ChuChartManager/ChuChartManager.csproj -c Release
 
   build:
-    name: Build
+    name: Build (zip)
     runs-on: windows-latest
     needs: [check-frontend, check-backend]
     steps:
@@ -81,7 +87,7 @@ jobs:
           pnpm build
 
       - name: Publish
-        run: dotnet publish ChuChartManager/ChuChartManager.csproj -c Release -r win-x64 --self-contained -o publish /p:PublishSingleFile=false
+        run: dotnet publish ChuChartManager/ChuChartManager.csproj -c Release -r win-x64 --self-contained -o publish /p:PublishSingleFile=false /p:ErrorOnDuplicatePublishOutputFiles=false
 
       - name: Package
         shell: pwsh
@@ -92,6 +98,35 @@ jobs:
         with:
           name: ChuChartManager-win-x64
           path: ChuChartManager-win-x64.zip
+
+  build-canary-appx:
+    name: Build Canary Appx
+    runs-on: self-hosted
+    needs: [check-frontend]
+    steps:
+      - run: git config --global core.longPaths true
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Download wwwroot
+        uses: actions/download-artifact@v4
+        with:
+          name: wwwroot
+          path: ChuChartManager/wwwroot
+
+      - name: Build Appx
+        shell: pwsh
+        # self-hosted runner 已配 .NET SDK / Windows SDK / D:\Sign\signcode.cmd
+        run: .\Packaging\Build.ps1 -Mode Canary
+
+      - name: Upload Appx
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChuChartManager-Canary-Appx
+          path: Packaging/ChuChartManager_Canary_*.appx
 
   release:
     name: Release
