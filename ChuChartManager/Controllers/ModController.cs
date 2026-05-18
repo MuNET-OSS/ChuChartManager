@@ -11,7 +11,7 @@ namespace ChuChartManager.Controllers;
 public class ModController : ControllerBase
 {
     public record ModInfo(string Name, string Version);
-    public record ModStatus(bool LoaderInstalled, List<ModInfo> Mods);
+    public record ModStatus(bool LoaderInstalled, bool ProxyInstalled, List<ModInfo> Mods);
     public record ModSectionConfig(bool Enabled, Dictionary<string, object?> Entries);
     public record ModConfigRequest(Dictionary<string, ModSectionConfig> Sections);
 
@@ -20,10 +20,11 @@ public class ModController : ControllerBase
     {
         var gamePath = StaticSettings.GamePath;
         if (string.IsNullOrEmpty(gamePath))
-            return Ok(new ModStatus(false, []));
+            return Ok(new ModStatus(false, false, []));
 
         var binPath = Path.Combine(gamePath, "bin");
         var loaderInstalled = System.IO.File.Exists(Path.Combine(binPath, "version.dll"));
+        var proxyInstalled = System.IO.File.Exists(Path.Combine(binPath, "d3d9.dll"));
         var modsPath = Path.Combine(binPath, "mods");
         var mods = Directory.Exists(modsPath)
             ? Directory.GetFiles(modsPath, "*.dll", SearchOption.TopDirectoryOnly)
@@ -32,11 +33,12 @@ public class ModController : ControllerBase
                 .ToList()
             : [];
 
-        return Ok(new ModStatus(loaderInstalled, mods));
+        return Ok(new ModStatus(loaderInstalled, proxyInstalled, mods));
     }
 
     private const string LoaderRepo = "MuNET-OSS/ChuModLoader";
     private const string LoaderAsset = "version.dll";
+    private const string ProxyAsset = "d3d9.dll";
     private const string AppleChuRepo = "MuNET-OSS/AppleChu";
     private const string AppleChuAsset = "AppleChu.dll";
 
@@ -59,11 +61,13 @@ public class ModController : ControllerBase
 
         var binPath = string.IsNullOrEmpty(StaticSettings.GamePath) ? "" : Path.Combine(StaticSettings.GamePath, "bin");
         var loaderInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "version.dll"));
+        var proxyInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "d3d9.dll"));
         var appleChuInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "mods", "AppleChu.dll"));
 
         return Ok(new
         {
             loader = new VersionInfo(loader?.Tag_name ?? "", loaderInstalled ? "installed" : "", loader?.Assets.FirstOrDefault(a => a.Name == LoaderAsset)?.Browser_download_url ?? ""),
+            proxy = new VersionInfo(loader?.Tag_name ?? "", proxyInstalled ? "installed" : "", loader?.Assets.FirstOrDefault(a => a.Name == ProxyAsset)?.Browser_download_url ?? ""),
             applechu = new VersionInfo(applechu?.Tag_name ?? "", appleChuInstalled ? "installed" : "", applechu?.Assets.FirstOrDefault(a => a.Name == AppleChuAsset)?.Browser_download_url ?? ""),
         });
     }
@@ -75,18 +79,25 @@ public class ModController : ControllerBase
         if (string.IsNullOrEmpty(gamePath))
             return BadRequest("GamePath not set");
 
-        var url = request?.Url;
-        if (string.IsNullOrEmpty(url))
-        {
-            var release = await GetLatestRelease(LoaderRepo, LoaderAsset);
-            url = release?.Assets.FirstOrDefault(a => a.Name == LoaderAsset)?.Browser_download_url;
-        }
-        if (string.IsNullOrEmpty(url))
+        var release = await GetLatestRelease(LoaderRepo, LoaderAsset);
+
+        var loaderUrl = request?.Url;
+        if (string.IsNullOrEmpty(loaderUrl))
+            loaderUrl = release?.Assets.FirstOrDefault(a => a.Name == LoaderAsset)?.Browser_download_url;
+        if (string.IsNullOrEmpty(loaderUrl))
             return NotFound("No release found");
 
-        var data = await Http.GetByteArrayAsync(url);
-        var dest = Path.Combine(gamePath, "bin", "version.dll");
-        await System.IO.File.WriteAllBytesAsync(dest, data);
+        var binPath = Path.Combine(gamePath, "bin");
+        var loaderData = await Http.GetByteArrayAsync(loaderUrl);
+        await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "version.dll"), loaderData);
+
+        var proxyUrl = release?.Assets.FirstOrDefault(a => a.Name == ProxyAsset)?.Browser_download_url;
+        if (!string.IsNullOrEmpty(proxyUrl))
+        {
+            var proxyData = await Http.GetByteArrayAsync(proxyUrl);
+            await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "d3d9.dll"), proxyData);
+        }
+
         return Ok();
     }
 
