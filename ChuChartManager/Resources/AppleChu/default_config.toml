@@ -49,9 +49,7 @@ Version = "1"
 
 ## 自动游玩
 ## 只屏蔽成绩数据，角色/设置/地图进度正常保存
-#[Autoplay]
-#block_playlog = true
-#block_music_detail = true
+[Autoplay]
 
 ## 解锁 120fps
 [Unlock120fps]

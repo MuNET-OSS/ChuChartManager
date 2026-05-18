@@ -156,7 +156,12 @@ public class ModController : ControllerBase
         if (!TryResolveGameFile($"{modId}.toml", out var path))
             return BadRequest("GamePath not set");
         if (!System.IO.File.Exists(path))
-            return NotFound();
+        {
+            var template = LoadDefaultConfig(modId);
+            if (template == null)
+                return NotFound();
+            System.IO.File.WriteAllText(path, template, new UTF8Encoding(false));
+        }
 
         var sections = ParseConfig(System.IO.File.ReadAllText(path, Encoding.UTF8));
         return Ok(new ModConfigRequest(sections));
@@ -168,7 +173,10 @@ public class ModController : ControllerBase
         if (!TryResolveGameFile($"{modId}.toml", out var path))
             return BadRequest("GamePath not set");
 
-        var toml = SerializeConfig(request.Sections);
+        var template = LoadDefaultConfig(modId);
+        var toml = template != null
+            ? SerializeFromTemplate(template, request.Sections)
+            : SerializeConfig(request.Sections);
         System.IO.File.WriteAllText(path, toml, new UTF8Encoding(false));
         return Ok();
     }
@@ -257,6 +265,57 @@ public class ModController : ControllerBase
         }
     }
 
+    private static string? LoadDefaultConfig(string modId)
+    {
+        var source = Path.Combine(StaticSettings.ExeDir, "Resources", modId, "default_config.toml");
+        return System.IO.File.Exists(source) ? System.IO.File.ReadAllText(source, Encoding.UTF8) : null;
+    }
+
+    private static string SerializeFromTemplate(string template, Dictionary<string, ModSectionConfig> sections)
+    {
+        var builder = new StringBuilder();
+        string? currentSection = null;
+        var usedEntries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var rawLine in template.Replace("\r\n", "\n").Split('\n'))
+        {
+            var trimmed = rawLine.Trim();
+
+            var uncommented = trimmed.StartsWith('#') ? trimmed[1..].TrimStart() : trimmed;
+            if (uncommented.StartsWith('[') && uncommented.EndsWith(']'))
+            {
+                currentSection = uncommented[1..^1].Trim();
+                usedEntries.Clear();
+                var enabled = sections.TryGetValue(currentSection, out var s) ? s.Enabled : !trimmed.StartsWith('#');
+                var prefix = enabled ? "" : "#";
+                builder.Append(prefix).Append('[').Append(currentSection).AppendLine("]");
+                continue;
+            }
+
+            if (currentSection != null && !trimmed.StartsWith("##") && trimmed.Length > 0)
+            {
+                var isCommented = trimmed.StartsWith('#');
+                var line = isCommented ? uncommented : trimmed;
+                var eq = line.IndexOf('=');
+                if (eq > 0)
+                {
+                    var key = line[..eq].Trim();
+                    if (sections.TryGetValue(currentSection, out var sec) && sec.Entries.TryGetValue(key, out var val))
+                    {
+                        var prefix = sec.Enabled ? "" : "#";
+                        builder.Append(prefix).Append(key).Append(" = ").AppendLine(FormatTomlValue(val));
+                        usedEntries.Add(key);
+                        continue;
+                    }
+                }
+            }
+
+            builder.AppendLine(rawLine);
+        }
+
+        return builder.ToString();
+    }
+
     private static string SerializeConfig(Dictionary<string, ModSectionConfig> sections)
     {
         var builder = new StringBuilder();
@@ -266,10 +325,7 @@ public class ModController : ControllerBase
             builder.Append(sectionPrefix).Append('[').Append(sectionName).AppendLine("]");
 
             foreach (var (key, value) in section.Entries)
-            {
-                // 禁用 section 内的配置项保留为注释，便于玩家手动编辑时理解默认格式。
                 builder.Append(sectionPrefix).Append(key).Append(" = ").AppendLine(FormatTomlValue(value));
-            }
 
             builder.AppendLine();
         }
