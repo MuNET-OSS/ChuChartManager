@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/AppleChu" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ChuModLoader" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DDSExtractor" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/FreeMote" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/FreeMote-SDK" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/MuConvert" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/MuNET-UI" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/SonicAudioTools" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/XV2-Tools" vcs="Git" />
+  </component>
+</project>
