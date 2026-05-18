@@ -16,6 +16,7 @@ audio.addEventListener('timeupdate', () => {
   if (!isSeeking.value) currentTime.value = audio.currentTime
 })
 audio.addEventListener('loadedmetadata', () => { duration.value = audio.duration })
+audio.addEventListener('durationchange', () => { if (Number.isFinite(audio.duration)) duration.value = audio.duration })
 audio.addEventListener('ended', () => { isPlaying.value = false })
 
 watch(volume, (v) => { audio.volume = v })
@@ -48,5 +49,11 @@ export function startSeek() { isSeeking.value = true }
 export function endSeek(time: number) {
   audio.currentTime = time
   currentTime.value = time
-  isSeeking.value = false
+  const unlock = () => {
+    isSeeking.value = false
+    audio.removeEventListener('seeked', unlock)
+  }
+  audio.addEventListener('seeked', unlock, { once: true })
+  // 兜底：如果 seeked 未触发（如音频未加载），300ms 后强制解锁
+  setTimeout(unlock, 300)
 }

@@ -188,7 +188,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         var wav = AudioHelper.GetWavFromMusic(music);
         if (wav == null) return NotFound();
 
-        return File(wav, "audio/wav");
+        return File(new MemoryStream(wav), "audio/wav", enableRangeProcessing: true);
     }
 
     [HttpGet]
