@@ -117,3 +117,69 @@ export async function importChart(id: number, assetDir: string, diffIndex: numbe
 export function getExportChartUrl(id: number, assetDir: string, diffIndex: number, format: 'c2s' | 'ugc' | 'sus' = 'ugc'): string {
   return `${getBaseUrl()}/api/Music/ExportChart?id=${id}&assetDir=${assetDir}&diffIndex=${diffIndex}&format=${format}`
 }
+
+export interface ImportCheckResult {
+  success: boolean
+  format: string
+  alerts: string[]
+  suggestedId: number
+}
+
+export interface ImportExecuteResult {
+  success: boolean
+  alerts: string[]
+}
+
+export async function importMusicCheck(chart: File): Promise<ImportCheckResult> {
+  const form = new FormData()
+  form.append('chart', chart)
+  const { data } = await apiClient.post('/api/Music/ImportMusicCheck', form)
+  return data
+}
+
+export async function importMusicExecute(params: {
+  chart: File
+  audio: File
+  cover?: File
+  id: number
+  title: string
+  artist: string
+  genreId: number
+  genreName: string
+  difficulty: number
+  level: number
+  levelDecimal: number
+  targetDir: string
+}): Promise<ImportExecuteResult> {
+  const form = new FormData()
+  form.append('chart', params.chart)
+  form.append('audio', params.audio)
+  if (params.cover) form.append('cover', params.cover)
+  form.append('id', params.id.toString())
+  form.append('title', params.title)
+  form.append('artist', params.artist)
+  form.append('genreId', params.genreId.toString())
+  form.append('genreName', params.genreName)
+  form.append('difficulty', params.difficulty.toString())
+  form.append('level', params.level.toString())
+  form.append('levelDecimal', params.levelDecimal.toString())
+  form.append('targetDir', params.targetDir)
+  const { data } = await apiClient.post('/api/Music/ImportMusicExecute', form, { timeout: 120000 })
+  return data
+}
+
+export function getExportOptUrl(id: number, assetDir: string): string {
+  return `${getBaseUrl()}/api/Music/ExportOpt?id=${id}&assetDir=${assetDir}`
+}
+
+export function getExportUgcUrl(id: number, assetDir: string): string {
+  return `${getBaseUrl()}/api/Music/ExportUgc?id=${id}&assetDir=${assetDir}`
+}
+
+export async function openExplorer(id: number, assetDir: string): Promise<void> {
+  await apiClient.post(`/api/Music/OpenExplorer?id=${id}&assetDir=${assetDir}`)
+}
+
+export async function openXml(id: number, assetDir: string): Promise<void> {
+  await apiClient.post(`/api/Music/OpenXml?id=${id}&assetDir=${assetDir}`)
+}

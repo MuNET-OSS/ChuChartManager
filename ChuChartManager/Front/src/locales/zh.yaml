@@ -120,9 +120,27 @@ music:
   exportC2S: 导出 C2S
   exportUGC: 导出 UGC
   exportSUS: 导出 SUS
-  save: 保存修改
+  importMusic: 导入自制谱
+  importTitle: 导入自制谱
+  importNoChart: 未找到谱面文件 (.ugc/.c2s/.sus)
+  importNoAudio: 未找到音频文件 (.wav/.mp3/.ogg)
+  importSuccess: 导入成功
+  importFailed: 导入失败
+  importChecking: 正在检查...
+  importExecuting: 正在导入...
+  importFoundFiles: 已找到文件
+  importId: Music ID
+  importDifficulty: 难度
+  importLevel: 等级
+  importTargetDir: 目标 Option
   copyToOption: 复制到其他 Option
   copy: 复制
+  copyAndExport: 复制与导出
+  copyToOptionShort: "复制到 {dir}"
+  exportOpt: 导出 OPT (原始格式)
+  exportUgcZip: 导出 UGC (自制谱格式)
+  openExplorer: 在资源管理器中打开
+  openXml: 编辑 Music.xml
 mods:
   wip: 正在加载...
   loaderNotInstalled: ChuModLoader 未安装

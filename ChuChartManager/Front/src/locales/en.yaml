@@ -120,9 +120,27 @@ music:
   exportC2S: Export C2S
   exportUGC: Export UGC
   exportSUS: Export SUS
-  save: Save Changes
+  importMusic: Import Chart
+  importTitle: Import Custom Chart
+  importNoChart: "Chart file not found (.ugc/.c2s/.sus)"
+  importNoAudio: "Audio file not found (.wav/.mp3/.ogg)"
+  importSuccess: Import successful
+  importFailed: Import failed
+  importChecking: Checking...
+  importExecuting: Importing...
+  importFoundFiles: Files found
+  importId: Music ID
+  importDifficulty: Difficulty
+  importLevel: Level
+  importTargetDir: Target Option
   copyToOption: Copy to other Option
   copy: Copy
+  copyAndExport: Copy & Export
+  copyToOptionShort: "Copy to {dir}"
+  exportOpt: Export OPT (Raw Format)
+  exportUgcZip: Export UGC (Custom Chart Format)
+  openExplorer: Open in Explorer
+  openXml: Edit Music.xml
 mods:
   wip: Loading...
   loaderNotInstalled: ChuModLoader is not installed

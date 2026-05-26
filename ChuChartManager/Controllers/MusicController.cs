@@ -561,6 +561,294 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         return new EmptyResult();
     }
 
+    [HttpPost]
+    public ActionResult ImportMusicCheck(IFormFile chart)
+    {
+        if (chart == null || chart.Length == 0)
+            return BadRequest(new { success = false, error = "No chart file provided" });
+
+        var ext = Path.GetExtension(chart.FileName).TrimStart('.').ToLowerInvariant();
+        if (ext is not ("ugc" or "c2s" or "sus"))
+            return BadRequest(new { success = false, error = $"Unsupported chart format: {ext}" });
+
+        var alerts = new List<string>();
+        try
+        {
+            using var reader = new StreamReader(chart.OpenReadStream(), Encoding.UTF8);
+            var content = reader.ReadToEnd();
+
+            switch (ext)
+            {
+                case "ugc":
+                    {
+                        var (_, parseAlerts) = new ChuUgcParser().Parse(content);
+                        alerts.AddRange(parseAlerts.Select(a => a.ToString()));
+                        break;
+                    }
+                case "sus":
+                    {
+                        var (_, parseAlerts) = new SusParser().Parse(content);
+                        alerts.AddRange(parseAlerts.Select(a => a.ToString()));
+                        break;
+                    }
+                case "c2s":
+                    {
+                        var (_, parseAlerts) = new C2sParser().Parse(content);
+                        alerts.AddRange(parseAlerts.Select(a => a.ToString()));
+                        break;
+                    }
+            }
+        }
+        catch (MuConvert.utils.ConversionException ex)
+        {
+            alerts.AddRange(ex.Alerts.Select(a => a.ToString()));
+            return BadRequest(new { success = false, error = ex.Message, alerts });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, error = ex.Message, alerts });
+        }
+
+        // Custom music range starts at 8000; find next available ID
+        var scanner = scannerService.Scanner;
+        var existingIds = new HashSet<int>();
+        if (scanner != null)
+        {
+            foreach (var list in scanner.MusicBySource.Values)
+                foreach (var m in list)
+                    existingIds.Add(m.Id);
+        }
+
+        var suggestedId = 8000;
+        while (existingIds.Contains(suggestedId))
+            suggestedId++;
+
+        return Ok(new
+        {
+            success = true,
+            format = ext,
+            alerts,
+            suggestedId
+        });
+    }
+
+    [HttpPost]
+    public ActionResult ImportMusicExecute(
+        IFormFile chart,
+        IFormFile audio,
+        IFormFile? cover,
+        [FromForm] int id,
+        [FromForm] string title,
+        [FromForm] string artist,
+        [FromForm] int genreId,
+        [FromForm] string genreName,
+        [FromForm] int difficulty,
+        [FromForm] int level,
+        [FromForm] int levelDecimal,
+        [FromForm] string targetDir)
+    {
+        if (string.IsNullOrEmpty(StaticSettings.GamePath))
+            return BadRequest(new { success = false, error = "GamePath not set" });
+
+        if (chart == null || chart.Length == 0)
+            return BadRequest(new { success = false, error = "No chart file provided" });
+        if (audio == null || audio.Length == 0)
+            return BadRequest(new { success = false, error = "No audio file provided" });
+        if (difficulty is < 0 or > 4)
+            return BadRequest(new { success = false, error = $"Invalid difficulty: {difficulty}" });
+
+        var optRoot = ResolveOptRoot(targetDir);
+        if (optRoot == null)
+            return BadRequest(new { success = false, error = "Invalid target directory" });
+
+        var musicDirName = $"music{id:D4}";
+        var musicDir = Path.Combine(optRoot, "music", musicDirName);
+        if (Directory.Exists(musicDir))
+            return BadRequest(new { success = false, error = $"Music directory already exists for ID {id}" });
+
+        var alerts = new List<string>();
+        var tempFiles = new List<string>();
+
+        try
+        {
+            Directory.CreateDirectory(musicDir);
+
+            // ========== 1. Chart conversion ==========
+            var chartExt = Path.GetExtension(chart.FileName).TrimStart('.').ToLowerInvariant();
+            if (chartExt is not ("ugc" or "c2s" or "sus"))
+                return BadRequest(new { success = false, error = $"Unsupported chart format: {chartExt}" });
+
+            var chartFileName = $"{id:D4}_0{difficulty}.c2s";
+            var chartDestPath = Path.Combine(musicDir, chartFileName);
+
+            using (var chartReader = new StreamReader(chart.OpenReadStream(), Encoding.UTF8))
+            {
+                var chartContent = chartReader.ReadToEnd();
+                if (chartExt is "ugc" or "sus")
+                {
+                    var (chartObj, parseAlerts) = chartExt == "ugc"
+                        ? new ChuUgcParser().Parse(chartContent)
+                        : new SusParser().Parse(chartContent);
+                    alerts.AddRange(parseAlerts.Select(a => a.ToString()));
+
+                    var (c2sContent, genAlerts) = new C2sGenerator().Generate(chartObj);
+                    alerts.AddRange(genAlerts.Select(a => a.ToString()));
+
+                    System.IO.File.WriteAllText(chartDestPath, c2sContent, Encoding.UTF8);
+                }
+                else
+                {
+                    System.IO.File.WriteAllText(chartDestPath, chartContent, Encoding.UTF8);
+                }
+            }
+
+            // ========== 2. Audio conversion ==========
+            var audioExt = Path.GetExtension(audio.FileName).TrimStart('.').ToLowerInvariant();
+            byte[] wavBytes;
+
+            using (var audioStream = audio.OpenReadStream())
+            using (var ms = new MemoryStream())
+            {
+                audioStream.CopyTo(ms);
+                var audioBytes = ms.ToArray();
+
+                if (audioExt == "wav")
+                {
+                    wavBytes = audioBytes;
+                }
+                else if (audioExt == "mp3")
+                {
+                    // Decode MP3 to WAV (NAudio Mp3FileReader requires Stream)
+                    using var mp3Stream = new MemoryStream(audioBytes);
+                    using var mp3Reader = new NAudio.Wave.Mp3FileReader(mp3Stream);
+                    using var wavMs = new MemoryStream();
+                    var sampleProvider = NAudio.Wave.WaveExtensionMethods.ToSampleProvider(mp3Reader);
+                    var pcm16 = NAudio.Wave.WaveExtensionMethods.ToWaveProvider16(sampleProvider);
+                    NAudio.Wave.WaveFileWriter.WriteWavFileToStream(wavMs, pcm16);
+                    wavBytes = wavMs.ToArray();
+                }
+                else
+                {
+                    return BadRequest(new { success = false, error = $"Unsupported audio format: {audioExt}" });
+                }
+            }
+
+            var hcaBytes = AudioHelper.EncodeWavToHca(wavBytes);
+            if (hcaBytes == null || hcaBytes.Length == 0)
+                return BadRequest(new { success = false, error = "Failed to encode WAV to HCA" });
+
+            // Write HCA to temp file so CriAfs2Archive can read it as FileInfo
+            var hcaTempPath = Path.Combine(Path.GetTempPath(), $"chuchart_{id}_{Guid.NewGuid():N}.hca");
+            tempFiles.Add(hcaTempPath);
+            System.IO.File.WriteAllBytes(hcaTempPath, hcaBytes);
+
+            var cueFileName = $"music{id:D4}";
+            var cueFileDir = Path.Combine(optRoot, "cueFile", $"cueFile{id:D6}");
+            Directory.CreateDirectory(cueFileDir);
+            var awbPath = Path.Combine(cueFileDir, $"{cueFileName}.awb");
+
+            var archive = new SonicAudioLib.Archives.CriAfs2Archive();
+            archive.Add(new SonicAudioLib.Archives.CriAfs2Entry
+            {
+                Id = 0,
+                FilePath = new FileInfo(hcaTempPath)
+            });
+
+            using (var awbStream = System.IO.File.Create(awbPath))
+                archive.Write(awbStream);
+
+            // ========== 3. Cover (jacket) ==========
+            string? jacketFileName = null;
+            if (cover != null && cover.Length > 0)
+            {
+                var coverExt = Path.GetExtension(cover.FileName).ToLowerInvariant();
+                if (coverExt is not (".png" or ".jpg" or ".jpeg"))
+                {
+                    alerts.Add($"Unsupported cover format '{coverExt}', skipping");
+                }
+                else
+                {
+                    var tmpCoverPath = Path.Combine(Path.GetTempPath(), $"chuchart_{id}_{Guid.NewGuid():N}{coverExt}");
+                    tempFiles.Add(tmpCoverPath);
+                    using (var coverFs = System.IO.File.Create(tmpCoverPath))
+                        cover.CopyTo(coverFs);
+
+                    jacketFileName = $"CHU_UI_Jacket_{id:D8}.dds";
+                    DdsHelper.ConvertPngToDds(tmpCoverPath, Path.Combine(musicDir, jacketFileName));
+                }
+            }
+
+            // ========== 4. Generate Music.xml ==========
+            var difficultyNames = new[] { "BASIC", "ADVANCED", "EXPERT", "MASTER", "ULTIMA" };
+            var fumenLines = new StringBuilder();
+            for (var i = 0; i < 5; i++)
+            {
+                var enable = i == difficulty ? "true" : "false";
+                var lvl = i == difficulty ? level : 0;
+                var lvlDec = i == difficulty ? levelDecimal : 0;
+                var filePath = i == difficulty ? chartFileName : "";
+                fumenLines.AppendLine(
+                    $"    <MusicFumenData><type><id>{i}</id><str>{difficultyNames[i]}</str><data /></type>" +
+                    $"<enable>{enable}</enable><file><path>{filePath}</path></file>" +
+                    $"<level>{lvl}</level><levelDecimal>{lvlDec}</levelDecimal><notesDesigner /></MusicFumenData>");
+            }
+
+            var enableUltima = difficulty == 4 ? "true" : "false";
+            var jaketFileXml = jacketFileName != null
+                ? $"<path>{jacketFileName}</path>"
+                : "<path />";
+
+            var xmlDoc = new System.Xml.XmlDocument();
+            xmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<MusicData xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+  <dataName>{musicDirName}</dataName>
+  <netOpenName><id>2800</id><str>v2_45 00_0</str><data /></netOpenName>
+  <releaseTagName><id>0</id><str>v1 1.00.00</str><data /></releaseTagName>
+  <disableFlag>false</disableFlag>
+  <name><id>{id}</id><str>{System.Security.SecurityElement.Escape(title)}</str><data /></name>
+  <sortName>{System.Security.SecurityElement.Escape(title.Length > 0 ? title[..1] : "")}</sortName>
+  <artistName><str>{System.Security.SecurityElement.Escape(artist)}</str><data /></artistName>
+  <genreNames><list><StringID><id>{genreId}</id><str>{System.Security.SecurityElement.Escape(genreName)}</str><data /></StringID></list></genreNames>
+  <jaketFile>{jaketFileXml}</jaketFile>
+  <cueFileName><str>{cueFileName}</str></cueFileName>
+  <worldsEndTagName><id>-1</id><str /><data /></worldsEndTagName>
+  <stageName><str /><data /></stageName>
+  <exType>0</exType>
+  <enableUltima>{enableUltima}</enableUltima>
+  <starDifType>0</starDifType>
+  <fumens>
+{fumenLines}    <MusicFumenData><type><id>5</id><str>WORLD'S END</str><data /></type><enable>false</enable><file><path /></file><level>0</level><levelDecimal>0</levelDecimal><notesDesigner /></MusicFumenData>
+  </fumens>
+  <priority>0</priority>
+</MusicData>");
+            xmlDoc.Save(Path.Combine(musicDir, "Music.xml"));
+
+            // ========== 5. Rescan ==========
+            var newScanner = new MusicScanner(StaticSettings.GamePath);
+            newScanner.ScanAll();
+            StaticSettings.Scanner = newScanner;
+
+            return Ok(new { success = true, alerts });
+        }
+        catch (MuConvert.utils.ConversionException ex)
+        {
+            alerts.AddRange(ex.Alerts.Select(a => a.ToString()));
+            return BadRequest(new { success = false, error = ex.Message, alerts });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, error = ex.Message, alerts });
+        }
+        finally
+        {
+            foreach (var tmp in tempFiles)
+            {
+                try { if (System.IO.File.Exists(tmp)) System.IO.File.Delete(tmp); }
+                catch { /* ignore cleanup failures */ }
+            }
+        }
+    }
+
     private static string? ResolveOptRoot(string dirName)
     {
         if (string.IsNullOrEmpty(StaticSettings.GamePath) || string.IsNullOrWhiteSpace(dirName))
@@ -616,6 +904,134 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 return null;
             }
         }
+    }
+
+    [HttpGet]
+    public ActionResult ExportOpt([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var musicDir = music.MusicDirectory;
+        if (!Directory.Exists(musicDir)) return NotFound();
+
+        var ms = new MemoryStream();
+        using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, true))
+        {
+            var musicDirName = Path.GetFileName(musicDir);
+            foreach (var file in Directory.GetFiles(musicDir))
+                zip.CreateEntryFromFile(file, $"music/{musicDirName}/{Path.GetFileName(file)}");
+
+            var awbPath = AudioHelper.FindAwbPath(music);
+            if (awbPath != null)
+            {
+                var cueDir = Path.GetDirectoryName(awbPath)!;
+                var cueDirName = Path.GetFileName(cueDir);
+                foreach (var file in Directory.GetFiles(cueDir))
+                    zip.CreateEntryFromFile(file, $"cueFile/{cueDirName}/{Path.GetFileName(file)}");
+            }
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        return File(ms, "application/zip", $"{id:D4} - {music.Name}.zip");
+    }
+
+    [HttpGet]
+    public ActionResult ExportUgc([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var safeName = string.Join("_", music.Name.Split(Path.GetInvalidFileNameChars()));
+        var ms = new MemoryStream();
+        using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, true))
+        {
+            var enabledFumen = music.Fumens.FirstOrDefault(f => f is { Enable: true });
+            if (enabledFumen != null)
+            {
+                var c2sPath = Path.Combine(music.MusicDirectory, enabledFumen.FilePath);
+                if (System.IO.File.Exists(c2sPath))
+                {
+                    var c2sContent = System.IO.File.ReadAllText(c2sPath, Encoding.UTF8);
+                    try
+                    {
+                        var (chart, _) = new C2sParser().Parse(c2sContent);
+                        var (ugcContent, _) = new UgcGenerator().Generate(chart);
+                        var entry = zip.CreateEntry($"{safeName}.ugc");
+                        using var w = new StreamWriter(entry.Open(), Encoding.UTF8);
+                        w.Write(ugcContent);
+                    }
+                    catch
+                    {
+                        zip.CreateEntryFromFile(c2sPath, $"{safeName}.c2s");
+                    }
+                }
+            }
+
+            var wav = AudioHelper.GetWavFromMusic(music);
+            if (wav != null)
+            {
+                var entry = zip.CreateEntry($"{safeName}.wav");
+                using var s = entry.Open();
+                s.Write(wav);
+            }
+
+            var jacketPath = music.GetJacketFullPath();
+            if (jacketPath != null)
+            {
+                var pngData = ConvertDdsToPng(jacketPath);
+                if (pngData != null)
+                {
+                    var entry = zip.CreateEntry($"{safeName}.png");
+                    using var s = entry.Open();
+                    s.Write(pngData);
+                }
+                else if (Path.GetExtension(jacketPath).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg")
+                {
+                    zip.CreateEntryFromFile(jacketPath, $"{safeName}{Path.GetExtension(jacketPath)}");
+                }
+            }
+        }
+
+        ms.Seek(0, SeekOrigin.Begin);
+        return File(ms, "application/zip", $"{safeName}.zip");
+    }
+
+    [HttpPost]
+    public ActionResult OpenExplorer([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        if (Directory.Exists(music.MusicDirectory))
+            System.Diagnostics.Process.Start("explorer.exe", music.MusicDirectory);
+
+        return Ok();
+    }
+
+    [HttpPost]
+    public ActionResult OpenXml([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var xmlPath = Path.Combine(music.MusicDirectory, "Music.xml");
+        if (System.IO.File.Exists(xmlPath))
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(xmlPath) { UseShellExecute = true });
+
+        return Ok();
     }
 }
 

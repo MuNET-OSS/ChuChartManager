@@ -24,10 +24,11 @@ public class FumenData
     public string NotesDesigner { get; set; } = "";
     public float DefaultBpm { get; set; }
 
-    // 实际等级 = level + levelDecimal/100，例如 level=12 decimal=70 → 12.7
+    // 谱面定数
     [JsonIgnore]
-    public double LevelValue => Level + LevelDecimal / 100.0;
+    public decimal LevelValue => Level + LevelDecimal / 100m;
 
+    // 等级显示
     public string LevelDisplay
     {
         get

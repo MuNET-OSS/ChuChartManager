@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { Button, Select, TextInput, CheckBox, theme } from '@munet/ui'
+import { Button, Select, TextInput, CheckBox, DropMenu, theme } from '@munet/ui'
 import type { SelectOption } from '@munet/ui'
 import { useStorage } from '@vueuse/core'
 import { VList } from 'virtua/vue'
-import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, copyMusic, importJacket, importChart, getExportChartUrl } from '@/api'
+import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, copyMusic, importJacket, importChart, getExportChartUrl, getExportOptUrl, getExportUgcUrl, openExplorer, openXml, isWebView } from '@/api'
 import type { MusicListItem } from '@/api'
 import { play } from '@/store/player'
 import { setStatus } from '@/store/status'
 import { leftPanel, selectedSource, optionDirs, selectMusicId } from '@/store/refs'
 import OptionDirsManager from '@/views/MusicList/OptionDirsManager/index'
+import ImportMusicModal from '@/views/ImportMusicModal.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -277,6 +278,42 @@ function getDiffPanelStyle(i: number) {
     backgroundColor: `color-mix(in srgb, ${color}, transparent 90%)`,
   }
 }
+
+const copyExportOptions = computed(() => {
+  if (!selectedMusic.value) return []
+  const m = selectedMusic.value
+  const opts: { label: string; action: () => void }[] = []
+
+  if (!isA000.value && copyDirOptions.value.length > 0 && copyTargetDir.value) {
+    opts.push({
+      label: t('music.copyToOptionShort', { dir: copyTargetDir.value }),
+      action: () => handleCopyTo(),
+    })
+  }
+
+  opts.push({
+    label: t('music.exportOpt'),
+    action: () => window.open(getExportOptUrl(m.id, m.assetDir)),
+  })
+
+  opts.push({
+    label: t('music.exportUgcZip'),
+    action: () => window.open(getExportUgcUrl(m.id, m.assetDir)),
+  })
+
+  if (isWebView) {
+    opts.push({
+      label: t('music.openExplorer'),
+      action: () => openExplorer(m.id, m.assetDir),
+    })
+    opts.push({
+      label: t('music.openXml'),
+      action: () => openXml(m.id, m.assetDir),
+    })
+  }
+
+  return opts
+})
 </script>
 
 <template>
@@ -298,6 +335,7 @@ function getDiffPanelStyle(i: number) {
               <span class="truncate">{{ selectedSource || 'A000' }}</span>
             </div>
             <Select :options="sortOptions" v-model:value="musicSortMode" class="w-40! shrink-0" />
+            <ImportMusicModal @imported="refresh" />
           </div>
           <div class="flex gap-1.5">
             <Select :options="genreFilterOptions" v-model:value="genreFilter" />
@@ -339,6 +377,7 @@ function getDiffPanelStyle(i: number) {
         <Button @click="play(selectedMusic)">{{ t('music.play') }}</Button>
         <Button @click="exportMp3">{{ t('music.exportMp3') }}</Button>
         <Button v-if="!isA000" @click="handleImportJacket">{{ t('music.importJacket') }}</Button>
+        <DropMenu :options="copyExportOptions" :button-text="t('music.copyAndExport')" />
       </div>
       <div class="of-y-auto cst flex-1 min-h-0 p-6">
         <div class="flex gap-6 mb-6">
@@ -388,12 +427,9 @@ function getDiffPanelStyle(i: number) {
 
         <div v-if="!isA000" class="mt-4"><Button @click="onSave">{{ t('music.save') }}</Button></div>
 
-        <div class="mt-6 border-t border-white/10 pt-4" v-if="copyDirOptions.length > 0">
+        <div class="mt-6 border-t border-white/10 pt-4" v-if="!isA000 && copyDirOptions.length > 0">
           <label class="block text-sm op-60 mb-2">{{ t('music.copyToOption') }}</label>
-          <div class="flex gap-2 items-center">
-            <Select :options="copyDirOptions" v-model:value="copyTargetDir" class="flex-1" />
-            <Button @click="handleCopyTo">{{ t('music.copy') }}</Button>
-          </div>
+          <Select :options="copyDirOptions" v-model:value="copyTargetDir" />
         </div>
       </div>
     </div>
