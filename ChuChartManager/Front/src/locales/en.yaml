@@ -119,6 +119,7 @@ music:
   importChart: Import Chart
   exportC2S: Export C2S
   exportUGC: Export UGC
+  exportSUS: Export SUS
   save: Save Changes
   copyToOption: Copy to other Option
   copy: Copy

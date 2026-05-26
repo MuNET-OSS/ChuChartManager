@@ -381,6 +381,7 @@ function getDiffPanelStyle(i: number) {
               <Button v-if="!isA000" @click="handleImportChart(selectedDiff)">{{ editFumens[selectedDiff].enable ? t('music.replaceChart') : t('music.importChart') }} (C2S/UGC/SUS)</Button>
               <Button v-if="editFumens[selectedDiff].enable" @click="handleExportChart(selectedDiff, 'c2s')">{{ t('music.exportC2S') }}</Button>
               <Button v-if="editFumens[selectedDiff].enable" @click="handleExportChart(selectedDiff, 'ugc')">{{ t('music.exportUGC') }}</Button>
+              <Button v-if="editFumens[selectedDiff].enable" @click="handleExportChart(selectedDiff, 'sus')">{{ t('music.exportSUS') }}</Button>
             </div>
           </div>
         </div>
