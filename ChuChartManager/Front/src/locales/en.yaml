@@ -113,6 +113,10 @@ music:
   artist: Artist
   genre: Genre
   enableDiff: Enable this difficulty
+  chartAuthor: Author
+  chartLevel: Display Level
+  chartConstant: Constant
+  chartNoteCount: Note Count
   level: Level
   notesDesigner: Notes Designer
   replaceChart: Replace Chart
@@ -122,6 +126,11 @@ music:
   exportSUS: Export SUS
   importMusic: Import Chart
   importTitle: Import Custom Chart
+  importSelectFolder: Supported file types
+  importFolderHint: Folder containing the following files
+  importSelectAudio: Supported audio files
+  importSelectChart: Supported chart files
+  chartReplaceFailed: "Replace chart failed: {error}"
   importNoChart: "Chart file not found (.ugc/.c2s/.sus)"
   importNoAudio: "Audio file not found (.wav/.mp3/.ogg)"
   importSuccess: Import successful
@@ -136,9 +145,25 @@ music:
   copyToOption: Copy to other Option
   copy: Copy
   copyAndExport: Copy & Export
-  copyToOptionShort: "Copy to {dir}"
-  exportOpt: Export OPT (Raw Format)
-  exportUgcZip: Export UGC (Custom Chart Format)
+  copyTo: Copy to...
+  exportZip: Export ZIP
+  exportZipUgc: Export ZIP (UGC)
+  exportUgc: Export as UGC
+  exportSus: Export as SUS
+  deleteConfirm: Confirm Delete
+  deleted: Deleted
+  deleteFailed: "Delete failed: {error}"
+  changeId: Change ID
+  newId: New ID
+  idChanged: "ID changed from {oldId} to {newId}"
+  idChangeFailed: "Failed to change ID: {error}"
+  exportSuccess: Export successful
+  exportFailed: "Export failed: {error}"
+  clickToReplaceJacket: Click to replace jacket
+  replaceAudio: Replace Audio
+  audioImporting: Importing audio...
+  audioReplaced: Audio replaced
+  audioReplaceFailed: "Audio replace failed: {error}"
   openExplorer: Open in Explorer
   openXml: Edit Music.xml
 mods:

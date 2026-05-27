@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { Button, Select, TextInput, CheckBox, DropMenu, theme } from '@munet/ui'
+import { Button, Select, TextInput, CheckBox, DropMenu, NumberInput, Modal, theme } from '@munet/ui'
 import type { SelectOption } from '@munet/ui'
 import { useStorage } from '@vueuse/core'
 import { VList } from 'virtua/vue'
-import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, copyMusic, importJacket, importChart, getExportChartUrl, getExportOptUrl, getExportUgcUrl, openExplorer, openXml, isWebView } from '@/api'
+import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, importJacket, importChart, getExportChartUrl, getExportOptUrl, getExportCustomUrl, openExplorer, openXml, changeId, deleteMusic, setJacket, setAudio, replaceChart, isWebView, getBaseUrl } from '@/api'
 import type { MusicListItem } from '@/api'
-import { play } from '@/store/player'
+import { play, loadMusic as loadPlayerMusic, stop as stopPlayer } from '@/store/player'
 import { setStatus } from '@/store/status'
 import { leftPanel, selectedSource, optionDirs, selectMusicId } from '@/store/refs'
 import OptionDirsManager from '@/views/MusicList/OptionDirsManager/index'
 import ImportMusicModal from '@/views/ImportMusicModal.vue'
+import PlayerBar from '@/components/PlayerBar.vue'
+import BottomOverlay from '@/components/BottomOverlay.vue'
+import FileTypeIcon from '@/components/FileTypeIcon.vue'
+import { BlobWriter, ZipReader } from '@zip.js/zip.js'
+import getSubDirFile from '@/utils/getSubDirFile'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -58,12 +63,27 @@ const diffFilter = ref<string | number>('-1')
 const editName = ref('')
 const editArtist = ref('')
 const editGenreId = ref<string | number>('-1')
-const editFumens = ref<{ enable: boolean; level: string; notesDesigner: string }[]>([])
+const editFumens = ref<{ enable: boolean; level: number; levelDecimal: number; notesDesigner: string; noteCount: number }[]>([])
 const selectedDiff = ref(0)
 
 const diffNames = ['Basic', 'Advanced', 'Expert', 'Master', 'Ultima', "World's End"]
 const diffColors = ['#22BB5B', '#FB9C2D', '#F64861', '#9E45E2', '#1A1A1A', 'linear-gradient(135deg, #FF3C3C, #FFB400, #50DC32, #00B4FF, #783CFF, #DC32C8)']
 const diffFgColors = ['#FFF', '#FFF', '#FFF', '#FFF', '#FFF', '#FFF']
+
+const levelOptions: SelectOption[] = Array.from({ length: 16 }, (_, i) => ({ label: String(i), value: i }))
+
+const editConstant = computed({
+  get: () => {
+    const f = editFumens.value[selectedDiff.value]
+    return f ? f.level + f.levelDecimal / 100 : 0
+  },
+  set: (v: number) => {
+    const f = editFumens.value[selectedDiff.value]
+    if (!f) return
+    f.level = Math.floor(v)
+    f.levelDecimal = Math.round((v - f.level) * 100)
+  },
+})
 
 const genreFilterOptions = computed<SelectOption[]>(() => [
   { label: t('music.allGenres'), value: '-1' },
@@ -154,31 +174,20 @@ function selectMusic(music: MusicListItem) {
   editGenreId.value = String(music.genreId)
   editFumens.value = music.fumens.map(f => ({
     enable: f?.enable ?? false,
-    level: f ? f.levelDecimal >= 70 ? `${f.level}+` : f.levelDecimal > 0 ? `${f.level}.${f.levelDecimal / 10}` : `${f.level}` : '0',
+    level: f?.level ?? 0,
+    levelDecimal: f?.levelDecimal ?? 0,
     notesDesigner: f?.notesDesigner ?? '',
+    noteCount: (f as any)?.noteCount ?? 0,
   }))
   selectedDiff.value = Math.max(0, music.fumens.findIndex(f => f?.enable))
-}
-
-function parseLevel(text: string): { level: number; dec: number } {
-  text = text.trim()
-  if (text.endsWith('+')) {
-    const lv = parseInt(text.slice(0, -1))
-    return isNaN(lv) ? { level: 0, dec: 0 } : { level: lv, dec: 70 }
-  }
-  if (text.includes('.')) {
-    const [l, d] = text.split('.')
-    return { level: parseInt(l) || 0, dec: (parseInt(d) || 0) * 10 }
-  }
-  return { level: parseInt(text) || 0, dec: 0 }
+  loadPlayerMusic(music)
 }
 
 async function onSave() {
   if (!selectedMusic.value) return
   const m = selectedMusic.value
   const fumens = editFumens.value.map((f, i) => {
-    const { level, dec } = parseLevel(f.level)
-    return { index: i, enable: f.enable, level, levelDecimal: dec, notesDesigner: f.notesDesigner }
+    return { index: i, enable: f.enable, level: f.level, levelDecimal: f.levelDecimal, notesDesigner: f.notesDesigner }
   })
   await saveMusic(m.id, m.assetDir, {
     name: editName.value,
@@ -201,35 +210,107 @@ function exportMp3() {
   if (selectedMusic.value) window.open(getExportMp3Url(selectedMusic.value.id, selectedMusic.value.assetDir))
 }
 
-const copyTargetDir = ref('')
-
-async function handleCopyTo() {
-  if (!selectedMusic.value || !copyTargetDir.value) return
+async function exportToFolder(url: string) {
+  if (!selectedMusic.value) return
+  let folderHandle: FileSystemDirectoryHandle
   try {
-    await copyMusic(selectedMusic.value.id, selectedMusic.value.assetDir, copyTargetDir.value)
-    setStatus(t('music.copiedTo', { dir: copyTargetDir.value }))
+    folderHandle = await window.showDirectoryPicker({ id: 'ccmExportDir', mode: 'readwrite' })
+  } catch { return }
+
+  try {
+    const res = await fetch(url)
+    const zipReader = new ZipReader(res.body!)
+    try {
+      const entries = zipReader.getEntriesGenerator()
+      for await (const entry of entries) {
+        if (entry.filename.endsWith('/')) continue
+        if (!('getData' in entry)) continue
+        const fileHandle = await getSubDirFile(folderHandle, entry.filename)
+        const writable = await fileHandle.createWritable()
+        try {
+          const blob = await entry.getData!(new BlobWriter())
+          await writable.write(blob)
+        } finally {
+          await writable.close()
+        }
+      }
+      setStatus(t('music.exportSuccess'))
+    } finally {
+      await zipReader.close()
+    }
   } catch (e: any) {
-    setStatus(t('music.copyFailed', { error: e?.response?.data || e?.message }))
+    setStatus(t('music.exportFailed', { error: e?.message || e }))
   }
 }
 
-async function handleImportJacket() {
+async function handleSetJacket() {
   if (!selectedMusic.value) return
-  const res = await importJacket(selectedMusic.value.id, selectedMusic.value.assetDir)
-  if (res.imported) {
-    selectedMusic.value.hasJacket = true
-    setStatus(t('music.jacketImported'))
+  let fileHandle: FileSystemFileHandle
+  try {
+    ;[fileHandle] = await window.showOpenFilePicker({
+      id: 'ccmJacket',
+      types: [{ description: 'Image', accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.bmp'] } }],
+    })
+  } catch { return }
+  const file = await fileHandle.getFile()
+  await setJacket(selectedMusic.value.id, selectedMusic.value.assetDir, file)
+  selectedMusic.value.hasJacket = true
+  setStatus(t('music.jacketImported'))
+}
+
+const showAudioOverlay = ref(false)
+
+async function handleReplaceAudio() {
+  if (!selectedMusic.value) return
+  showAudioOverlay.value = true
+  let fileHandle: FileSystemFileHandle
+  try {
+    ;[fileHandle] = await window.showOpenFilePicker({
+      id: 'ccmAudio',
+      types: [{ description: '支持的文件类型', accept: { 'application/octet-stream': ['.wav', '.mp3', '.ogg', '.awb'] } }],
+    })
+  } catch {
+    showAudioOverlay.value = false
+    return
+  }
+  showAudioOverlay.value = false
+  const file = await fileHandle.getFile()
+  setStatus(t('music.audioImporting'))
+  try {
+    await setAudio(selectedMusic.value.id, selectedMusic.value.assetDir, file)
+    setStatus(t('music.audioReplaced'))
+  } catch (e: any) {
+    setStatus(t('music.audioReplaceFailed', { error: e?.response?.data || e?.message }))
   }
 }
 
-async function handleImportChart(diffIndex: number) {
+const showChartOverlay = ref(false)
+
+async function handleReplaceChart(diffIndex: number) {
   if (!selectedMusic.value) return
-  const res = await importChart(selectedMusic.value.id, selectedMusic.value.assetDir, diffIndex)
-  if (res.imported) {
-    const suffix = res.convertedFrom ? ` (${res.convertedFrom.toUpperCase()} → C2S)` : ''
-    setStatus(t('music.chartImported', { diff: diffNames[diffIndex], suffix }))
-    await loadMusic()
-    selectMusic(selectedMusic.value)
+  showChartOverlay.value = true
+  let fileHandle: FileSystemFileHandle
+  try {
+    ;[fileHandle] = await window.showOpenFilePicker({
+      id: 'ccmChart',
+      types: [{ description: 'Chart', accept: { 'application/octet-stream': ['.c2s', '.ugc', '.sus'] } }],
+    })
+  } catch {
+    showChartOverlay.value = false
+    return
+  }
+  showChartOverlay.value = false
+  const file = await fileHandle.getFile()
+  try {
+    const res = await replaceChart(selectedMusic.value.id, selectedMusic.value.assetDir, diffIndex, file)
+    if (res.imported) {
+      const suffix = res.convertedFrom ? ` (${res.convertedFrom.toUpperCase()} → C2S)` : ''
+      setStatus(t('music.chartImported', { diff: diffNames[diffIndex], suffix }))
+      await loadMusic()
+      selectMusic(selectedMusic.value)
+    }
+  } catch (e: any) {
+    setStatus(t('music.chartReplaceFailed', { error: e?.response?.data?.error || e?.message }))
   }
 }
 
@@ -237,12 +318,6 @@ function handleExportChart(diffIndex: number, format: 'c2s' | 'ugc' | 'sus') {
   if (!selectedMusic.value) return
   window.open(getExportChartUrl(selectedMusic.value.id, selectedMusic.value.assetDir, diffIndex, format), '_blank')
 }
-
-const copyDirOptions = computed(() =>
-  optionDirs.value
-    .filter(d => d.dirName !== 'A000' && d.dirName !== selectedMusic.value?.assetDir)
-    .map(d => ({ label: d.dirName, value: d.dirName }))
-)
 
 function getDiffBadgeStyle(i: number) {
   const bg = diffColors[i]
@@ -279,27 +354,88 @@ function getDiffPanelStyle(i: number) {
   }
 }
 
+const deleteConfirm = ref(false)
+const deleteLoading = ref(false)
+
+async function handleDelete() {
+  if (!selectedMusic.value) return
+  if (!deleteConfirm.value) {
+    deleteConfirm.value = true
+    return
+  }
+  deleteConfirm.value = false
+  deleteLoading.value = true
+  try {
+    await deleteMusic(selectedMusic.value.id, selectedMusic.value.assetDir)
+    selectedMusic.value = null
+    await refresh()
+    setStatus(t('music.deleted'))
+  } catch (e: any) {
+    setStatus(t('music.deleteFailed', { error: e?.response?.data || e?.message }))
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
+const showChangeId = ref(false)
+const newMusicId = ref(0)
+const changeIdLoading = ref(false)
+
+watch(showChangeId, (val) => {
+  if (val && selectedMusic.value) newMusicId.value = selectedMusic.value.id
+})
+
+async function handleChangeId() {
+  if (!selectedMusic.value || newMusicId.value === selectedMusic.value.id) return
+  changeIdLoading.value = true
+  try {
+    await changeId(selectedMusic.value.id, selectedMusic.value.assetDir, newMusicId.value)
+    await refresh()
+    setStatus(t('music.idChanged', { oldId: selectedMusic.value.id, newId: newMusicId.value }))
+    showChangeId.value = false
+  } catch (e: any) {
+    setStatus(t('music.idChangeFailed', { error: e?.response?.data || e?.message }))
+  } finally {
+    changeIdLoading.value = false
+  }
+}
+
 const copyExportOptions = computed(() => {
   if (!selectedMusic.value) return []
   const m = selectedMusic.value
   const opts: { label: string; action: () => void }[] = []
 
-  if (!isA000.value && copyDirOptions.value.length > 0 && copyTargetDir.value) {
-    opts.push({
-      label: t('music.copyToOptionShort', { dir: copyTargetDir.value }),
-      action: () => handleCopyTo(),
-    })
-  }
+  opts.push({
+    label: t('music.copyTo'),
+    action: () => exportToFolder(getExportOptUrl(m.id, m.assetDir)),
+  })
 
   opts.push({
-    label: t('music.exportOpt'),
+    label: t('music.exportZip'),
     action: () => window.open(getExportOptUrl(m.id, m.assetDir)),
   })
 
   opts.push({
-    label: t('music.exportUgcZip'),
-    action: () => window.open(getExportUgcUrl(m.id, m.assetDir)),
+    label: t('music.exportUgc'),
+    action: () => exportToFolder(getExportCustomUrl(m.id, m.assetDir, 'ugc')),
   })
+
+  opts.push({
+    label: t('music.exportZipUgc'),
+    action: () => window.open(getExportCustomUrl(m.id, m.assetDir, 'ugc')),
+  })
+
+  opts.push({
+    label: t('music.exportSus'),
+    action: () => exportToFolder(getExportCustomUrl(m.id, m.assetDir, 'sus')),
+  })
+
+  if (!isA000.value) {
+    opts.push({
+      label: t('music.changeId'),
+      action: () => { showChangeId.value = true },
+    })
+  }
 
   if (isWebView) {
     opts.push({
@@ -335,7 +471,6 @@ const copyExportOptions = computed(() => {
               <span class="truncate">{{ selectedSource || 'A000' }}</span>
             </div>
             <Select :options="sortOptions" v-model:value="musicSortMode" class="w-40! shrink-0" />
-            <ImportMusicModal @imported="refresh" />
           </div>
           <div class="flex gap-1.5">
             <Select :options="genreFilterOptions" v-model:value="genreFilter" />
@@ -372,17 +507,21 @@ const copyExportOptions = computed(() => {
     <!-- 右侧详情 -->
     <div class="flex-1 flex flex-col of-hidden" v-if="selectedMusic">
       <div class="flex items-center gap-2 shrink-0 p-3 border-b border-white/10">
-        <span v-if="isA000" class="text-sm op-50">{{ t('music.a000Hint') }}</span>
         <div class="grow-1" />
-        <Button @click="play(selectedMusic)">{{ t('music.play') }}</Button>
-        <Button @click="exportMp3">{{ t('music.exportMp3') }}</Button>
-        <Button v-if="!isA000" @click="handleImportJacket">{{ t('music.importJacket') }}</Button>
         <DropMenu :options="copyExportOptions" :button-text="t('music.copyAndExport')" />
+        <template v-if="isA000">
+          <span class="text-sm op-50">{{ t('music.a000Hint') }}</span>
+        </template>
+        <template v-else>
+          <Button :class="deleteConfirm && 'bg-red-300!'" :ing="deleteLoading" @click="handleDelete" @mouseleave="deleteConfirm = false">{{ deleteConfirm ? t('music.deleteConfirm') : t('common.delete') }}</Button>
+          <Button @click="onSave">{{ t('common.save') }}</Button>
+          <ImportMusicModal @imported="refresh" />
+        </template>
       </div>
       <div class="of-y-auto cst flex-1 min-h-0 p-6">
         <div class="flex gap-6 mb-6">
-          <img v-if="selectedMusic.hasJacket" :src="getJacketUrl(selectedMusic.id, selectedMusic.assetDir)" class="w-48 h-48 rounded-lg object-cover shrink-0" />
-          <div v-else class="w-48 h-48 rounded-lg bg-white/10 flex items-center justify-center op-30 text-2xl shrink-0">?</div>
+          <img v-if="selectedMusic.hasJacket" :src="getJacketUrl(selectedMusic.id, selectedMusic.assetDir)" class="w-48 h-48 rounded-lg object-cover shrink-0 cursor-pointer hover:op-80 transition-opacity" :title="t('music.clickToReplaceJacket')" @click="!isA000 && handleSetJacket()" />
+          <div v-else class="w-48 h-48 rounded-lg bg-white/10 flex items-center justify-center op-30 text-2xl shrink-0 cursor-pointer hover:op-50 transition-opacity" @click="!isA000 && handleSetJacket()">?</div>
           <div class="flex-1 min-w-0">
             <h2 class="text-xl font-bold mb-1">{{ selectedMusic.name }}</h2>
             <p class="op-60 mb-2">{{ selectedMusic.artist }}</p>
@@ -401,6 +540,11 @@ const copyExportOptions = computed(() => {
           <div><label class="block text-sm op-60 mb-1">{{ t('music.genre') }}</label><Select :options="genreEditOptions" v-model:value="editGenreId" :disabled="isA000" /></div>
         </div>
 
+        <div class="flex items-center gap-2 mt-4">
+          <PlayerBar class="grow" />
+          <Button v-if="!isA000" class="ws-nowrap shrink-0" @click="handleReplaceAudio">{{ t('music.replaceAudio') }}</Button>
+        </div>
+
         <div class="mt-6">
           <div class="diff-tabs-grid">
             <span />
@@ -410,31 +554,52 @@ const copyExportOptions = computed(() => {
             </button>
             <span />
           </div>
-          <div v-if="editFumens[selectedDiff]" class="space-y-2 rounded-b-lg p-4" :style="getDiffPanelStyle(selectedDiff)">
+          <div v-if="editFumens[selectedDiff]" class="space-y-2 rounded-b-lg p-4 relative" :style="getDiffPanelStyle(selectedDiff)">
             <div class="flex items-center gap-2">
               <CheckBox v-model:value="editFumens[selectedDiff].enable" :disabled="isA000" /><span class="text-sm">{{ t('music.enableDiff') }}</span>
             </div>
-            <div><label class="block text-sm op-60 mb-1">{{ t('music.level') }}</label><TextInput v-model:value="editFumens[selectedDiff].level" :disabled="isA000" /></div>
-            <div><label class="block text-sm op-60 mb-1">{{ t('music.notesDesigner') }}</label><TextInput v-model:value="editFumens[selectedDiff].notesDesigner" :disabled="isA000" /></div>
-            <div class="flex gap-2 mt-3 pt-3 border-t border-white/10">
-              <Button v-if="!isA000" @click="handleImportChart(selectedDiff)">{{ editFumens[selectedDiff].enable ? t('music.replaceChart') : t('music.importChart') }} (C2S/UGC/SUS)</Button>
-              <Button v-if="editFumens[selectedDiff].enable" @click="handleExportChart(selectedDiff, 'c2s')">{{ t('music.exportC2S') }}</Button>
-              <Button v-if="editFumens[selectedDiff].enable" @click="handleExportChart(selectedDiff, 'ugc')">{{ t('music.exportUGC') }}</Button>
-              <Button v-if="editFumens[selectedDiff].enable" @click="handleExportChart(selectedDiff, 'sus')">{{ t('music.exportSUS') }}</Button>
+            <div v-if="!isA000" class="absolute right-0 top-0 m-4 z-2 flex gap-2">
+              <Button @click="handleReplaceChart(selectedDiff)">{{ t('music.replaceChart') }}</Button>
             </div>
+            <div><label class="block text-sm op-60 mb-1">{{ t('music.chartAuthor') }}</label><TextInput v-model:value="editFumens[selectedDiff].notesDesigner" :disabled="isA000" /></div>
+            <div><label class="block text-sm op-60 mb-1">{{ t('music.chartLevel') }}</label><Select :options="levelOptions" v-model:value="editFumens[selectedDiff].level" :disabled="isA000" /></div>
+            <div><label class="block text-sm op-60 mb-1">{{ t('music.chartConstant') }}</label><NumberInput v-model:value="editConstant" :step="0.1" :min="0" :max="15.9" class="w-full" :disabled="isA000" /></div>
+            <div><label class="block text-sm op-60 mb-1">{{ t('music.chartNoteCount') }}</label><NumberInput v-model:value="editFumens[selectedDiff].noteCount" :min="0" class="w-full" disabled /></div>
           </div>
-        </div>
-
-        <div v-if="!isA000" class="mt-4"><Button @click="onSave">{{ t('music.save') }}</Button></div>
-
-        <div class="mt-6 border-t border-white/10 pt-4" v-if="!isA000 && copyDirOptions.length > 0">
-          <label class="block text-sm op-60 mb-2">{{ t('music.copyToOption') }}</label>
-          <Select :options="copyDirOptions" v-model:value="copyTargetDir" />
         </div>
       </div>
     </div>
 
-    <div v-else class="flex-1 flex items-center justify-center op-30 text-lg">{{ t('music.selectHint') }}</div>
+    <div v-else class="flex-1 flex items-center justify-center op-30 text-lg">{{ isA000 ? t('music.a000Hint') : t('music.selectHint') }}</div>
+
+    <Modal v-model:show="showChangeId" :title="t('music.changeId')" width="min(30vw,25em)">
+      <div class="flex flex-col gap-3">
+        <div>
+          <label class="block text-sm op-60 mb-1">{{ t('music.newId') }}</label>
+          <NumberInput v-model:value="newMusicId" :min="1" :max="99999" class="w-full" />
+        </div>
+      </div>
+      <template #actions>
+        <Button class="w-0 grow" @click="handleChangeId" :disabled="!selectedMusic || newMusicId === selectedMusic.id" :ing="changeIdLoading">{{ t('common.confirm') }}</Button>
+      </template>
+    </Modal>
+
+    <BottomOverlay :show="showAudioOverlay" :title="t('music.importSelectAudio')">
+      <div class="flex gap-10 justify-center text-white text-4em">
+        <FileTypeIcon type="WAV" />
+        <FileTypeIcon type="MP3" />
+        <FileTypeIcon type="OGG" />
+        <FileTypeIcon type="AWB" />
+      </div>
+    </BottomOverlay>
+
+    <BottomOverlay :show="showChartOverlay" :title="t('music.importSelectChart')">
+      <div class="flex gap-10 justify-center text-white text-4em">
+        <FileTypeIcon type="C2S" />
+        <FileTypeIcon type="UGC" />
+        <FileTypeIcon type="SUS" />
+      </div>
+    </BottomOverlay>
   </div>
 </template>
 

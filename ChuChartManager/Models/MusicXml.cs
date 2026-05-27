@@ -96,6 +96,12 @@ public class MusicXml
             for (var i = 0; i < Math.Min(fumenNodes.Count, 6); i++)
             {
                 Fumens[i] = FumenData.FromXml(fumenNodes[i]!);
+                if (string.IsNullOrEmpty(Fumens[i].FilePath)) continue;
+                var c2sPath = Path.Combine(MusicDirectory, Fumens[i].FilePath);
+                if (!File.Exists(c2sPath)) continue;
+                if (string.IsNullOrEmpty(Fumens[i].NotesDesigner))
+                    Fumens[i].NotesDesigner = FumenData.ReadCreatorFromC2s(c2sPath);
+                Fumens[i].NoteCount = FumenData.CountNotesFromC2s(c2sPath);
             }
         }
     }

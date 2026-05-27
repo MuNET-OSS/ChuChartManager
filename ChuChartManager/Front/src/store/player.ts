@@ -21,14 +21,25 @@ audio.addEventListener('ended', () => { isPlaying.value = false })
 
 watch(volume, (v) => { audio.volume = v })
 
-export function play(music: MusicListItem) {
+export function loadMusic(music: MusicListItem) {
+  if (playingMusic.value?.id === music.id && playingMusic.value?.assetDir === music.assetDir) return
+  audio.pause()
+  isPlaying.value = false
+  currentTime.value = 0
+  duration.value = 0
   playingMusic.value = music
   audio.src = getAudioUrl(music.id, music.assetDir)
+}
+
+export function play(music: MusicListItem) {
+  if (playingMusic.value?.id !== music.id || playingMusic.value?.assetDir !== music.assetDir)
+    loadMusic(music)
   audio.play()
   isPlaying.value = true
 }
 
 export function togglePlayPause() {
+  if (!playingMusic.value) return
   if (isPlaying.value) { audio.pause(); isPlaying.value = false }
   else { audio.play(); isPlaying.value = true }
 }
@@ -36,13 +47,8 @@ export function togglePlayPause() {
 export function stop() {
   audio.pause()
   audio.currentTime = 0
+  currentTime.value = 0
   isPlaying.value = false
-  playingMusic.value = null
-}
-
-export function seek(time: number) {
-  audio.currentTime = time
-  currentTime.value = time
 }
 
 export function startSeek() { isSeeking.value = true }
@@ -54,6 +60,5 @@ export function endSeek(time: number) {
     audio.removeEventListener('seeked', unlock)
   }
   audio.addEventListener('seeked', unlock, { once: true })
-  // 兜底：如果 seeked 未触发（如音频未加载），300ms 后强制解锁
   setTimeout(unlock, 300)
 }

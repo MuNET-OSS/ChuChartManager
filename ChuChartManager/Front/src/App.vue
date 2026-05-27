@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import { modalShowing, GlobalElementsContainer } from '@munet/ui'
 import Sidebar from '@/components/Sidebar.vue'
-import PlayerBar from '@/components/PlayerBar.vue'
 import StatusBar from '@/components/StatusBar.vue'
 import MusicList from '@/views/MusicList.vue'
 import Course from '@/views/Course/index'
@@ -58,7 +57,6 @@ const handleRefresh = () => {
           <Settings v-if="sidebarActive === 'settings'" />
         </div>
       </div>
-      <PlayerBar />
       <StatusBar />
     </div>
   </template>

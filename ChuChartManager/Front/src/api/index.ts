@@ -50,6 +50,7 @@ export interface FumenSummary {
   levelDecimal: number
   levelDisplay: string
   notesDesigner: string
+  noteCount: number
 }
 
 export async function getMusicList(source?: string): Promise<MusicListItem[]> {
@@ -172,8 +173,8 @@ export function getExportOptUrl(id: number, assetDir: string): string {
   return `${getBaseUrl()}/api/Music/ExportOpt?id=${id}&assetDir=${assetDir}`
 }
 
-export function getExportUgcUrl(id: number, assetDir: string): string {
-  return `${getBaseUrl()}/api/Music/ExportUgc?id=${id}&assetDir=${assetDir}`
+export function getExportCustomUrl(id: number, assetDir: string, format: 'ugc' | 'sus'): string {
+  return `${getBaseUrl()}/api/Music/ExportCustom?id=${id}&assetDir=${assetDir}&format=${format}`
 }
 
 export async function openExplorer(id: number, assetDir: string): Promise<void> {
@@ -182,4 +183,33 @@ export async function openExplorer(id: number, assetDir: string): Promise<void> 
 
 export async function openXml(id: number, assetDir: string): Promise<void> {
   await apiClient.post(`/api/Music/OpenXml?id=${id}&assetDir=${assetDir}`)
+}
+
+export async function changeId(id: number, assetDir: string, newId: number): Promise<void> {
+  await apiClient.post(`/api/Music/ChangeId?id=${id}&assetDir=${assetDir}`, newId, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+export async function deleteMusic(id: number, assetDir: string): Promise<void> {
+  await apiClient.post(`/api/Music/DeleteMusic?id=${id}&assetDir=${assetDir}`)
+}
+
+export async function setJacket(id: number, assetDir: string, file: File): Promise<void> {
+  const form = new FormData()
+  form.append('file', file)
+  await apiClient.put(`/api/Music/SetJacket?id=${id}&assetDir=${assetDir}`, form)
+}
+
+export async function setAudio(id: number, assetDir: string, file: File): Promise<void> {
+  const form = new FormData()
+  form.append('file', file)
+  await apiClient.put(`/api/Music/SetAudio?id=${id}&assetDir=${assetDir}`, form, { timeout: 120000 })
+}
+
+export async function replaceChart(id: number, assetDir: string, diffIndex: number, file: File): Promise<{ imported: boolean; convertedFrom?: string; alerts?: string[] }> {
+  const form = new FormData()
+  form.append('file', file)
+  const { data } = await apiClient.put(`/api/Music/ReplaceChart?id=${id}&assetDir=${assetDir}&diffIndex=${diffIndex}`, form)
+  return data
 }

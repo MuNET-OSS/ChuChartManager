@@ -113,6 +113,10 @@ music:
   artist: アーティスト
   genre: ジャンル
   enableDiff: この難易度を有効にする
+  chartAuthor: 作者
+  chartLevel: 表示レベル
+  chartConstant: 定数
+  chartNoteCount: ノーツ数
   level: レベル
   notesDesigner: 譜面デザイナー
   replaceChart: 譜面を差し替え
@@ -122,6 +126,11 @@ music:
   exportSUS: SUS エクスポート
   importMusic: 譜面をインポート
   importTitle: カスタム譜面をインポート
+  importSelectFolder: 対応ファイル形式
+  importFolderHint: 以下のファイルを含むフォルダ
+  importSelectAudio: 対応オーディオファイル
+  importSelectChart: 対応譜面ファイル
+  chartReplaceFailed: "譜面の置換に失敗: {error}"
   importNoChart: "譜面ファイルが見つかりません (.ugc/.c2s/.sus)"
   importNoAudio: "音声ファイルが見つかりません (.wav/.mp3/.ogg)"
   importSuccess: インポート成功
@@ -136,9 +145,25 @@ music:
   copyToOption: 他のオプションにコピー
   copy: コピー
   copyAndExport: コピーとエクスポート
-  copyToOptionShort: "{dir} にコピー"
-  exportOpt: OPT エクスポート (原始形式)
-  exportUgcZip: UGC エクスポート (自作譜面形式)
+  copyTo: コピー先を選択...
+  exportZip: ZIP エクスポート
+  exportZipUgc: ZIP エクスポート (UGC)
+  exportUgc: UGC としてエクスポート
+  exportSus: SUS としてエクスポート
+  deleteConfirm: 削除を確認
+  deleted: 削除しました
+  deleteFailed: "削除に失敗: {error}"
+  changeId: ID を変更
+  newId: 新しい ID
+  idChanged: "ID を {oldId} から {newId} に変更しました"
+  idChangeFailed: "ID の変更に失敗: {error}"
+  exportSuccess: エクスポート成功
+  exportFailed: "エクスポート失敗: {error}"
+  clickToReplaceJacket: クリックでジャケットを置換
+  replaceAudio: 音声を置換
+  audioImporting: 音声をインポート中...
+  audioReplaced: 音声を置換しました
+  audioReplaceFailed: "音声の置換に失敗: {error}"
   openExplorer: エクスプローラーで開く
   openXml: Music.xml を編集
 mods:

@@ -16,8 +16,5 @@ node_modules/
 ChuChartManager/wwwroot/
 pnpm-lock.yaml
 
-# 临时文件
-*.psb
-*.pure.psb
-*.emtbytes
-
+# 其他
+.sisyphus

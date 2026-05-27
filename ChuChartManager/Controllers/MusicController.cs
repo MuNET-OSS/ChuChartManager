@@ -55,7 +55,8 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 Level = f.Level,
                 LevelDecimal = f.LevelDecimal,
                 LevelDisplay = f.LevelDisplay,
-                NotesDesigner = f.NotesDesigner
+                NotesDesigner = f.NotesDesigner,
+                NoteCount = f.NoteCount
             }).ToArray()
         }).ToList();
 
@@ -334,6 +335,77 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         return Ok(new { imported = true });
     }
 
+    [HttpPut]
+    public ActionResult SetJacket([FromQuery] int id, [FromQuery] string assetDir, IFormFile file)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var ddsFileName = $"CHU_UI_Jacket_{id:D8}.dds";
+        var tempPath = Path.Combine(Path.GetTempPath(), $"ccm_jacket_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
+        try
+        {
+            using (var fs = System.IO.File.Create(tempPath))
+                file.CopyTo(fs);
+            DdsHelper.ConvertPngToDds(tempPath, Path.Combine(music.MusicDirectory, ddsFileName));
+        }
+        finally
+        {
+            try { System.IO.File.Delete(tempPath); } catch { }
+        }
+
+        var root = music.XmlDoc.SelectSingleNode("/MusicData/jaketFile/path");
+        if (root != null) root.InnerText = ddsFileName;
+        music.JacketFileName = ddsFileName;
+        music.Save();
+
+        JacketCache.TryRemove(music.GetJacketFullPath() ?? "", out _);
+
+        return Ok();
+    }
+
+    [HttpPut]
+    [DisableRequestSizeLimit]
+    public ActionResult SetAudio([FromQuery] int id, [FromQuery] string assetDir, IFormFile file)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var tempPath = Path.Combine(Path.GetTempPath(), $"ccm_audio_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
+        try
+        {
+            using (var fs = System.IO.File.Create(tempPath))
+                file.CopyTo(fs);
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext == ".awb")
+            {
+                var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(music.MusicDirectory));
+                if (sourceRoot == null) return BadRequest("Cannot determine option root");
+                var cueFileDir = Path.Combine(sourceRoot, "cueFile", $"cueFile{id:D6}");
+                Directory.CreateDirectory(cueFileDir);
+                var awbPath = Path.Combine(cueFileDir, $"music{id:D4}.awb");
+                System.IO.File.Copy(tempPath, awbPath, true);
+            }
+            else
+            {
+                AudioHelper.ImportAudioToMusic(music, tempPath);
+            }
+        }
+        finally
+        {
+            try { System.IO.File.Delete(tempPath); } catch { }
+        }
+
+        return Ok();
+    }
+
     [HttpPost]
     public ActionResult ImportChart([FromQuery] int id, [FromQuery] string assetDir, [FromQuery] int diffIndex)
     {
@@ -390,6 +462,63 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         else
         {
             System.IO.File.Copy(selected, destPath, true);
+        }
+
+        var fumenNodes = music.XmlDoc.SelectNodes("/MusicData/fumens/MusicFumenData");
+        if (fumenNodes != null && diffIndex < fumenNodes.Count)
+        {
+            var node = fumenNodes[diffIndex]!;
+            var enableNode = node.SelectSingleNode("enable");
+            if (enableNode != null) enableNode.InnerText = "true";
+            var fileNode = node.SelectSingleNode("file/path");
+            if (fileNode != null) fileNode.InnerText = destFileName;
+        }
+        music.Save();
+
+        return Ok(new { imported = true, convertedFrom = ext != "c2s" ? ext : (string?)null, alerts });
+    }
+
+    [HttpPut]
+    public ActionResult ReplaceChart([FromQuery] int id, [FromQuery] string assetDir, [FromQuery] int diffIndex, IFormFile file)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var ext = Path.GetExtension(file.FileName).TrimStart('.').ToLowerInvariant();
+        var destFileName = $"{id:D4}_0{diffIndex}.c2s";
+        var destPath = Path.Combine(music.MusicDirectory, destFileName);
+        var alerts = new List<string>();
+
+        using var ms = new MemoryStream();
+        file.CopyTo(ms);
+        var sourceContent = Encoding.UTF8.GetString(ms.ToArray());
+
+        if (ext is "ugc" or "sus")
+        {
+            try
+            {
+                var (chart, parseAlerts) = ext == "ugc"
+                    ? new ChuUgcParser().Parse(sourceContent)
+                    : new SusParser().Parse(sourceContent);
+                alerts.AddRange(parseAlerts.Select(a => a.ToString()));
+
+                var (c2sContent, genAlerts) = new C2sGenerator().Generate(chart);
+                alerts.AddRange(genAlerts.Select(a => a.ToString()));
+
+                System.IO.File.WriteAllText(destPath, c2sContent, Encoding.UTF8);
+            }
+            catch (MuConvert.utils.ConversionException ex)
+            {
+                alerts.AddRange(ex.Alerts.Select(a => a.ToString()));
+                return BadRequest(new { error = ex.Message, alerts });
+            }
+        }
+        else
+        {
+            System.IO.File.WriteAllText(destPath, sourceContent, Encoding.UTF8);
         }
 
         var fumenNodes = music.XmlDoc.SelectNodes("/MusicData/fumens/MusicFumenData");
@@ -940,7 +1069,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
     }
 
     [HttpGet]
-    public ActionResult ExportUgc([FromQuery] int id, [FromQuery] string assetDir)
+    public ActionResult ExportCustom([FromQuery] int id, [FromQuery] string assetDir, [FromQuery] string format = "ugc")
     {
         var scanner = scannerService.Scanner;
         if (scanner == null) return NotFound();
@@ -962,10 +1091,13 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                     try
                     {
                         var (chart, _) = new C2sParser().Parse(c2sContent);
-                        var (ugcContent, _) = new UgcGenerator().Generate(chart);
-                        var entry = zip.CreateEntry($"{safeName}.ugc");
+                        var ext = format.ToLowerInvariant() == "sus" ? "sus" : "ugc";
+                        var content = ext == "sus"
+                            ? new SusGenerator().Generate(chart).Item1
+                            : new UgcGenerator().Generate(chart).Item1;
+                        var entry = zip.CreateEntry($"{safeName}.{ext}");
                         using var w = new StreamWriter(entry.Open(), Encoding.UTF8);
-                        w.Write(ugcContent);
+                        w.Write(content);
                     }
                     catch
                     {
@@ -1001,6 +1133,82 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
 
         ms.Seek(0, SeekOrigin.Begin);
         return File(ms, "application/zip", $"{safeName}.zip");
+    }
+
+    [HttpPost]
+    public ActionResult ChangeId([FromQuery] int id, [FromQuery] string assetDir, [FromBody] int newId)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound("曲目不存在");
+
+        if (assetDir == "A000") return BadRequest("不能修改 A000 的曲目 ID");
+
+        var optRoot = ResolveOptRoot(assetDir);
+        if (optRoot == null) return BadRequest("目录无效");
+
+        var newMusicDirName = $"music{newId:D4}";
+        var newMusicDir = Path.Combine(optRoot, "music", newMusicDirName);
+        if (Directory.Exists(newMusicDir) && newId != id)
+            return BadRequest($"ID {newId} 的曲目目录已存在");
+
+        var oldMusicDir = music.MusicDirectory;
+
+        // Music.xml: 更新 ID
+        var root = music.XmlDoc.SelectSingleNode("/MusicData");
+        var idNode = root?.SelectSingleNode("name/id");
+        if (idNode != null) idNode.InnerText = newId.ToString();
+        var dataNameNode = root?.SelectSingleNode("dataName");
+        if (dataNameNode != null) dataNameNode.InnerText = newMusicDirName;
+        music.Save();
+
+        // 重命名 music 目录
+        if (newId != id && oldMusicDir != newMusicDir)
+            Directory.Move(oldMusicDir, newMusicDir);
+
+        // 重命名 cueFile 目录
+        var oldCueDir = Path.Combine(optRoot, "cueFile", $"cueFile{id:D6}");
+        var newCueDir = Path.Combine(optRoot, "cueFile", $"cueFile{newId:D6}");
+        if (newId != id && Directory.Exists(oldCueDir) && !Directory.Exists(newCueDir))
+            Directory.Move(oldCueDir, newCueDir);
+
+        // 重新扫描
+        var newScanner = new MusicScanner(StaticSettings.GamePath);
+        newScanner.ScanAll();
+        StaticSettings.Scanner = newScanner;
+
+        return Ok();
+    }
+
+    [HttpPost]
+    public ActionResult DeleteMusic([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound("曲目不存在");
+
+        if (assetDir == "A000") return BadRequest("不能删除 A000 的曲目");
+
+        if (Directory.Exists(music.MusicDirectory))
+            Directory.Delete(music.MusicDirectory, true);
+
+        var optRoot = ResolveOptRoot(assetDir);
+        if (optRoot != null)
+        {
+            var cueDir = Path.Combine(optRoot, "cueFile", $"cueFile{id:D6}");
+            if (Directory.Exists(cueDir))
+                Directory.Delete(cueDir, true);
+        }
+
+        var newScanner = new MusicScanner(StaticSettings.GamePath);
+        newScanner.ScanAll();
+        StaticSettings.Scanner = newScanner;
+
+        return Ok();
     }
 
     [HttpPost]
@@ -1057,6 +1265,7 @@ public class FumenSummary
     public int LevelDecimal { get; set; }
     public string LevelDisplay { get; set; } = "";
     public string NotesDesigner { get; set; } = "";
+    public int NoteCount { get; set; }
 }
 
 public class MusicEditDto

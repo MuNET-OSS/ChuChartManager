@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
-import { getJacketUrl } from '@/api'
+import { getExportMp3Url } from '@/api'
 import {
   currentTime,
   duration,
@@ -8,50 +8,33 @@ import {
   isPlaying,
   playingMusic,
   startSeek,
-  stop,
   togglePlayPause,
   volume,
 } from '@/store/player'
 
-const isSeekingLocal = ref(false)
-const isSeekHover = ref(false)
-const isVolumeHover = ref(false)
-const lastVolume = ref(0.8)
 const seekTrackRef = ref<HTMLElement | null>(null)
+const isSeekHover = ref(false)
+const isSeekingLocal = ref(false)
+const isVolumeHover = ref(false)
 const volumeTrackRef = ref<HTMLElement | null>(null)
+const lastVolume = ref(0.8)
 
 const safeDuration = computed(() => Number.isFinite(duration.value) && duration.value > 0 ? duration.value : 0)
 const safeCurrentTime = computed(() => Math.max(0, Math.min(currentTime.value, safeDuration.value || currentTime.value)))
 const progressPercent = computed(() => safeDuration.value > 0 ? safeCurrentTime.value / safeDuration.value * 100 : 0)
-const canSeek = computed(() => safeDuration.value > 0 || isSeekingLocal.value)
 const volumePercent = computed(() => Math.max(0, Math.min(volume.value, 1)) * 100)
-const volumeLevel = computed(() => {
-  if (volume.value <= 0) return 'mute'
-  if (volume.value < 0.34) return 'low'
-  if (volume.value < 0.67) return 'medium'
-  return 'high'
-})
 
 let stopSeekDrag: (() => void) | null = null
 let stopVolumeDrag: (() => void) | null = null
 
 function fmt(s: number): string {
-  const safeSeconds = Number.isFinite(s) && s > 0 ? s : 0
-  return `${Math.floor(safeSeconds / 60).toString().padStart(2, '0')}:${Math.floor(safeSeconds % 60).toString().padStart(2, '0')}`
+  const v = Number.isFinite(s) && s > 0 ? s : 0
+  return `${Math.floor(v / 60)}:${Math.floor(v % 60).toString().padStart(2, '0')}`
 }
 
-function getPointerRatio(event: MouseEvent, element: HTMLElement): number {
-  const rect = element.getBoundingClientRect()
-  if (rect.width <= 0) return 0
-  return Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width))
-}
-
-function previewSeek(event: MouseEvent) {
-  if (!seekTrackRef.value) return
-  const dur = safeDuration.value
-  if (dur <= 0) return
-  const ratio = getPointerRatio(event, seekTrackRef.value)
-  currentTime.value = ratio * dur
+function ratio(event: MouseEvent, el: HTMLElement): number {
+  const r = el.getBoundingClientRect()
+  return r.width > 0 ? Math.max(0, Math.min(1, (event.clientX - r.left) / r.width)) : 0
 }
 
 function beginSeek(event: MouseEvent) {
@@ -59,20 +42,15 @@ function beginSeek(event: MouseEvent) {
   stopSeekDrag?.()
   isSeekingLocal.value = true
   startSeek()
+  if (safeDuration.value > 0) currentTime.value = ratio(event, seekTrackRef.value) * safeDuration.value
 
-  const dur = safeDuration.value
-  if (dur > 0) {
-    const ratio = getPointerRatio(event, seekTrackRef.value)
-    currentTime.value = ratio * dur
+  const onMove = (e: MouseEvent) => {
+    if (seekTrackRef.value && safeDuration.value > 0)
+      currentTime.value = ratio(e, seekTrackRef.value) * safeDuration.value
   }
-
-  const onMove = (moveEvent: MouseEvent) => previewSeek(moveEvent)
-  const onUp = (upEvent: MouseEvent) => {
-    const finalDur = safeDuration.value
-    if (seekTrackRef.value && finalDur > 0) {
-      const ratio = getPointerRatio(upEvent, seekTrackRef.value)
-      endSeek(ratio * finalDur)
-    }
+  const onUp = (e: MouseEvent) => {
+    if (seekTrackRef.value && safeDuration.value > 0)
+      endSeek(ratio(e, seekTrackRef.value) * safeDuration.value)
     isSeekingLocal.value = false
     cleanup()
   }
@@ -81,344 +59,141 @@ function beginSeek(event: MouseEvent) {
     document.removeEventListener('mouseup', onUp)
     stopSeekDrag = null
   }
-
   document.addEventListener('mousemove', onMove)
   document.addEventListener('mouseup', onUp)
   stopSeekDrag = cleanup
 }
 
-function setVolumeFromPointer(event: MouseEvent) {
-  if (!volumeTrackRef.value) return
-  volume.value = getPointerRatio(event, volumeTrackRef.value)
-  if (volume.value > 0) lastVolume.value = volume.value
-}
-
 function beginVolumeDrag(event: MouseEvent) {
+  if (!volumeTrackRef.value) return
   stopVolumeDrag?.()
-  setVolumeFromPointer(event)
+  volume.value = ratio(event, volumeTrackRef.value)
+  if (volume.value > 0) lastVolume.value = volume.value
 
-  const onMove = (moveEvent: MouseEvent) => setVolumeFromPointer(moveEvent)
+  const onMove = (e: MouseEvent) => {
+    if (!volumeTrackRef.value) return
+    volume.value = ratio(e, volumeTrackRef.value)
+    if (volume.value > 0) lastVolume.value = volume.value
+  }
   const onUp = () => cleanup()
   const cleanup = () => {
     document.removeEventListener('mousemove', onMove)
     document.removeEventListener('mouseup', onUp)
     stopVolumeDrag = null
   }
-
   document.addEventListener('mousemove', onMove)
   document.addEventListener('mouseup', onUp)
   stopVolumeDrag = cleanup
 }
 
 function toggleMute() {
-  if (volume.value > 0) {
-    lastVolume.value = volume.value
-    volume.value = 0
-    return
-  }
-
-  volume.value = lastVolume.value || 0.8
+  if (volume.value > 0) { lastVolume.value = volume.value; volume.value = 0 }
+  else volume.value = lastVolume.value || 0.8
 }
 
-onBeforeUnmount(() => {
-  stopSeekDrag?.()
-  stopVolumeDrag?.()
-})
+function downloadMp3() {
+  if (playingMusic.value) window.open(getExportMp3Url(playingMusic.value.id, playingMusic.value.assetDir))
+}
+
+onBeforeUnmount(() => { stopSeekDrag?.(); stopVolumeDrag?.() })
 </script>
 
 <template>
-  <Transition name="player-bar-transition">
-    <div v-if="playingMusic" class="player-bar-shell">
-      <div class="player-bar">
-        <section class="track-meta" aria-label="当前播放曲目">
-          <img
-            v-if="playingMusic.hasJacket"
-            :src="getJacketUrl(playingMusic.id, playingMusic.assetDir)"
-            class="track-jacket"
-            alt=""
-          />
-          <div v-else class="track-jacket track-jacket--empty" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18V5l11-2v13" />
-              <circle cx="6" cy="18" r="3" />
-              <circle cx="17" cy="16" r="3" />
-            </svg>
-          </div>
+  <div v-if="playingMusic" class="player-wrapper">
+    <div class="player">
+      <button class="btn btn-play" @click="togglePlayPause">
+        <svg v-if="!isPlaying" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l10.5-6.5z" /></svg>
+        <svg v-else viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zm6.5 0H17v14h-3.5z" /></svg>
+      </button>
 
-          <div class="track-text">
-            <div class="track-title" :title="playingMusic.name">{{ playingMusic.name }}</div>
-            <div class="track-artist" :title="playingMusic.artist">{{ playingMusic.artist }}</div>
-          </div>
-        </section>
+      <span class="time">{{ fmt(currentTime) }}</span>
 
-        <section class="seek-section" aria-label="播放进度">
-          <div class="seek-topline">
-            <span class="time-label">{{ fmt(currentTime) }}</span>
-            <span class="time-label time-label--duration">{{ fmt(duration) }}</span>
-          </div>
-
-          <div
-            ref="seekTrackRef"
-            class="seek-track"
-            :class="{ 'is-active': isSeekHover || isSeekingLocal }"
-            role="slider"
-            aria-label="播放进度"
-            aria-valuemin="0"
-            :aria-valuemax="Math.round(safeDuration)"
-            :aria-valuenow="Math.round(safeCurrentTime)"
-            @mouseenter="isSeekHover = true"
-            @mouseleave="isSeekHover = false"
-            @mousedown.prevent="beginSeek"
-          >
-            <div class="seek-fill" :style="{ width: `${progressPercent}%` }">
-              <span class="seek-thumb" />
-            </div>
-          </div>
-        </section>
-
-        <section class="control-section" aria-label="播放控制">
-          <button
-            class="icon-button icon-button--primary"
-            type="button"
-            :title="isPlaying ? '暂停' : '播放'"
-            :aria-label="isPlaying ? '暂停' : '播放'"
-            @click="togglePlayPause"
-          >
-            <svg v-if="!isPlaying" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M8 5.5v13l10.5-6.5L8 5.5z" />
-            </svg>
-            <svg v-else viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M7 5h3.6v14H7V5zm6.4 0H17v14h-3.6V5z" />
-            </svg>
-          </button>
-
-          <button class="icon-button" type="button" title="停止" aria-label="停止" @click="stop">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <rect x="6.5" y="6.5" width="11" height="11" rx="1.6" />
-            </svg>
-          </button>
-
-          <div class="volume-control">
-            <button
-              class="icon-button icon-button--volume"
-              type="button"
-              :title="volume > 0 ? '静音' : '恢复音量'"
-              :aria-label="volume > 0 ? '静音' : '恢复音量'"
-              @click="toggleMute"
-            >
-              <svg v-if="volumeLevel === 'mute'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M11 5 6.4 9H3v6h3.4l4.6 4V5z" />
-                <path d="m17 9 4 4m0-4-4 4" />
-              </svg>
-              <svg v-else-if="volumeLevel === 'low'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M11 5 6.4 9H3v6h3.4l4.6 4V5z" />
-                <path d="M15.5 9.5a4 4 0 0 1 0 5" />
-              </svg>
-              <svg v-else-if="volumeLevel === 'medium'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M11 5 6.4 9H3v6h3.4l4.6 4V5z" />
-                <path d="M15.5 9.5a4 4 0 0 1 0 5" />
-                <path d="M18.3 7a8 8 0 0 1 0 10" />
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M11 5 6.4 9H3v6h3.4l4.6 4V5z" />
-                <path d="M15.5 9.5a4 4 0 0 1 0 5" />
-                <path d="M18.3 7a8 8 0 0 1 0 10" />
-                <path d="M20.8 4.8a12 12 0 0 1 0 14.4" />
-              </svg>
-            </button>
-
-            <div
-              ref="volumeTrackRef"
-              class="volume-track"
-              :class="{ 'is-active': isVolumeHover }"
-              role="slider"
-              aria-label="音量"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              :aria-valuenow="Math.round(volumePercent)"
-              @mouseenter="isVolumeHover = true"
-              @mouseleave="isVolumeHover = false"
-              @mousedown.prevent="beginVolumeDrag"
-            >
-              <div class="volume-fill" :style="{ width: `${volumePercent}%` }">
-                <span class="volume-thumb" />
-              </div>
-            </div>
-          </div>
-        </section>
+      <div
+        ref="seekTrackRef"
+        class="track seek"
+        :class="{ active: isSeekHover || isSeekingLocal }"
+        @mouseenter="isSeekHover = true" @mouseleave="isSeekHover = false"
+        @mousedown.prevent="beginSeek"
+      >
+        <div class="track-fill" :style="{ width: `${progressPercent}%` }"><span class="thumb" /></div>
       </div>
+
+      <span class="time time-dim">{{ fmt(duration) }}</span>
+
+      <div class="divider" />
+
+      <div class="volume-group">
+        <button class="btn btn-sm" @click="toggleMute">
+          <svg v-if="volume <= 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.4 9H3v6h3.4l4.6 4V5z" /><path d="m17 9 4 4m0-4-4 4" /></svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.4 9H3v6h3.4l4.6 4V5z" /><path d="M15.5 9.5a4 4 0 0 1 0 5" /><path v-if="volume >= 0.5" d="M18.3 7a8 8 0 0 1 0 10" /></svg>
+        </button>
+        <div
+          ref="volumeTrackRef"
+          class="track vol"
+          :class="{ active: isVolumeHover }"
+          @mouseenter="isVolumeHover = true" @mouseleave="isVolumeHover = false"
+          @mousedown.prevent="beginVolumeDrag"
+        >
+          <div class="track-fill" :style="{ width: `${volumePercent}%` }"><span class="thumb" /></div>
+        </div>
+      </div>
+
+      <div class="divider" />
+
+      <button class="btn btn-sm" @click="downloadMp3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v10m0 0-4-4m4 4 4-4" /><path d="M5 17h14" /></svg>
+      </button>
     </div>
-  </Transition>
+  </div>
 </template>
 
 <style lang="sass" scoped>
-.player-bar-transition-enter-active, .player-bar-transition-leave-active
-  transition: transform 0.25s ease, opacity 0.25s ease
+.player-wrapper
+  display: flex
+  justify-content: center
+  width: 100%
 
-.player-bar-transition-enter-from, .player-bar-transition-leave-to
-  transform: translateY(16px)
-  opacity: 0
+.player
+  --text-primary: oklch(0.3 0.02 var(--hue))
+  --text-dim: oklch(0.5 0.02 var(--hue))
+  --bg-glass: oklch(0.92 0.02 var(--hue) / 80%)
+  --border-glass: oklch(0.8 0.03 var(--hue) / 20%)
+  --accent: oklch(0.8 0.12 var(--hue))
+  --accent-glow: oklch(0.7 0.15 var(--hue) / 40%)
 
-.player-bar-shell
-  padding: 8px 12px 6px
-  flex-shrink: 0
-
-.player-bar
-  display: grid
-  grid-template-columns: minmax(180px, 260px) minmax(180px, 1fr) auto
-  align-items: center
-  gap: 18px
-  min-height: 64px
-  padding: 10px 14px
-  border: 1px solid rgba(255, 255, 255, 0.08)
-  border-radius: 16px
-  color: var(--text-color, rgba(255, 255, 255, 0.88))
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02)), rgba(0, 0, 0, 0.18)
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06)
-  backdrop-filter: blur(18px)
-
-.track-meta
   display: flex
   align-items: center
-  min-width: 0
   gap: 12px
+  width: 100%
+  padding: 8px 16px 8px 8px
+  border-radius: 50px
+  background: var(--bg-glass)
+  border: 1px solid var(--border-glass)
+  box-shadow: 0 2px 12px oklch(0.5 0.05 var(--hue) / 8%)
+  backdrop-filter: blur(20px) saturate(150%)
+  color: var(--text-primary)
 
-.track-jacket
-  width: 48px
-  height: 48px
-  flex-shrink: 0
-  border-radius: 12px
-  object-fit: cover
-  background: rgba(255, 255, 255, 0.05)
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22)
-
-  &--empty
-    display: flex
-    align-items: center
-    justify-content: center
-    color: currentColor
-    opacity: 0.62
-
-    svg
-      width: 22px
-      height: 22px
-
-.track-text
-  min-width: 0
-
-.track-title
-  overflow: hidden
-  text-overflow: ellipsis
-  white-space: nowrap
-  font-size: 0.9rem
-  font-weight: 700
-  line-height: 1.25
-  opacity: 0.94
-
-.track-artist
-  margin-top: 3px
-  overflow: hidden
-  text-overflow: ellipsis
-  white-space: nowrap
-  font-size: 0.74rem
-  line-height: 1.25
-  opacity: 0.48
-
-.seek-section
-  min-width: 0
-
-.seek-topline
-  display: flex
-  justify-content: space-between
-  margin-bottom: 7px
-
-.time-label
-  font-size: 0.68rem
-  line-height: 1
-  font-variant-numeric: tabular-nums
-  opacity: 0.56
-
-  &--duration
-    opacity: 0.38
-
-.seek-track, .volume-track
-  position: relative
-  display: flex
-  align-items: center
-  cursor: pointer
-
-  &::before
-    content: ''
-    position: absolute
-    left: 0
-    right: 0
-    height: 4px
-    border-radius: 999px
-    background: rgba(255, 255, 255, 0.12)
-    transition: height 0.16s ease, background 0.16s ease
-
-  &.is-active::before
-    height: 6px
-    background: rgba(255, 255, 255, 0.16)
-
-.seek-track
+.divider
+  width: 1px
   height: 18px
-
-.seek-fill, .volume-fill
-  position: absolute
-  left: 0
-  display: flex
-  align-items: center
-  justify-content: flex-end
-  height: 4px
-  min-width: 0
-  max-width: 100%
-  border-radius: 999px
-  background: color-mix(in srgb, var(--text-color, #ffffff), transparent 38%)
-  pointer-events: none
-  transition: height 0.16s ease, background 0.16s ease
-
-  .is-active &
-    height: 6px
-    background: color-mix(in srgb, var(--text-color, #ffffff), transparent 24%)
-
-.seek-thumb, .volume-thumb
-  width: 0
-  height: 0
+  background: var(--border-glass)
   flex-shrink: 0
-  border-radius: 999px
-  background: color-mix(in srgb, var(--text-color, #ffffff), transparent 6%)
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28)
-  opacity: 0
-  transform: scale(0.7)
-  transition: width 0.16s ease, height 0.16s ease, opacity 0.16s ease, transform 0.16s ease
 
-  .is-active &
-    width: 11px
-    height: 11px
-    opacity: 1
-    transform: scale(1)
-
-.control-section
-  display: flex
-  align-items: center
-  gap: 6px
-  min-width: 0
-
-.icon-button
+.btn
   display: flex
   align-items: center
   justify-content: center
-  width: 34px
-  height: 34px
+  width: 32px
+  height: 32px
   padding: 0
-  border: 1px solid transparent
-  border-radius: 999px
-  color: currentColor
-  background: rgba(255, 255, 255, 0.035)
-  opacity: 0.72
+  border: none
+  border-radius: 50%
+  background: transparent
+  color: var(--text-primary)
+  opacity: 0.7
   cursor: pointer
-  transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease, border-color 0.12s ease
+  flex-shrink: 0
+  transition: opacity 0.2s, background 0.2s, transform 0.2s
 
   svg
     width: 16px
@@ -426,52 +201,113 @@ onBeforeUnmount(() => {
 
   &:hover
     opacity: 1
-    transform: translateY(-1px)
-    background: color-mix(in srgb, var(--text-color, #ffffff), transparent 90%)
-    border-color: rgba(255, 255, 255, 0.08)
+    background: oklch(0.5 0.05 var(--hue) / 10%)
+    transform: scale(1.08)
 
   &:active
-    transform: scale(0.94)
+    transform: scale(0.92)
 
-  &--primary
-    width: 40px
-    height: 40px
-    opacity: 0.9
-    background: color-mix(in srgb, var(--text-color, #ffffff), transparent 88%)
+.btn-play
+  width: 40px
+  height: 40px
+  background: var(--accent)
+  color: #111
+  opacity: 1
+  box-shadow: 0 4px 12px var(--accent-glow)
 
-    svg
-      width: 18px
-      height: 18px
+  svg
+    width: 20px
+    height: 20px
 
-  &--volume
-    width: 32px
-    height: 32px
+  &:hover
+    background: oklch(0.85 0.14 var(--hue))
+    box-shadow: 0 6px 16px var(--accent-glow)
+    transform: scale(1.05)
 
-.volume-control
+.btn-sm
+  width: 28px
+  height: 28px
+
+  svg
+    width: 14px
+    height: 14px
+
+.volume-group
   display: flex
   align-items: center
-  gap: 5px
-  margin-left: 4px
+  gap: 4px
 
-.volume-track
-  width: 76px
-  height: 18px
+.time
+  font-size: 12px
+  font-weight: 500
+  font-variant-numeric: tabular-nums
+  letter-spacing: 0.5px
+  color: var(--text-primary)
+  flex-shrink: 0
+  min-width: 38px
+  text-align: center
 
-.volume-fill
-  background: color-mix(in srgb, var(--text-color, #ffffff), transparent 48%)
+.time-dim
+  color: var(--text-dim)
 
-@media (max-width: 760px)
-  .player-bar
-    grid-template-columns: minmax(150px, 1fr) auto
-    gap: 12px
+.track
+  position: relative
+  display: flex
+  align-items: center
+  cursor: pointer
+  height: 24px
 
-  .seek-section
-    grid-column: 1 / -1
-    grid-row: 2
+  &::before
+    content: ''
+    position: absolute
+    left: 0
+    right: 0
+    height: 4px
+    border-radius: 4px
+    background: oklch(0.7 0.03 var(--hue) / 20%)
+    transition: height 0.2s
 
-  .control-section
-    justify-self: end
+  &.active::before
+    height: 6px
+    background: oklch(0.6 0.04 var(--hue) / 30%)
 
-  .volume-track
-    display: none
+.seek
+  flex: 1
+  min-width: 120px
+
+.vol
+  width: 64px
+  flex-shrink: 0
+
+.track-fill
+  position: absolute
+  left: 0
+  display: flex
+  align-items: center
+  justify-content: flex-end
+  height: 4px
+  max-width: 100%
+  border-radius: 4px
+  background: var(--accent)
+  pointer-events: none
+  transition: height 0.2s, box-shadow 0.2s
+
+  .active &
+    height: 6px
+    box-shadow: 0 0 8px var(--accent-glow)
+
+.thumb
+  width: 12px
+  height: 12px
+  flex-shrink: 0
+  border-radius: 50%
+  background: var(--accent)
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3)
+  opacity: 0
+  transform: scale(0.5) translate(50%, 0)
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s
+
+  .active &
+    opacity: 1
+    transform: scale(1) translate(50%, 0)
 </style>

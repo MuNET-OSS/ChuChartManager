@@ -113,15 +113,24 @@ music:
   artist: 曲师
   genre: 流派
   enableDiff: 启用此难度
+  chartAuthor: 作者
+  chartLevel: 显示等级
+  chartConstant: 定数
+  chartNoteCount: 音符数量
   level: 等级
   notesDesigner: 谱面设计
   replaceChart: 替换谱面
   importChart: 导入谱面
-  exportC2S: 导出 C2S
-  exportUGC: 导出 UGC
-  exportSUS: 导出 SUS
-  importMusic: 导入自制谱
+  exportC2S: 导出为 C2S
+  exportUGC: 导出为 UGC
+  exportSUS: 导出为 SUS
+  importMusic: 导入谱面
   importTitle: 导入自制谱
+  importSelectFolder: 可以选择的文件类型
+  importFolderHint: 包含以下文件的文件夹
+  importSelectAudio: 可以选择的音频文件
+  importSelectChart: 可以选择的谱面文件
+  chartReplaceFailed: "替换谱面失败: {error}"
   importNoChart: 未找到谱面文件 (.ugc/.c2s/.sus)
   importNoAudio: 未找到音频文件 (.wav/.mp3/.ogg)
   importSuccess: 导入成功
@@ -136,9 +145,25 @@ music:
   copyToOption: 复制到其他 Option
   copy: 复制
   copyAndExport: 复制与导出
-  copyToOptionShort: "复制到 {dir}"
-  exportOpt: 导出 OPT (原始格式)
-  exportUgcZip: 导出 UGC (自制谱格式)
+  copyTo: 复制到...
+  exportZip: 导出 ZIP
+  exportZipUgc: 导出 ZIP (UGC)
+  exportUgc: 导出为 UGC
+  exportSus: 导出为 SUS
+  deleteConfirm: 确认删除
+  deleted: 已删除
+  deleteFailed: "删除失败: {error}"
+  changeId: 修改 ID
+  newId: 新 ID
+  idChanged: "ID 已从 {oldId} 修改为 {newId}"
+  idChangeFailed: "修改 ID 失败: {error}"
+  exportSuccess: 导出成功
+  exportFailed: "导出失败: {error}"
+  clickToReplaceJacket: 点击替换封面
+  replaceAudio: 替换音频
+  audioImporting: 正在导入音频...
+  audioReplaced: 音频替换成功
+  audioReplaceFailed: "音频替换失败: {error}"
   openExplorer: 在资源管理器中打开
   openXml: 编辑 Music.xml
 mods:

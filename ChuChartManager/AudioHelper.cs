@@ -62,21 +62,26 @@ public class AudioHelper : IDisposable
 
     public static byte[]? DecodeHcaToWav(byte[] hcaData)
     {
+        try
+        {
+            var reader = new HcaReader();
+            var audio = reader.Read(hcaData);
+            return new WaveWriter().GetFile(audio);
+        }
+        catch { }
+
         foreach (var key in Keys)
         {
             try
             {
                 var hcaReader = new HcaReader { EncryptionKey = key };
                 var audioData = hcaReader.Read(hcaData);
-                var waveWriter = new WaveWriter();
-                return waveWriter.GetFile(audioData);
+                return new WaveWriter().GetFile(audioData);
             }
             catch (InvalidDataException) { }
         }
 
-        var fallback = new HcaReader();
-        var audio = fallback.Read(hcaData);
-        return new WaveWriter().GetFile(audio);
+        return null;
     }
 
     public static byte[]? GetWavFromMusic(MusicXml music)
@@ -171,7 +176,54 @@ public class AudioHelper : IDisposable
         var audioData = waveReader.Read(wavData);
 
         var hcaWriter = new HcaWriter();
+        hcaWriter.Configuration.EncryptionKey = Keys[0];
         return hcaWriter.GetFile(audioData);
+    }
+
+    public static void ImportAudioToMusic(MusicXml music, string audioPath)
+    {
+        byte[] wavBytes;
+        var ext = Path.GetExtension(audioPath).ToLowerInvariant();
+        if (ext == ".wav")
+        {
+            wavBytes = File.ReadAllBytes(audioPath);
+        }
+        else
+        {
+            using var reader = new AudioFileReader(audioPath);
+            using var wavMs = new MemoryStream();
+            var pcm16 = reader.ToWaveProvider16();
+            WaveFileWriter.WriteWavFileToStream(wavMs, pcm16);
+            wavBytes = wavMs.ToArray();
+        }
+
+        var hcaBytes = EncodeWavToHca(wavBytes);
+        if (hcaBytes == null || hcaBytes.Length == 0)
+            throw new InvalidOperationException("Failed to encode audio to HCA");
+
+        var hcaTempPath = Path.Combine(Path.GetTempPath(), $"ccm_hca_{Guid.NewGuid():N}.hca");
+        try
+        {
+            File.WriteAllBytes(hcaTempPath, hcaBytes);
+
+            var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(music.MusicDirectory));
+            if (sourceRoot == null) throw new InvalidOperationException("Cannot determine option root");
+
+            var cueFileName = $"music{music.Id:D4}";
+            var cueFileDir = Path.Combine(sourceRoot, "cueFile", $"cueFile{music.Id:D6}");
+            Directory.CreateDirectory(cueFileDir);
+            var awbPath = Path.Combine(cueFileDir, $"{cueFileName}.awb");
+
+            var archive = new CriAfs2Archive();
+            archive.Add(new CriAfs2Entry { Id = 0, FilePath = new FileInfo(hcaTempPath) });
+
+            using var awbStream = File.Create(awbPath);
+            archive.Write(awbStream);
+        }
+        finally
+        {
+            try { File.Delete(hcaTempPath); } catch { }
+        }
     }
 
     public void Dispose()

@@ -23,6 +23,7 @@ public class FumenData
     public int LevelDecimal { get; set; }
     public string NotesDesigner { get; set; } = "";
     public float DefaultBpm { get; set; }
+    public int NoteCount { get; set; }
 
     // 谱面定数
     [JsonIgnore]
@@ -64,5 +65,35 @@ public class FumenData
             NotesDesigner = node.SelectSingleNode("notesDesigner")?.InnerText ?? "",
             DefaultBpm = float.TryParse(node.SelectSingleNode("defaultBpm")?.InnerText, out var bpm) ? bpm : 0f,
         };
+    }
+
+    public static string ReadCreatorFromC2s(string c2sPath)
+    {
+        foreach (var line in File.ReadLines(c2sPath))
+        {
+            if (!line.StartsWith("CREATOR")) continue;
+            var parts = line.Split('\t', 2);
+            return parts.Length >= 2 ? parts[1].Trim() : "";
+        }
+        return "";
+    }
+
+    private static readonly HashSet<string> NoteTypes = new(StringComparer.Ordinal)
+    {
+        "TAP", "CHR", "HLD", "SLD", "SLC", "FLK",
+        "AIR", "AUR", "AUL", "AHD", "ADW", "ADL", "ADR", "MNE"
+    };
+
+    public static int CountNotesFromC2s(string c2sPath)
+    {
+        var count = 0;
+        foreach (var line in File.ReadLines(c2sPath))
+        {
+            var tab = line.IndexOf('\t');
+            if (tab <= 0) continue;
+            if (NoteTypes.Contains(line[..tab]))
+                count++;
+        }
+        return count;
     }
 }
