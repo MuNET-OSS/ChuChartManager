@@ -1078,38 +1078,54 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         if (music == null) return NotFound();
 
         var safeName = string.Join("_", music.Name.Split(Path.GetInvalidFileNameChars()));
+        var ext = format.ToLowerInvariant() == "sus" ? "sus" : "ugc";
+        var diffFileNames = new[] { "bas", "adv", "exp", "mas", "ult", "we" };
+
         var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, true))
         {
-            var enabledFumen = music.Fumens.FirstOrDefault(f => f is { Enable: true });
-            if (enabledFumen != null)
+            for (var i = 0; i < music.Fumens.Length; i++)
             {
-                var c2sPath = Path.Combine(music.MusicDirectory, enabledFumen.FilePath);
-                if (System.IO.File.Exists(c2sPath))
+                var fumen = music.Fumens[i];
+                if (fumen is not { Enable: true } || string.IsNullOrEmpty(fumen.FilePath)) continue;
+
+                var c2sPath = Path.Combine(music.MusicDirectory, fumen.FilePath);
+                if (!System.IO.File.Exists(c2sPath)) continue;
+
+                var c2sContent = System.IO.File.ReadAllText(c2sPath, Encoding.UTF8);
+                try
                 {
-                    var c2sContent = System.IO.File.ReadAllText(c2sPath, Encoding.UTF8);
-                    try
-                    {
-                        var (chart, _) = new C2sParser().Parse(c2sContent);
-                        var ext = format.ToLowerInvariant() == "sus" ? "sus" : "ugc";
-                        var content = ext == "sus"
-                            ? new SusGenerator().Generate(chart).Item1
-                            : new UgcGenerator().Generate(chart).Item1;
-                        var entry = zip.CreateEntry($"{safeName}.{ext}");
-                        using var w = new StreamWriter(entry.Open(), Encoding.UTF8);
-                        w.Write(content);
-                    }
-                    catch
-                    {
-                        zip.CreateEntryFromFile(c2sPath, $"{safeName}.c2s");
-                    }
+                    var (chart, _) = new C2sParser().Parse(c2sContent);
+                    chart.Difficulty = i;
+                    chart.Title = music.Name;
+                    chart.Artist = music.Artist;
+                    chart.Designer = fumen.NotesDesigner;
+                    chart.DisplayLevel = fumen.LevelDisplay;
+                    chart.Level = fumen.LevelValue;
+                    chart.MusicId = music.Id.ToString();
+                    var content = ext == "sus"
+                        ? new SusGenerator().Generate(chart).Item1
+                        : new UgcGenerator().Generate(chart).Item1;
+
+                    if (ext == "ugc")
+                        content = content.Replace("@SONGID\t", "@BGM\tbgm.wav\r\n@JACKET\tjacket.png\r\n@SONGID\t");
+
+                    var fileName = i < diffFileNames.Length ? diffFileNames[i] : $"diff{i}";
+                    var entry = zip.CreateEntry($"{safeName}/{fileName}.{ext}");
+                    using var w = new StreamWriter(entry.Open(), Encoding.UTF8);
+                    w.Write(content);
+                }
+                catch
+                {
+                    var fileName = i < diffFileNames.Length ? diffFileNames[i] : $"diff{i}";
+                    zip.CreateEntryFromFile(c2sPath, $"{safeName}/{fileName}.c2s");
                 }
             }
 
             var wav = AudioHelper.GetWavFromMusic(music);
             if (wav != null)
             {
-                var entry = zip.CreateEntry($"{safeName}.wav");
+                var entry = zip.CreateEntry($"{safeName}/bgm.wav");
                 using var s = entry.Open();
                 s.Write(wav);
             }
@@ -1120,13 +1136,13 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 var pngData = ConvertDdsToPng(jacketPath);
                 if (pngData != null)
                 {
-                    var entry = zip.CreateEntry($"{safeName}.png");
+                    var entry = zip.CreateEntry($"{safeName}/jacket.png");
                     using var s = entry.Open();
                     s.Write(pngData);
                 }
                 else if (Path.GetExtension(jacketPath).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg")
                 {
-                    zip.CreateEntryFromFile(jacketPath, $"{safeName}{Path.GetExtension(jacketPath)}");
+                    zip.CreateEntryFromFile(jacketPath, $"{safeName}/jacket{Path.GetExtension(jacketPath)}");
                 }
             }
         }
