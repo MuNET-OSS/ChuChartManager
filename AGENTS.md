@@ -43,9 +43,9 @@ ChuChartManager/              # CCM 主仓库（monorepo）
 ### Git
 
 - **不要自动 push** — 只在用户明确说 push 时才推
-- **不要未经确认 commit** — 改完等用户确认
-- commit 带签名：`git -c gpg.format=ssh commit -S -m "..."`，如果失败就不带签名
-- commit message 用中文，conventional commits 格式，统一 commit 风格
+- **不要未经确认 commit** — 改完等用户 review
+- commit 签名：`git -c gpg.format=ssh commit -S -m "..."`，如果失败就不签名
+- commit message 用中文，conventional commits **不加 scope**：`type: description`
 
 ### AppleChu
 
@@ -69,8 +69,7 @@ ChuChartManager/              # CCM 主仓库（monorepo）
 
 | 功能 | 原因 |
 |------|------|
-| 自定义分辨率 | Segatools 先于 mod 创建 D3D9 设备 |
-| FPS 显示 OSD | 同上，Present hook 不生效 |
+| 自定义分辨率 | 未知 可能是写死的 |
 
 ## 构建
 
