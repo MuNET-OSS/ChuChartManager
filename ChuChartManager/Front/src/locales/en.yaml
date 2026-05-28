@@ -120,7 +120,7 @@ music:
   importChart: Import Chart
   exportC2S: Export C2S
   exportUGC: Export UGC
-  exportSUS: Export SUS
+  exportSUS: Export SUS (Experimental)
   importMusic: Import Chart
   importTitle: Import Custom Chart
   importSelectFolder: Supported file types
@@ -147,7 +147,7 @@ music:
   exportZip: Export ZIP
   exportZipUgc: Export ZIP (UGC)
   exportUgc: Export as UGC
-  exportSus: Export as SUS
+  exportSus: Export as SUS (Experimental)
   deleteConfirm: Confirm Delete
   deleted: Deleted
   deleteFailed: "Delete failed: {error}"

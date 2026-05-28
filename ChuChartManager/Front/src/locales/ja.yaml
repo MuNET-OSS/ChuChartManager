@@ -120,7 +120,7 @@ music:
   importChart: 譜面をインポート
   exportC2S: C2S エクスポート
   exportUGC: UGC エクスポート
-  exportSUS: SUS エクスポート
+  exportSUS: SUS エクスポート (実験的)
   importMusic: 譜面をインポート
   importTitle: カスタム譜面をインポート
   importSelectFolder: 対応ファイル形式
@@ -147,7 +147,7 @@ music:
   exportZip: ZIP エクスポート
   exportZipUgc: ZIP エクスポート (UGC)
   exportUgc: UGC としてエクスポート
-  exportSus: SUS としてエクスポート
+  exportSus: SUS としてエクスポート(実験的)
   deleteConfirm: 削除を確認
   deleted: 削除しました
   deleteFailed: "削除に失敗: {error}"

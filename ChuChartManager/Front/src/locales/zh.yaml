@@ -120,7 +120,7 @@ music:
   importChart: 导入谱面
   exportC2S: 导出为 C2S
   exportUGC: 导出为 UGC
-  exportSUS: 导出为 SUS
+  exportSUS: 导出为 SUS （实验性）
   importMusic: 导入谱面
   importTitle: 导入自制谱
   importSelectFolder: 可以选择的文件类型
@@ -147,7 +147,7 @@ music:
   exportZip: 导出 ZIP
   exportZipUgc: 导出 ZIP (UGC)
   exportUgc: 导出为 UGC
-  exportSus: 导出为 SUS
+  exportSus: 导出为 SUS （实验性）
   deleteConfirm: 确认删除
   deleted: 已删除
   deleteFailed: "删除失败: {error}"
