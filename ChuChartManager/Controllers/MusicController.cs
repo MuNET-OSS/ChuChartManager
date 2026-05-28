@@ -1101,7 +1101,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
     }
 
     [HttpGet]
-    public ActionResult ExportCustom([FromQuery] int id, [FromQuery] string assetDir, [FromQuery] string format = "ugc")
+    public ActionResult ExportCustom([FromQuery] int id, [FromQuery] string assetDir, [FromQuery] string format = "ugc", [FromQuery] bool stripRoot = false)
     {
         var scanner = scannerService.Scanner;
         if (scanner == null) return NotFound();
@@ -1112,6 +1112,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         var safeName = string.Join("_", music.Name.Split(Path.GetInvalidFileNameChars())).TrimEnd('.', ' ');
         var ext = format.ToLowerInvariant() == "sus" ? "sus" : "ugc";
         var diffFileNames = new[] { "bas", "adv", "exp", "mas", "ult", "we" };
+        var prefix = stripRoot ? "" : $"{safeName}/";
 
         var ms = new MemoryStream();
         using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, true))
@@ -1150,21 +1151,21 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                     }
 
                     var fileName = i < diffFileNames.Length ? diffFileNames[i] : $"diff{i}";
-                    var entry = zip.CreateEntry($"{safeName}/{fileName}.{ext}");
+                    var entry = zip.CreateEntry($"{prefix}{fileName}.{ext}");
                     using var w = new StreamWriter(entry.Open(), Encoding.UTF8);
                     w.Write(content);
                 }
                 catch
                 {
                     var fileName = i < diffFileNames.Length ? diffFileNames[i] : $"diff{i}";
-                    zip.CreateEntryFromFile(c2sPath, $"{safeName}/{fileName}.c2s");
+                    zip.CreateEntryFromFile(c2sPath, $"{prefix}{fileName}.c2s");
                 }
             }
 
             var wav = AudioHelper.GetWavFromMusic(music);
             if (wav != null)
             {
-                var entry = zip.CreateEntry($"{safeName}/bgm.wav");
+                var entry = zip.CreateEntry($"{prefix}bgm.wav");
                 using var s = entry.Open();
                 s.Write(wav);
             }
@@ -1175,13 +1176,13 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 var pngData = ConvertDdsToPng(jacketPath);
                 if (pngData != null)
                 {
-                    var entry = zip.CreateEntry($"{safeName}/jacket.png");
+                    var entry = zip.CreateEntry($"{prefix}jacket.png");
                     using var s = entry.Open();
                     s.Write(pngData);
                 }
                 else if (Path.GetExtension(jacketPath).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg")
                 {
-                    zip.CreateEntryFromFile(jacketPath, $"{safeName}/jacket{Path.GetExtension(jacketPath)}");
+                    zip.CreateEntryFromFile(jacketPath, $"{prefix}jacket{Path.GetExtension(jacketPath)}");
                 }
             }
         }

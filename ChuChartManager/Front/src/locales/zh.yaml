@@ -332,8 +332,22 @@ batch:
   selected: "已选 {count} 首"
   action: 操作
   setGenre: 设置分类
-  exportJackets: 导出封面
-  exportMp3: 导出 MP3
+  exportJackets: 导出封面 (ZIP)
+  exportMp3: 导出 MP3 (ZIP)
+  exportOpt: 导出 OPT 包
+  exportUgcByName: 导出 UGC 谱面（按曲名分目录）
+  exportUgcById: 导出 UGC 谱面（按 ID 分目录）
+  exportSusByName: 导出 SUS 谱面（按曲名分目录）
+  exportSusById: 导出 SUS 谱面（按 ID 分目录）
+  exportSuccess: 导出完成
+  exportFailed: 导出失败
+  currentProgress: 当前进度
+  currentProcessing: 正在处理
+  unknown: 未知
+  subdir:
+    label: 子目录分组
+    none: 无
+    genre: 按流派
   genre: 分类
   execute: 执行
   executing: 执行中…

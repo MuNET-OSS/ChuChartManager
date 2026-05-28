@@ -323,8 +323,22 @@ batch:
   selected: "{count} 曲選択中"
   action: 操作
   setGenre: ジャンル設定
-  exportJackets: ジャケット書き出し
-  exportMp3: MP3書き出し
+  exportJackets: ジャケット書き出し (ZIP)
+  exportMp3: MP3書き出し (ZIP)
+  exportOpt: OPT パッケージ書き出し
+  exportUgcByName: UGC 譜面を書き出し（曲名フォルダ）
+  exportUgcById: UGC 譜面を書き出し（ID フォルダ）
+  exportSusByName: SUS 譜面を書き出し（曲名フォルダ）
+  exportSusById: SUS 譜面を書き出し（ID フォルダ）
+  exportSuccess: 書き出し完了
+  exportFailed: 書き出し失敗
+  currentProgress: 進捗
+  currentProcessing: 処理中
+  unknown: 不明
+  subdir:
+    label: サブフォルダ分け
+    none: なし
+    genre: ジャンル別
   genre: ジャンル
   execute: 実行
   executing: 実行中…

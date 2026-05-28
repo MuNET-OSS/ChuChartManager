@@ -332,8 +332,22 @@ batch:
   selected: "{count} selected"
   action: Action
   setGenre: Set Genre
-  exportJackets: Export Jackets
-  exportMp3: Export MP3
+  exportJackets: Export Jackets (ZIP)
+  exportMp3: Export MP3 (ZIP)
+  exportOpt: Export OPT Package
+  exportUgcByName: Export UGC Charts (by Name)
+  exportUgcById: Export UGC Charts (by ID)
+  exportSusByName: Export SUS Charts (by Name)
+  exportSusById: Export SUS Charts (by ID)
+  exportSuccess: Export complete
+  exportFailed: Export failed
+  currentProgress: Progress
+  currentProcessing: Processing
+  unknown: unknown
+  subdir:
+    label: Subfolder grouping
+    none: None
+    genre: By genre
   genre: Genre
   execute: Execute
   executing: Executing…
