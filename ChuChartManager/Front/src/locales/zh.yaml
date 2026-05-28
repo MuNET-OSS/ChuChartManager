@@ -137,6 +137,7 @@ music:
   importFailed: 导入失败
   importChecking: 正在检查...
   importExecuting: 正在导入...
+  importDifficulties: 检测到的难度
   importFoundFiles: 已找到文件
   importId: Music ID
   importDifficulty: 难度

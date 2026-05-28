@@ -137,6 +137,7 @@ music:
   importFailed: Import failed
   importChecking: Checking...
   importExecuting: Importing...
+  importDifficulties: Detected difficulties
   importFoundFiles: Files found
   importId: Music ID
   importDifficulty: Difficulty

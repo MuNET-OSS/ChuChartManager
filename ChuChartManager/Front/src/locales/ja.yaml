@@ -137,6 +137,7 @@ music:
   importFailed: インポート失敗
   importChecking: 確認中...
   importExecuting: インポート中...
+  importDifficulties: 検出された難易度
   importFoundFiles: 見つかったファイル
   importId: Music ID
   importDifficulty: 難易度

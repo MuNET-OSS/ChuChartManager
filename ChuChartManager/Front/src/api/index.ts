@@ -121,15 +121,11 @@ export function getExportChartUrl(id: number, assetDir: string, diffIndex: numbe
 
 export interface ImportCheckResult {
   success: boolean
-  format: string
   alerts: string[]
   suggestedId: number
-  difficulty: number
-  level: number
-  levelDecimal: number
-  designer: string
   title: string
   artist: string
+  difficulties: { fileName: string; difficulty: number; level: number; levelDecimal: number; designer: string }[]
 }
 
 export interface ImportExecuteResult {
@@ -137,15 +133,15 @@ export interface ImportExecuteResult {
   alerts: string[]
 }
 
-export async function importMusicCheck(chart: File): Promise<ImportCheckResult> {
+export async function importMusicCheck(charts: File[]): Promise<ImportCheckResult> {
   const form = new FormData()
-  form.append('chart', chart)
+  for (const chart of charts) form.append('charts', chart)
   const { data } = await apiClient.post('/api/Music/ImportMusicCheck', form)
   return data
 }
 
 export async function importMusicExecute(params: {
-  chart: File
+  charts: File[]
   audio: File
   cover?: File
   id: number
@@ -153,13 +149,10 @@ export async function importMusicExecute(params: {
   artist: string
   genreId: number
   genreName: string
-  difficulty: number
-  level: number
-  levelDecimal: number
   targetDir: string
 }): Promise<ImportExecuteResult> {
   const form = new FormData()
-  form.append('chart', params.chart)
+  for (const chart of params.charts) form.append('charts', chart)
   form.append('audio', params.audio)
   if (params.cover) form.append('cover', params.cover)
   form.append('id', params.id.toString())
@@ -167,9 +160,6 @@ export async function importMusicExecute(params: {
   form.append('artist', params.artist)
   form.append('genreId', params.genreId.toString())
   form.append('genreName', params.genreName)
-  form.append('difficulty', params.difficulty.toString())
-  form.append('level', params.level.toString())
-  form.append('levelDecimal', params.levelDecimal.toString())
   form.append('targetDir', params.targetDir)
   const { data } = await apiClient.post('/api/Music/ImportMusicExecute', form, { timeout: 120000 })
   return data
