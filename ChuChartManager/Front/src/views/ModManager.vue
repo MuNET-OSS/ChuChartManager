@@ -98,7 +98,7 @@ watch(config, () => {
 
 <template>
   <div class="p-xy h-100dvh flex flex-col of-hidden">
-    <!-- MCM 风格顶部状态栏 -->
+    <div class="text-sm op-60 mb-3 px-2 py-1.5 bg-orange/10 c-orange rd">{{ t('mods.experimentalWarning') }}</div>
     <div v-if="!loading" class="flex gap-2 items-center flex-wrap shrink-0">
       <span>ChuModLoader:</span>
       <span :class="loaderOk ? 'c-green-6' : 'c-red-6'">{{ loaderOk ? t('mods.installed') : t('mods.notInstalled') }}</span>

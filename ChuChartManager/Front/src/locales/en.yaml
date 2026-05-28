@@ -168,6 +168,7 @@ music:
   openExplorer: Open in Explorer
   openXml: Edit Music.xml
 mods:
+  experimentalWarning: This feature is experimental and may be unstable
   wip: Loading...
   loaderNotInstalled: ChuModLoader is not installed
   loaderInstalled: ChuModLoader is installed
@@ -458,3 +459,4 @@ emote:
   viewerNotFound: FreeMoteViewer.exe not found
   viewerLaunched: Emote Viewer launched
   launchFailed: Launch failed
+

@@ -168,6 +168,7 @@ music:
   openExplorer: 在资源管理器中打开
   openXml: 编辑 Music.xml
 mods:
+  experimentalWarning: 此功能为实验性，可能存在不稳定的情况
   wip: 正在加载...
   loaderNotInstalled: ChuModLoader 未安装
   loaderInstalled: ChuModLoader 已安装
@@ -458,3 +459,4 @@ emote:
   viewerNotFound: FreeMoteViewer.exe 未找到
   viewerLaunched: 已启动 Emote Viewer
   launchFailed: 启动失败
+

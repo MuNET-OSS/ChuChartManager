@@ -168,6 +168,7 @@ music:
   openExplorer: エクスプローラーで開く
   openXml: Music.xml を編集
 mods:
+  experimentalWarning: この機能は実験的であり、不安定な場合があります
   wip: 読み込み中...
   loaderNotInstalled: ChuModLoader は未インストールです
   loaderInstalled: ChuModLoader はインストール済みです
@@ -449,3 +450,4 @@ emote:
   viewerNotFound: FreeMoteViewer.exe が見つかりません
   viewerLaunched: Emote Viewer を起動しました
   launchFailed: 起動に失敗しました
+
