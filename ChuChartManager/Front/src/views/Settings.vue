@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Button, Select, Range } from '@munet/ui'
+import { Button, Select } from '@munet/ui'
 import { selectedThemeHue, selectedThemeName, UIThemes } from '@munet/ui'
 import type { SelectOption } from '@munet/ui'
-import { apiClient, isWebView } from '@/api'
+import { apiClient } from '@/api'
 import { setStatus } from '@/store/status'
 import { availableLocales, localeLabels, setLocale, locale } from '@/locales'
 import type { Locale } from '@/locales'
@@ -16,27 +16,9 @@ const historyPaths = ref<string[]>([])
 const switching = ref(false)
 const error = ref('')
 
-const uiZoom = ref(0)
-const autoZoom = 100
-
-const zoomDisplay = computed({
-  get: () => uiZoom.value || autoZoom,
-  set: (v: number) => {
-    uiZoom.value = v
-    postZoom(v)
-  }
-})
-
-function postZoom(value: number) {
-  if (isWebView) {
-    ;(window as any).chrome.webview.postMessage(JSON.stringify({ type: 'setZoom', value }))
-  }
-}
-
 const themeOptions = computed<SelectOption[]>(() => [
   { label: t('settings.themeAuto'), value: UIThemes.Auto },
   { label: t('settings.themeLight'), value: UIThemes.DynamicLight },
-  { label: t('settings.themeDark'), value: UIThemes.Dark },
 ])
 
 const localeOptions = computed(() =>
@@ -53,11 +35,6 @@ onMounted(async () => {
 
 function resetHue() {
   selectedThemeHue.value = 353
-}
-
-function resetZoom() {
-  uiZoom.value = 0
-  postZoom(0)
 }
 
 async function handleChangeDirectory() {
@@ -124,19 +101,6 @@ async function deleteHistory(path: string) {
             class="hue-slider flex-1"
           />
           <Button @click="resetHue" class="shrink-0">{{ t('settings.reset') }}</Button>
-        </div>
-        <div v-if="isWebView" class="flex items-center gap-2">
-          <span class="shrink-0 op-60">{{ t('settings.zoom') }}</span>
-          <input
-            type="range" min="50" max="250" step="5"
-            :value="zoomDisplay"
-            @input="(e: Event) => zoomDisplay = Number((e.target as HTMLInputElement).value)"
-            class="flex-1"
-          />
-          <span class="ml-auto shrink-0 text-sm op-60 w-12">
-            {{ uiZoom === 0 ? t('settings.zoomAuto') : `${uiZoom}%` }}
-          </span>
-          <Button @click="resetZoom" class="shrink-0">{{ t('settings.reset') }}</Button>
         </div>
         <div class="flex items-center gap-3">
           <span class="shrink-0 op-60">{{ t('settings.language') }}</span>

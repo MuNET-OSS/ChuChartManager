@@ -16,11 +16,8 @@ settings:
   theme: テーマ
   themeAuto: 自動
   themeLight: ライト
-  themeDark: ダーク
   themeHue: テーマ色相
   reset: リセット
-  zoom: UI スケール
-  zoomAuto: 自動
   gameDirectory: ゲームディレクトリ
   currentPath: 現在のパス
   changeDirectory: ディレクトリ変更

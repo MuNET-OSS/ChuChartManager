@@ -16,11 +16,8 @@ settings:
   theme: 主题
   themeAuto: 自动
   themeLight: 浅色
-  themeDark: 深色
   themeHue: 主题色相
   reset: 重置
-  zoom: 界面缩放
-  zoomAuto: 自动
   gameDirectory: 游戏目录
   currentPath: 当前路径
   changeDirectory: 切换目录

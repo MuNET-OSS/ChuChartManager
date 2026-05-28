@@ -16,11 +16,8 @@ settings:
   theme: Theme
   themeAuto: Auto
   themeLight: Light
-  themeDark: Dark
   themeHue: Theme Hue
   reset: Reset
-  zoom: UI Scale
-  zoomAuto: Auto
   gameDirectory: Game Directory
   currentPath: Current Path
   changeDirectory: Change Directory
