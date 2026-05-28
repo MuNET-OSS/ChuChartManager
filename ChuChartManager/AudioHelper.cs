@@ -5,6 +5,8 @@ using NAudio.Lame;
 using VGAudio.Codecs.CriHca;
 using VGAudio.Containers.Hca;
 using VGAudio.Containers.Wave;
+using VGAudio.Cli;
+using Xv2CoreLib.ACB;
 
 namespace ChuChartManager;
 
@@ -170,14 +172,13 @@ public class AudioHelper : IDisposable
         wavStream.CopyTo(mp3Writer);
     }
 
+    private const ulong ChuniHcaKey = 32931609366120192;
+
     public static byte[]? EncodeWavToHca(byte[] wavData)
     {
-        var waveReader = new VGAudio.Containers.Wave.WaveReader();
-        var audioData = waveReader.Read(wavData);
-
-        var hcaWriter = new HcaWriter();
-        hcaWriter.Configuration.EncryptionKey = Keys[0];
-        return hcaWriter.GetFile(audioData);
+        using var wavStream = new MemoryStream(wavData);
+        var options = new Options { KeyCode = ChuniHcaKey };
+        return ConvertStream.ConvertFile(options, wavStream, FileType.Wave, FileType.Hca);
     }
 
     public static void ImportAudioToMusic(MusicXml music, string audioPath)
@@ -201,29 +202,25 @@ public class AudioHelper : IDisposable
         if (hcaBytes == null || hcaBytes.Length == 0)
             throw new InvalidOperationException("Failed to encode audio to HCA");
 
-        var hcaTempPath = Path.Combine(Path.GetTempPath(), $"ccm_hca_{Guid.NewGuid():N}.hca");
-        try
-        {
-            File.WriteAllBytes(hcaTempPath, hcaBytes);
+        var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(music.MusicDirectory));
+        if (sourceRoot == null) throw new InvalidOperationException("Cannot determine option root");
 
-            var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(music.MusicDirectory));
-            if (sourceRoot == null) throw new InvalidOperationException("Cannot determine option root");
+        var cueFileName = $"music{music.Id:D4}";
+        var cueFileDir = Path.Combine(sourceRoot, "cueFile", $"cueFile{music.Id:D6}");
+        Directory.CreateDirectory(cueFileDir);
 
-            var cueFileName = $"music{music.Id:D4}";
-            var cueFileDir = Path.Combine(sourceRoot, "cueFile", $"cueFile{music.Id:D6}");
-            Directory.CreateDirectory(cueFileDir);
-            var awbPath = Path.Combine(cueFileDir, $"{cueFileName}.awb");
+        RepackAcbWithHca(cueFileDir, cueFileName, hcaBytes);
+    }
 
-            var archive = new CriAfs2Archive();
-            archive.Add(new CriAfs2Entry { Id = 0, FilePath = new FileInfo(hcaTempPath) });
+    public static void RepackAcbWithHca(string cueFileDir, string cueFileName, byte[] hcaBytes)
+    {
+        var acbTemplatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "template_music.acb");
+        var acbSavePath = Path.Combine(cueFileDir, $"{cueFileName}.acb");
 
-            using var awbStream = File.Create(awbPath);
-            archive.Write(awbStream);
-        }
-        finally
-        {
-            try { File.Delete(hcaTempPath); } catch { }
-        }
+        var acbTemplate = ACB_File.Load(File.ReadAllBytes(acbTemplatePath), null);
+        var wrapper = new ACB_Wrapper(acbTemplate);
+        wrapper.Cues[0].AddTrackToCue(hcaBytes, true, false, EncodeType.HCA);
+        wrapper.AcbFile.Save(acbSavePath);
     }
 
     public void Dispose()

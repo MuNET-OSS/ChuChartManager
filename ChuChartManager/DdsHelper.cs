@@ -13,6 +13,9 @@ public static class DdsHelper
     {
         var encoder = CreateEncoder();
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(pngPath);
+        var size = (image.Width / 4) * 4;
+        if (size == 0) size = 4;
+        image.Mutate(x => x.Resize(size, size));
         using var fs = File.Create(ddsPath);
         encoder.EncodeToStream(image, fs);
     }
@@ -33,6 +36,9 @@ public static class DdsHelper
     {
         var encoder = CreateEncoder();
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(pngBytes);
+        var size = (image.Width / 4) * 4;
+        if (size == 0) size = 4;
+        image.Mutate(x => x.Resize(size, size));
         using var ms = new MemoryStream();
         encoder.EncodeToStream(image, ms);
         return ms.ToArray();
@@ -40,7 +46,7 @@ public static class DdsHelper
 
     private static BcEncoder CreateEncoder()
     {
-        var encoder = new BcEncoder(CompressionFormat.Bc3);
+        var encoder = new BcEncoder(CompressionFormat.Bc1);
         encoder.OutputOptions.GenerateMipMaps = false;
         encoder.OutputOptions.Quality = CompressionQuality.BestQuality;
         encoder.OutputOptions.FileFormat = OutputFileFormat.Dds;

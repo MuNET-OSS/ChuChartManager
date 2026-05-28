@@ -32,7 +32,7 @@
     <PackageReference Include="Pfim" Version="0.11.4" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="Tomlyn" Version="2.4.0" />
-    <PackageReference Include="VGAudio" Version="2.2.1" />
+    <PackageReference Include="YAXLib" Version="2.15.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SonicAudioTools\Source\SonicAudioLib\SonicAudioLib.csproj" />
@@ -41,7 +41,7 @@
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\XV2-Tools\LB_Common\LB_Common.csproj">
-      <Aliases>LBCommon</Aliases>
+      <Aliases>global,LBCommon</Aliases>
     </ProjectReference>
     <ProjectReference Include="..\XV2-Tools\Xv2CoreLib\Xv2CoreLib.csproj" />
     <ProjectReference Include="..\DDSExtractor\DDSExtractor\DDSExtractor.vbproj">

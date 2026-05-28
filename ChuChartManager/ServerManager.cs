@@ -63,6 +63,7 @@ public static class ServerManager
 
         builder.WebHost.ConfigureKestrel(serverOptions =>
         {
+            serverOptions.Limits.MaxRequestBodySize = null;
             serverOptions.Listen(IPAddress.Loopback, 0);
             if (export)
             {
@@ -85,7 +86,10 @@ public static class ServerManager
                     .AllowAnyHeader();
             }))
             .AddProblemDetails()
-            .AddControllers()
+            .AddControllers(options =>
+                options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true)
+            .ConfigureApiBehaviorOptions(options =>
+                options.SuppressModelStateInvalidFilter = true)
             .AddApplicationPart(typeof(ServerManager).Assembly)
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));

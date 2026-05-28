@@ -322,7 +322,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
 
         if (selected == null) return Ok(new { imported = false });
 
-        var ddsFileName = $"CHU_UI_Jacket_{id:D8}.dds";
+        var ddsFileName = $"CHU_UI_Jacket_{id:D4}.dds";
         DdsHelper.ConvertPngToDds(selected, Path.Combine(music.MusicDirectory, ddsFileName));
 
         var root = music.XmlDoc.SelectSingleNode("/MusicData/jaketFile/path");
@@ -344,7 +344,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         var music = FindMusic(scanner, id, assetDir);
         if (music == null) return NotFound();
 
-        var ddsFileName = $"CHU_UI_Jacket_{id:D8}.dds";
+        var ddsFileName = $"CHU_UI_Jacket_{id:D4}.dds";
         var tempPath = Path.Combine(Path.GetTempPath(), $"ccm_jacket_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}");
         try
         {
@@ -706,94 +706,104 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             using var reader = new StreamReader(chart.OpenReadStream(), Encoding.UTF8);
             var content = reader.ReadToEnd();
 
+            MuConvert.chu.ChuChart? chartObj = null;
             switch (ext)
             {
                 case "ugc":
                     {
-                        var (_, parseAlerts) = new ChuUgcParser().Parse(content);
+                        var (parsed, parseAlerts) = new ChuUgcParser().Parse(content);
+                        chartObj = parsed;
                         alerts.AddRange(parseAlerts.Select(a => a.ToString()));
                         break;
                     }
                 case "sus":
                     {
-                        var (_, parseAlerts) = new SusParser().Parse(content);
+                        var (parsed, parseAlerts) = new SusParser().Parse(content);
+                        chartObj = parsed;
                         alerts.AddRange(parseAlerts.Select(a => a.ToString()));
                         break;
                     }
                 case "c2s":
                     {
-                        var (_, parseAlerts) = new C2sParser().Parse(content);
+                        var (parsed, parseAlerts) = new C2sParser().Parse(content);
+                        chartObj = parsed;
                         alerts.AddRange(parseAlerts.Select(a => a.ToString()));
                         break;
                     }
             }
+
+            var suggestedId = 8000;
+            var scanner = scannerService.Scanner;
+            var existingIds = new HashSet<int>();
+            if (scanner != null)
+            {
+                foreach (var list in scanner.MusicBySource.Values)
+                    foreach (var m in list)
+                        existingIds.Add(m.Id);
+            }
+            while (existingIds.Contains(suggestedId))
+                suggestedId++;
+
+            return Ok(new
+            {
+                success = true,
+                format = ext,
+                alerts,
+                suggestedId,
+                difficulty = chartObj?.Difficulty ?? 3,
+                level = (int)(chartObj?.Level ?? 0),
+                levelDecimal = (int)((chartObj?.Level ?? 0) % 1 * 100),
+                designer = chartObj?.Designer ?? "",
+                title = chartObj?.Title ?? "",
+                artist = chartObj?.Artist ?? "",
+            });
         }
         catch (MuConvert.utils.ConversionException ex)
         {
             alerts.AddRange(ex.Alerts.Select(a => a.ToString()));
-            return BadRequest(new { success = false, error = ex.Message, alerts });
+            return Ok(new { success = false, error = ex.Message, alerts, suggestedId = 8000, difficulty = 3, level = 0, levelDecimal = 0, designer = "", title = "", artist = "" });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { success = false, error = ex.Message, alerts });
+            return Ok(new { success = false, error = ex.Message, alerts, suggestedId = 8000, difficulty = 3, level = 0, levelDecimal = 0, designer = "", title = "", artist = "" });
         }
-
-        // Custom music range starts at 8000; find next available ID
-        var scanner = scannerService.Scanner;
-        var existingIds = new HashSet<int>();
-        if (scanner != null)
-        {
-            foreach (var list in scanner.MusicBySource.Values)
-                foreach (var m in list)
-                    existingIds.Add(m.Id);
-        }
-
-        var suggestedId = 8000;
-        while (existingIds.Contains(suggestedId))
-            suggestedId++;
-
-        return Ok(new
-        {
-            success = true,
-            format = ext,
-            alerts,
-            suggestedId
-        });
     }
 
     [HttpPost]
+    [DisableRequestSizeLimit]
+    [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
     public ActionResult ImportMusicExecute(
         IFormFile chart,
         IFormFile audio,
         IFormFile? cover,
-        [FromForm] int id,
-        [FromForm] string title,
-        [FromForm] string artist,
-        [FromForm] int genreId,
-        [FromForm] string genreName,
-        [FromForm] int difficulty,
-        [FromForm] int level,
-        [FromForm] int levelDecimal,
-        [FromForm] string targetDir)
+        [FromForm] int id = 0,
+        [FromForm] string? title = "",
+        [FromForm] string? artist = "",
+        [FromForm] int genreId = 0,
+        [FromForm] string? genreName = "",
+        [FromForm] int difficulty = 3,
+        [FromForm] int level = 0,
+        [FromForm] int levelDecimal = 0,
+        [FromForm] string? targetDir = "")
     {
         if (string.IsNullOrEmpty(StaticSettings.GamePath))
-            return BadRequest(new { success = false, error = "GamePath not set" });
+            return Ok(new { success = false, error = "GamePath not set" });
 
         if (chart == null || chart.Length == 0)
-            return BadRequest(new { success = false, error = "No chart file provided" });
+            return Ok(new { success = false, error = "No chart file provided" });
         if (audio == null || audio.Length == 0)
-            return BadRequest(new { success = false, error = "No audio file provided" });
+            return Ok(new { success = false, error = "No audio file provided" });
         if (difficulty is < 0 or > 4)
-            return BadRequest(new { success = false, error = $"Invalid difficulty: {difficulty}" });
+            return Ok(new { success = false, error = $"Invalid difficulty: {difficulty}" });
 
-        var optRoot = ResolveOptRoot(targetDir);
+        var optRoot = ResolveOptRoot(targetDir ?? "");
         if (optRoot == null)
-            return BadRequest(new { success = false, error = "Invalid target directory" });
+            return Ok(new { success = false, error = "Invalid target directory" });
 
         var musicDirName = $"music{id:D4}";
         var musicDir = Path.Combine(optRoot, "music", musicDirName);
         if (Directory.Exists(musicDir))
-            return BadRequest(new { success = false, error = $"Music directory already exists for ID {id}" });
+            return Ok(new { success = false, error = $"Music directory already exists for ID {id}" });
 
         var alerts = new List<string>();
         var tempFiles = new List<string>();
@@ -805,7 +815,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             // ========== 1. Chart conversion ==========
             var chartExt = Path.GetExtension(chart.FileName).TrimStart('.').ToLowerInvariant();
             if (chartExt is not ("ugc" or "c2s" or "sus"))
-                return BadRequest(new { success = false, error = $"Unsupported chart format: {chartExt}" });
+                return Ok(new { success = false, error = $"Unsupported chart format: {chartExt}" });
 
             var chartFileName = $"{id:D4}_0{difficulty}.c2s";
             var chartDestPath = Path.Combine(musicDir, chartFileName);
@@ -823,11 +833,13 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                     var (c2sContent, genAlerts) = new C2sGenerator().Generate(chartObj);
                     alerts.AddRange(genAlerts.Select(a => a.ToString()));
 
+                    c2sContent = FixC2sHeader(c2sContent, id);
                     System.IO.File.WriteAllText(chartDestPath, c2sContent, Encoding.UTF8);
                 }
                 else
                 {
-                    System.IO.File.WriteAllText(chartDestPath, chartContent, Encoding.UTF8);
+                    var fixedContent = FixC2sHeader(chartContent, id);
+                    System.IO.File.WriteAllText(chartDestPath, fixedContent, Encoding.UTF8);
                 }
             }
 
@@ -858,33 +870,144 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 }
                 else
                 {
-                    return BadRequest(new { success = false, error = $"Unsupported audio format: {audioExt}" });
+                    return Ok(new { success = false, error = $"Unsupported audio format: {audioExt}" });
                 }
             }
 
             var hcaBytes = AudioHelper.EncodeWavToHca(wavBytes);
             if (hcaBytes == null || hcaBytes.Length == 0)
-                return BadRequest(new { success = false, error = "Failed to encode WAV to HCA" });
-
-            // Write HCA to temp file so CriAfs2Archive can read it as FileInfo
-            var hcaTempPath = Path.Combine(Path.GetTempPath(), $"chuchart_{id}_{Guid.NewGuid():N}.hca");
-            tempFiles.Add(hcaTempPath);
-            System.IO.File.WriteAllBytes(hcaTempPath, hcaBytes);
+                return Ok(new { success = false, error = "Failed to encode WAV to HCA" });
 
             var cueFileName = $"music{id:D4}";
             var cueFileDir = Path.Combine(optRoot, "cueFile", $"cueFile{id:D6}");
             Directory.CreateDirectory(cueFileDir);
-            var awbPath = Path.Combine(cueFileDir, $"{cueFileName}.awb");
 
-            var archive = new SonicAudioLib.Archives.CriAfs2Archive();
-            archive.Add(new SonicAudioLib.Archives.CriAfs2Entry
+            AudioHelper.RepackAcbWithHca(cueFileDir, cueFileName, hcaBytes);
+
+            // Generate CueFile.xml
+            var cueFileXmlPath = Path.Combine(cueFileDir, "CueFile.xml");
+            var cueFileXmlDoc = new System.Xml.XmlDocument();
+            cueFileXmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<CueFileData>
+  <dataName>cueFile{id:D6}</dataName>
+  <name><id>{id}</id><str>{cueFileName}</str><data /></name>
+  <acbFile><path>{cueFileName}.acb</path></acbFile>
+  <awbFile><path>{cueFileName}.awb</path></awbFile>
+</CueFileData>");
+            cueFileXmlDoc.Save(cueFileXmlPath);
+
+            // Generate Event.xml
+            var eventDir = Path.Combine(optRoot, "event", "event01000001");
+            Directory.CreateDirectory(eventDir);
+            var eventXmlPath = Path.Combine(eventDir, "Event.xml");
+            if (System.IO.File.Exists(eventXmlPath))
             {
-                Id = 0,
-                FilePath = new FileInfo(hcaTempPath)
-            });
+                var eventXmlDoc = new System.Xml.XmlDocument();
+                eventXmlDoc.Load(eventXmlPath);
+                var musicList = eventXmlDoc.SelectSingleNode("//substances/music/musicNames/list");
+                if (musicList != null)
+                {
+                    var existing = musicList.SelectNodes("StringID/id");
+                    bool found = false;
+                    if (existing != null)
+                        foreach (System.Xml.XmlNode n in existing)
+                            if (n.InnerText == id.ToString()) { found = true; break; }
+                    if (!found)
+                    {
+                        var entry = eventXmlDoc.CreateDocumentFragment();
+                        entry.InnerXml = $"<StringID><id>{id}</id><str>{System.Security.SecurityElement.Escape(title ?? "")}</str><data /></StringID>";
+                        musicList.AppendChild(entry);
+                        eventXmlDoc.Save(eventXmlPath);
+                    }
+                }
+            }
+            else
+            {
+                var eventXmlDoc = new System.Xml.XmlDocument();
+                eventXmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<EventData>
+  <dataName>event01000001</dataName>
+  <netOpenName><id>2600</id><str>v2_30 00_0</str><data /></netOpenName>
+  <name><id>1000001</id><str>曲開放</str><data /></name>
+  <text />
+  <ddsBannerName><id>-1</id><str>Invalid</str><data /></ddsBannerName>
+  <periodDispType>1</periodDispType>
+  <alwaysOpen>true</alwaysOpen>
+  <teamOnly>false</teamOnly>
+  <isKop>false</isKop>
+  <priority>0</priority>
+  <substances>
+    <type>3</type>
+    <flag><value>0</value></flag>
+    <information><informationType>0</informationType><informationDispType>0</informationDispType><mapFilterID><id>-1</id><str>Invalid</str><data /></mapFilterID><courseNames><list /></courseNames><text /><image><path /></image><movieName><id>-1</id><str>Invalid</str><data /></movieName><presentNames><list /></presentNames></information>
+    <map><tagText /><mapName><id>-1</id><str>Invalid</str><data /></mapName><musicNames><list /></musicNames></map>
+    <music><musicType>2</musicType><musicNames><list><StringID><id>{id}</id><str>{System.Security.SecurityElement.Escape(title ?? "")}</str><data /></StringID></list></musicNames></music>
+    <advertiseMovie><firstMovieName><id>-1</id><str>Invalid</str><data /></firstMovieName><secondMovieName><id>-1</id><str>Invalid</str><data /></secondMovieName></advertiseMovie>
+    <recommendMusic><musicNames><list /></musicNames></recommendMusic>
+    <release><value>0</value></release>
+    <course><courseNames><list /></courseNames></course>
+    <quest><questNames><list /></questNames></quest>
+    <duel><duelName><id>-1</id><str>Invalid</str><data /></duelName></duel>
+    <cmission><cmissionName><id>-1</id><str>Invalid</str><data /></cmissionName></cmission>
+    <changeSurfBoardUI><value>0</value></changeSurfBoardUI>
+    <avatarAccessoryGacha><avatarAccessoryGachaName><id>-1</id><str>Invalid</str><data /></avatarAccessoryGachaName></avatarAccessoryGacha>
+    <rightsInfo><rightsNames><list /></rightsNames></rightsInfo>
+    <playRewardSet><playRewardSetName><id>-1</id><str>Invalid</str><data /></playRewardSetName></playRewardSet>
+    <dailyBonusPreset><dailyBonusPresetName><id>-1</id><str>Invalid</str><data /></dailyBonusPresetName></dailyBonusPreset>
+    <matchingBonus><timeTableName><id>-1</id><str>Invalid</str><data /></timeTableName></matchingBonus>
+    <unlockChallenge><unlockChallengeName><id>-1</id><str>Invalid</str><data /></unlockChallengeName></unlockChallenge>
+  </substances>
+</EventData>");
+                eventXmlDoc.Save(eventXmlPath);
+            }
 
-            using (var awbStream = System.IO.File.Create(awbPath))
-                archive.Write(awbStream);
+            // Generate ReleaseTag.xml
+            var releaseTagDir = Path.Combine(optRoot, "releaseTag", "releaseTag000020");
+            Directory.CreateDirectory(releaseTagDir);
+            var releaseTagXmlPath = Path.Combine(releaseTagDir, "ReleaseTag.xml");
+            if (!System.IO.File.Exists(releaseTagXmlPath))
+            {
+                var releaseTagXmlDoc = new System.Xml.XmlDocument();
+                releaseTagXmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<ReleaseTagData>
+  <dataName>releaseTag000020</dataName>
+  <name><id>-1</id><str>Invalid</str><data /></name>
+  <titleName>CHUNITHM Custom</titleName>
+</ReleaseTagData>");
+                releaseTagXmlDoc.Save(releaseTagXmlPath);
+            }
+
+            // Update MusicSort.xml
+            var musicSortPath = Path.Combine(optRoot, "music", "MusicSort.xml");
+            if (System.IO.File.Exists(musicSortPath))
+            {
+                var sortDoc = new System.Xml.XmlDocument();
+                sortDoc.Load(musicSortPath);
+                var sortList = sortDoc.SelectSingleNode("//SortList");
+                if (sortList != null)
+                {
+                    var existing = sortList.SelectNodes($"StringID[id='{id}']");
+                    if (existing == null || existing.Count == 0)
+                    {
+                        var entry = sortDoc.CreateDocumentFragment();
+                        entry.InnerXml = $"<StringID><id>{id}</id><str /><data /></StringID>";
+                        sortList.AppendChild(entry);
+                        sortDoc.Save(musicSortPath);
+                    }
+                }
+            }
+            else
+            {
+                var sortDoc = new System.Xml.XmlDocument();
+                sortDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
+<SerializeSortData>
+  <dataName>music</dataName>
+  <SortList>
+    <StringID><id>{id}</id><str /><data /></StringID>
+  </SortList>
+</SerializeSortData>");
+                sortDoc.Save(musicSortPath);
+            }
 
             // ========== 3. Cover (jacket) ==========
             string? jacketFileName = null;
@@ -902,24 +1025,25 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                     using (var coverFs = System.IO.File.Create(tmpCoverPath))
                         cover.CopyTo(coverFs);
 
-                    jacketFileName = $"CHU_UI_Jacket_{id:D8}.dds";
+                    jacketFileName = $"CHU_UI_Jacket_{id:D4}.dds";
                     DdsHelper.ConvertPngToDds(tmpCoverPath, Path.Combine(musicDir, jacketFileName));
                 }
             }
 
             // ========== 4. Generate Music.xml ==========
-            var difficultyNames = new[] { "BASIC", "ADVANCED", "EXPERT", "MASTER", "ULTIMA" };
+            var difficultyStrs = new[] { "Basic", "Advanced", "Expert", "Master", "Ultima" };
+            var difficultyData = new[] { "BASIC", "ADVANCED", "EXPERT", "MASTER", "ULTIMA" };
             var fumenLines = new StringBuilder();
             for (var i = 0; i < 5; i++)
             {
                 var enable = i == difficulty ? "true" : "false";
                 var lvl = i == difficulty ? level : 0;
                 var lvlDec = i == difficulty ? levelDecimal : 0;
-                var filePath = i == difficulty ? chartFileName : "";
+                var filePathXml = i == difficulty ? $"<path>{chartFileName}</path>" : "<path />";
                 fumenLines.AppendLine(
-                    $"    <MusicFumenData><type><id>{i}</id><str>{difficultyNames[i]}</str><data /></type>" +
-                    $"<enable>{enable}</enable><file><path>{filePath}</path></file>" +
-                    $"<level>{lvl}</level><levelDecimal>{lvlDec}</levelDecimal><notesDesigner /></MusicFumenData>");
+                    $"    <MusicFumenData><type><id>{i}</id><str>{difficultyStrs[i]}</str><data>{difficultyData[i]}</data></type>" +
+                    $"<enable>{enable}</enable><file>{filePathXml}</file>" +
+                    $"<level>{lvl}</level><levelDecimal>{lvlDec}</levelDecimal><notesDesigner /><defaultBpm>0</defaultBpm></MusicFumenData>");
             }
 
             var enableUltima = difficulty == 4 ? "true" : "false";
@@ -929,26 +1053,31 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
 
             var xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
-<MusicData xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
+<MusicData>
   <dataName>{musicDirName}</dataName>
-  <netOpenName><id>2800</id><str>v2_45 00_0</str><data /></netOpenName>
   <releaseTagName><id>0</id><str>v1 1.00.00</str><data /></releaseTagName>
+  <netOpenName><id>2800</id><str>v2_45 00_0</str><data /></netOpenName>
   <disableFlag>false</disableFlag>
-  <name><id>{id}</id><str>{System.Security.SecurityElement.Escape(title)}</str><data /></name>
-  <sortName>{System.Security.SecurityElement.Escape(title.Length > 0 ? title[..1] : "")}</sortName>
-  <artistName><str>{System.Security.SecurityElement.Escape(artist)}</str><data /></artistName>
-  <genreNames><list><StringID><id>{genreId}</id><str>{System.Security.SecurityElement.Escape(genreName)}</str><data /></StringID></list></genreNames>
-  <jaketFile>{jaketFileXml}</jaketFile>
-  <cueFileName><str>{cueFileName}</str></cueFileName>
-  <worldsEndTagName><id>-1</id><str /><data /></worldsEndTagName>
-  <stageName><str /><data /></stageName>
   <exType>0</exType>
+  <name><id>{id}</id><str>{System.Security.SecurityElement.Escape(title ?? "")}</str><data /></name>
+  <sortName>{System.Security.SecurityElement.Escape((title ?? "").Length > 0 ? (title ?? "")[..1].ToUpperInvariant() : "")}</sortName>
+  <artistName><id>{id}</id><str>{System.Security.SecurityElement.Escape(artist ?? "")}</str><data /></artistName>
+  <genreNames><list><StringID><id>{genreId}</id><str>{System.Security.SecurityElement.Escape(genreName ?? "")}</str><data /></StringID></list></genreNames>
+  <worksName><id>-1</id><str>Invalid</str><data /></worksName>
+  <labelName><id>-1</id><str>Invalid</str><data /></labelName>
+  <jaketFile>{jaketFileXml}</jaketFile>
+  <firstLock>false</firstLock>
   <enableUltima>{enableUltima}</enableUltima>
-  <starDifType>0</starDifType>
-  <fumens>
-{fumenLines}    <MusicFumenData><type><id>5</id><str>WORLD'S END</str><data /></type><enable>false</enable><file><path /></file><level>0</level><levelDecimal>0</levelDecimal><notesDesigner /></MusicFumenData>
-  </fumens>
+  <isGiftMusic>false</isGiftMusic>
+  <releaseDate>20240101</releaseDate>
   <priority>0</priority>
+  <cueFileName><id>{id}</id><str>{cueFileName}</str><data /></cueFileName>
+  <worldsEndTagName><id>-1</id><str>Invalid</str><data /></worldsEndTagName>
+  <starDifType>0</starDifType>
+  <stageName><id>-1</id><str>Invalid</str><data /></stageName>
+  <fumens>
+{fumenLines}    <MusicFumenData><type><id>5</id><str>WorldsEnd</str><data>WORLD'S END</data></type><enable>false</enable><file><path /></file><level>0</level><levelDecimal>0</levelDecimal><notesDesigner /><defaultBpm>0</defaultBpm></MusicFumenData>
+  </fumens>
 </MusicData>");
             xmlDoc.Save(Path.Combine(musicDir, "Music.xml"));
 
@@ -990,6 +1119,23 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         if (Directory.Exists(optionPath)) return optionPath;
 
         return null;
+    }
+
+    private static string FixC2sHeader(string c2s, int musicId)
+    {
+        var lines = c2s.Replace("\r\n", "\n").Split('\n');
+        for (var i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].StartsWith("VERSION\t"))
+                lines[i] = "VERSION\t1.13.00\t1.13.00";
+            else if (lines[i].StartsWith("MUSIC\t"))
+                lines[i] = "MUSIC\t0";
+            else if (lines[i].StartsWith("SEQUENCEID\t"))
+                lines[i] = "SEQUENCEID\t0";
+            else if (lines[i].StartsWith("DIFFICULT\t"))
+                lines[i] = "DIFFICULT\t00";
+        }
+        return string.Join("\r\n", lines);
     }
 
     private static MusicXml? FindMusic(MusicScanner scanner, int id, string assetDir)
@@ -1218,6 +1364,30 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             var cueDir = Path.Combine(optRoot, "cueFile", $"cueFile{id:D6}");
             if (Directory.Exists(cueDir))
                 Directory.Delete(cueDir, true);
+
+            var eventXmlPath = Path.Combine(optRoot, "event", "event01000001", "Event.xml");
+            if (System.IO.File.Exists(eventXmlPath))
+            {
+                var eventXmlDoc = new System.Xml.XmlDocument();
+                eventXmlDoc.Load(eventXmlPath);
+                var nodes = eventXmlDoc.SelectNodes($"//substances/music/musicNames/list/StringID[id='{id}']");
+                if (nodes != null)
+                    foreach (System.Xml.XmlNode n in nodes)
+                        n.ParentNode?.RemoveChild(n);
+                eventXmlDoc.Save(eventXmlPath);
+            }
+
+            var musicSortPath = Path.Combine(optRoot, "music", "MusicSort.xml");
+            if (System.IO.File.Exists(musicSortPath))
+            {
+                var sortDoc = new System.Xml.XmlDocument();
+                sortDoc.Load(musicSortPath);
+                var nodes = sortDoc.SelectNodes($"//SortList/StringID[id='{id}']");
+                if (nodes != null)
+                    foreach (System.Xml.XmlNode n in nodes)
+                        n.ParentNode?.RemoveChild(n);
+                sortDoc.Save(musicSortPath);
+            }
         }
 
         var newScanner = new MusicScanner(StaticSettings.GamePath);

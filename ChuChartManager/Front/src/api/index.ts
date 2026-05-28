@@ -124,6 +124,12 @@ export interface ImportCheckResult {
   format: string
   alerts: string[]
   suggestedId: number
+  difficulty: number
+  level: number
+  levelDecimal: number
+  designer: string
+  title: string
+  artist: string
 }
 
 export interface ImportExecuteResult {

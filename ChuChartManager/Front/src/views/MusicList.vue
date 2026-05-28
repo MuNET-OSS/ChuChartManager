@@ -6,7 +6,7 @@ import { useStorage } from '@vueuse/core'
 import { VList } from 'virtua/vue'
 import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, importJacket, importChart, getExportChartUrl, getExportOptUrl, getExportCustomUrl, openExplorer, openXml, changeId, deleteMusic, setJacket, setAudio, replaceChart, isWebView, getBaseUrl } from '@/api'
 import type { MusicListItem } from '@/api'
-import { play, loadMusic as loadPlayerMusic, stop as stopPlayer } from '@/store/player'
+import { loadMusic as loadPlayerMusic, stop as stopPlayer } from '@/store/player'
 import { setStatus } from '@/store/status'
 import { leftPanel, selectedSource, optionDirs, selectMusicId } from '@/store/refs'
 import OptionDirsManager from '@/views/MusicList/OptionDirsManager/index'
@@ -39,6 +39,7 @@ watch(() => selectedSource.value, async (val) => {
   savedSource.value = val
   if (loadingMusic) return
   loadingMusic = true
+  stopPlayer()
   try {
     musicList.value = await getMusicList(val)
     selectedMusic.value = null
@@ -55,7 +56,7 @@ const genreMap = ref<Record<number, string>>({})
 const selectedMusic = ref<MusicListItem | null>(null)
 const loading = ref(true)
 
-const isA000 = computed(() => selectedMusic.value?.assetDir === 'A000')
+const isA000 = computed(() => selectedSource.value === 'A000')
 
 const genreFilter = ref<string | number>('-1')
 const diffFilter = ref<string | number>('-1')
@@ -482,7 +483,7 @@ const copyExportOptions = computed(() => {
             <div
               :key="`${music.assetDir}-${music.id}`"
               :class="['flex gap-5 h-20 w-full p-2 my-1 rd-md relative cursor-pointer transition-colors', theme.listItemHover, (selectedMusic?.id === music.id && selectedMusic?.assetDir === music.assetDir) && theme.listItem]"
-              @click="selectMusic(music)" @dblclick="play(music)"
+              @click="selectMusic(music)"
             >
               <img v-if="music.hasJacket" :src="getJacketUrl(music.id, music.assetDir)" class="h-16 w-16 object-fill shrink-0" loading="lazy" />
               <div v-else class="h-16 w-16 shrink-0 bg-white/10 flex items-center justify-center text-xs op-40 rd">?</div>
@@ -504,21 +505,27 @@ const copyExportOptions = computed(() => {
       </Transition>
     </div>
 
-    <!-- 右侧详情 -->
-    <div class="flex-1 flex flex-col of-hidden" v-if="selectedMusic">
+    <!-- 右侧 -->
+    <div class="flex-1 flex flex-col of-hidden">
       <div class="flex items-center gap-2 shrink-0 p-3 border-b border-white/10">
         <div class="grow-1" />
-        <DropMenu :options="copyExportOptions" :button-text="t('music.copyAndExport')" />
-        <template v-if="isA000">
+        <template v-if="selectedMusic">
+          <DropMenu :options="copyExportOptions" :button-text="t('music.copyAndExport')" />
+          <template v-if="isA000">
+            <span class="text-sm op-50">{{ t('music.a000Hint') }}</span>
+          </template>
+          <template v-else>
+            <Button :class="deleteConfirm && 'bg-red-300!'" :ing="deleteLoading" @click="handleDelete" @mouseleave="deleteConfirm = false">{{ deleteConfirm ? t('music.deleteConfirm') : t('common.delete') }}</Button>
+            <Button @click="onSave">{{ t('common.save') }}</Button>
+          </template>
+        </template>
+        <template v-else-if="isA000">
           <span class="text-sm op-50">{{ t('music.a000Hint') }}</span>
         </template>
-        <template v-else>
-          <Button :class="deleteConfirm && 'bg-red-300!'" :ing="deleteLoading" @click="handleDelete" @mouseleave="deleteConfirm = false">{{ deleteConfirm ? t('music.deleteConfirm') : t('common.delete') }}</Button>
-          <Button @click="onSave">{{ t('common.save') }}</Button>
-          <ImportMusicModal @imported="refresh" />
-        </template>
+        <ImportMusicModal v-if="!isA000" @imported="refresh" />
       </div>
-      <div class="of-y-auto cst flex-1 min-h-0 p-6">
+
+      <div v-if="selectedMusic" class="of-y-auto cst flex-1 min-h-0 p-6">
         <div class="flex gap-6 mb-6">
           <img v-if="selectedMusic.hasJacket" :src="getJacketUrl(selectedMusic.id, selectedMusic.assetDir)" class="w-48 h-48 rounded-lg object-cover shrink-0 cursor-pointer hover:op-80 transition-opacity" :title="t('music.clickToReplaceJacket')" @click="!isA000 && handleSetJacket()" />
           <div v-else class="w-48 h-48 rounded-lg bg-white/10 flex items-center justify-center op-30 text-2xl shrink-0 cursor-pointer hover:op-50 transition-opacity" @click="!isA000 && handleSetJacket()">?</div>
@@ -568,9 +575,8 @@ const copyExportOptions = computed(() => {
           </div>
         </div>
       </div>
+      <div v-else class="flex-1 flex items-center justify-center op-30 text-lg">{{ t('music.selectHint') }}</div>
     </div>
-
-    <div v-else class="flex-1 flex items-center justify-center op-30 text-lg">{{ isA000 ? t('music.a000Hint') : t('music.selectHint') }}</div>
 
     <Modal v-model:show="showChangeId" :title="t('music.changeId')" width="min(30vw,25em)">
       <div class="flex flex-col gap-3">

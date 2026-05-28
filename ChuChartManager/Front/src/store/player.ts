@@ -49,6 +49,7 @@ export function stop() {
   audio.currentTime = 0
   currentTime.value = 0
   isPlaying.value = false
+  playingMusic.value = null
 }
 
 export function startSeek() { isSeeking.value = true }

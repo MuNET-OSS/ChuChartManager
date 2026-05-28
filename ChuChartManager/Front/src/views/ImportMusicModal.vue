@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button, TextInput, NumberInput, Select, Modal, DropMenu, addToast } from '@munet/ui'
 import { getGenreMap, getSources, importMusicCheck, importMusicExecute } from '@/api'
+import { selectedSource } from '@/store/refs'
 import type { ImportCheckResult } from '@/api'
 import BottomOverlay from '@/components/BottomOverlay.vue'
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
@@ -20,10 +21,17 @@ const checkResult = ref<ImportCheckResult | null>(null)
 
 const title = ref('')
 const artist = ref('')
-const genreId = ref(99)
+const genreId = ref(0)
 const difficulty = ref(3)
 const level = ref(10)
 const levelDecimal = ref(0)
+const constant = computed({
+  get: () => level.value + levelDecimal.value / 100,
+  set: (v: number) => {
+    level.value = Math.floor(v)
+    levelDecimal.value = Math.round((v - Math.floor(v)) * 100)
+  },
+})
 const targetDir = ref('')
 const musicId = ref(8000)
 
@@ -50,7 +58,10 @@ onMounted(async () => {
   const [g, s] = await Promise.all([getGenreMap(), getSources()])
   genreMap.value = g
   sources.value = s
-  if (sourceOptions.value.length > 0) targetDir.value = sourceOptions.value[0].value
+  if (sourceOptions.value.length > 0) {
+    const current = selectedSource.value
+    targetDir.value = sourceOptions.value.find(s => s.value === current)?.value ?? sourceOptions.value[0].value
+  }
 })
 
 function parseFolderName(name: string) {
@@ -101,11 +112,15 @@ async function startImport() {
     return
   }
 
-  parseFolderName(dirHandle.name)
-
   try {
     checkResult.value = await importMusicCheck(chartFile.value)
     musicId.value = checkResult.value.suggestedId
+    difficulty.value = checkResult.value.difficulty
+    level.value = checkResult.value.level
+    levelDecimal.value = checkResult.value.levelDecimal
+    if (checkResult.value.title) title.value = checkResult.value.title
+    else parseFolderName(dirHandle.name)
+    if (checkResult.value.artist) artist.value = checkResult.value.artist
     step.value = 'form'
   } catch (e: any) {
     addToast({ message: e.message || t('music.importFailed'), type: 'error' })
@@ -140,7 +155,7 @@ async function doImport() {
       emit('imported')
       step.value = 'idle'
     } else {
-      addToast({ message: result.alerts?.join('\n') || t('music.importFailed'), type: 'error' })
+      addToast({ message: (result as any).error || result.alerts?.join('\n') || t('music.importFailed'), type: 'error' })
       step.value = 'form'
     }
   } catch (e: any) {
@@ -219,8 +234,8 @@ defineExpose({ startImport })
             <Select :options="diffOptions" v-model:value="difficulty" :disabled="loading" />
           </div>
           <div>
-            <label class="block text-sm op-60 mb-1">{{ t('music.importLevel') }}</label>
-            <NumberInput v-model:value="level" :min="1" :max="15" :step="1" :disabled="loading" class="w-full" />
+            <label class="block text-sm op-60 mb-1">{{ t('music.chartConstant') }}</label>
+            <NumberInput v-model:value="constant" :min="0" :max="15.9" :step="0.1" :decimal="1" :disabled="loading" class="w-full" />
           </div>
           <div>
             <label class="block text-sm op-60 mb-1">{{ t('music.importTargetDir') }}</label>
