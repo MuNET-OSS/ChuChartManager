@@ -7,9 +7,10 @@ import DirSelect from '@/components/DirSelect'
 import { openImageFileDialog, createTrophy, createNamePlate, createAvatarAccessory, createMapIcon, getResourceList, getLocalImagePreviewUrl } from '@/api/customResource'
 import { openAfbFileDialog, openAfbFolderDialog, extractDds } from '@/api/ddsExtractor'
 import type { ExtractResult } from '@/api/ddsExtractor'
+import { convertImgToDds } from '@/api/imgToDds'
 import CharaCreator from './CharaCreator'
 
-type ModalType = null | 'trophy' | 'namePlate' | 'avatarAccessory' | 'mapIcon' | 'ddsExtractor'
+type ModalType = null | 'trophy' | 'namePlate' | 'avatarAccessory' | 'mapIcon' | 'ddsExtractor' | 'imgToDds'
 
 export default defineComponent({
   setup() {
@@ -21,6 +22,14 @@ export default defineComponent({
     const ddsPath = ref('')
     const ddsExtracting = ref(false)
     const ddsResults = ref<ExtractResult[]>([])
+
+    // imgtodds
+    const imgPath = ref('')
+    const converting = ref(false)
+    const imgFormat = ref<'bc1' | 'bc3' | 'bc7'>('bc1')
+    const imgWidth = ref(0)
+    const imgHeight = ref(0)
+    const generateMipMaps = ref(false)
 
     const targetDir = ref('')
     const resourceId = ref(9000)
@@ -67,7 +76,15 @@ export default defineComponent({
       { icon: 'i-mdi-hanger', labelKey: 'tools.createAvatarAccessory', action: () => openModal('avatarAccessory'), experimental: true },
       { icon: 'i-mdi-map-marker', labelKey: 'tools.createMapIcon', action: () => openModal('mapIcon'), experimental: true },
       { icon: 'i-mdi-account', labelKey: 'tools.createChara', action: () => { showCharaCreator.value = true }, experimental: true },
+      { icon: 'i-mdi-image-multiple', labelKey: 'imgToDds.title', action: () => openModal('imgToDds'), experimental: false },
     ])
+
+    const formatOptions = computed<SelectOption[]>(() => [
+      { label: t('imgToDds.bc1'), value: 'bc1' },
+      { label: t('imgToDds.bc3'), value: 'bc3' },
+      { label: t('imgToDds.bc7'), value: 'bc7' },
+    ])
+
 
     function openModal(type: ModalType) {
       activeModal.value = type
@@ -80,6 +97,7 @@ export default defineComponent({
       textureImagePath.value = ''
       accessoryCategory.value = 1
       idConflict.value = false
+      imgPath.value = ''
       const custom = optionDirs.value.filter(d => d.dirName !== 'A000')
       if (custom.length > 0 && !targetDir.value)
         targetDir.value = custom[0].dirName
@@ -92,6 +110,11 @@ export default defineComponent({
     async function selectImage() {
       const path = await openImageFileDialog()
       if (path) imagePath.value = path
+    }
+
+    async function selectImgToDdsImage() {
+      const path = await openImageFileDialog()
+      if (path) imgPath.value = path
     }
 
     async function selectIconImage() {
@@ -131,6 +154,30 @@ export default defineComponent({
         addToast({ message: String(msg), type: 'error' })
       } finally {
         ddsExtracting.value = false
+      }
+    }
+
+    async function handleConvert() {
+      if (!imgPath.value) {
+        addToast({ message: t('imgToDds.noImage'), type: 'error' })
+        return
+      }
+      converting.value = true
+      try {
+        await convertImgToDds({
+          sourcePath: imgPath.value,
+          format: imgFormat.value,
+          width: imgWidth.value || undefined,
+          height: imgHeight.value || undefined,
+          generateMipMaps: generateMipMaps.value,
+        })
+        addToast({ message: t('imgToDds.success'), type: 'success' })
+        closeModal()
+      } catch (e: any) {
+        const msg = e?.response?.data || e?.message || t('imgToDds.failed')
+        addToast({ message: String(msg), type: 'error' })
+      } finally {
+        converting.value = false
       }
     }
 
@@ -222,6 +269,7 @@ export default defineComponent({
         case 'namePlate': return t('tools.createNamePlate')
         case 'avatarAccessory': return t('tools.createAvatarAccessory')
         case 'mapIcon': return t('tools.createMapIcon')
+        case 'imgToDds': return t('imgToDds.title')
         default: return ''
       }
     })
@@ -315,6 +363,33 @@ export default defineComponent({
                 <div class="flex justify-end gap-2 mt-2">
                   <Button onClick={closeModal}>{t('common.cancel')}</Button>
                   <Button onClick={handleExtractDds} ing={ddsExtracting.value}>{t('ddsExtractor.extract')}</Button>
+                </div>
+              </div>
+            ) : activeModal.value === 'imgToDds' ? (
+              <div class="flex flex-col gap-3 p-2">
+                <p class="text-sm op-50">{t('imgToDds.desc')}</p>
+                {renderImageSelector(imgPath, selectImgToDdsImage, t('imgToDds.selectImage'))}
+                <div>
+                  <label class="block text-sm op-60 mb-1">{t('imgToDds.format')}</label>
+                  <Select options={formatOptions.value} v-model:value={imgFormat.value} />
+                </div>
+                <div class="flex gap-3">
+                  <div class="flex-1">
+                    <label class="block text-sm op-60 mb-1">{t('imgToDds.width')}</label>
+                    <NumberInput v-model:value={imgWidth.value} min={0} max={8192} placeholder={t('imgToDds.auto')} />
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-sm op-60 mb-1">{t('imgToDds.height')}</label>
+                    <NumberInput v-model:value={imgHeight.value} min={0} max={8192} placeholder={t('imgToDds.auto')} />
+                  </div>
+                </div>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" v-model={generateMipMaps.value} class="checkbox checkbox-primary" />
+                  <span>{t('imgToDds.generateMipMaps')}</span>
+                </label>
+                <div class="flex justify-end gap-2 mt-2">
+                  <Button onClick={closeModal}>{t('common.cancel')}</Button>
+                  <Button onClick={handleConvert} ing={converting.value}>{t('imgToDds.convert')}</Button>
                 </div>
               </div>
             ) : (

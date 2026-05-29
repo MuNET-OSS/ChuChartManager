@@ -457,6 +457,23 @@ ddsExtractor:
   extract: 提取
   done: "提取完成：{count} 个 DDS，来自 {files} 个文件"
   failed: 提取失败
+imgToDds:
+  title: 图片转 DDS
+  desc: 将常用图片格式转换为 DDS 纹理
+  selectImage: 选择图片
+  noImage: 未选择图片
+  format: 压缩格式
+  bc1: BC1 / DXT1
+  bc3: BC3 / DXT5
+  bc7: BC7
+  width: 输出宽度
+  height: 输出高度
+  auto: 自动
+  generateMipMaps: 生成 Mipmap
+  convert: 转换
+  converting: 转换中…
+  success: 转换成功
+  failed: 转换失败
 emote:
   title: Emote 模型
   data: Emote 模型

@@ -448,6 +448,23 @@ ddsExtractor:
   extract: 抽出
   done: "抽出完了：{count} DDS、{files} ファイルから"
   failed: 抽出失敗
+imgToDds:
+  title: 画像を DDS に変換
+  desc: 一般的な画像形式を DDS テクスチャに変換します
+  selectImage: 画像を選択
+  noImage: 画像が選択されていません
+  format: 圧縮形式
+  bc1: BC1 / DXT1
+  bc3: BC3 / DXT5
+  bc7: BC7
+  width: 出力幅
+  height: 出力高さ
+  auto: 自動
+  generateMipMaps: Mipmap を生成
+  convert: 変換
+  converting: 変換中…
+  success: 変換成功
+  failed: 変換失敗
 emote:
   title: Emote モデル
   data: Emote モデル

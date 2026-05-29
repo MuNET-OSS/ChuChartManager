@@ -457,6 +457,23 @@ ddsExtractor:
   extract: Extract
   done: "Extraction complete: {count} DDS from {files} file(s)"
   failed: Extraction failed
+imgToDds:
+  title: Image to DDS
+  desc: Convert common image formats to DDS texture
+  selectImage: Select Image
+  noImage: No image selected
+  format: Compression Format
+  bc1: BC1 / DXT1
+  bc3: BC3 / DXT5
+  bc7: BC7
+  width: Output Width
+  height: Output Height
+  auto: Auto
+  generateMipMaps: Generate Mipmaps
+  convert: Convert
+  converting: Converting…
+  success: Conversion successful
+  failed: Conversion failed
 emote:
   title: Emote Models
   data: Emote Models
