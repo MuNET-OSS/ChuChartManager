@@ -1,8 +1,11 @@
 using System.Text;
+using ChuChartManager;
 using ChuChartManager.CLI.Commands;
+using ChuChartManager.CLI.Utils;
 using Spectre.Console.Cli;
 
 Console.OutputEncoding = Encoding.UTF8;
+Console.CancelKeyPress += (_, _) => TerminalProgress.Clear();
 
 var app = new CommandApp();
 

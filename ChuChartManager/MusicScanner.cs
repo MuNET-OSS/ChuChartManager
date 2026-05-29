@@ -58,9 +58,15 @@ public partial class MusicScanner
             if (!OptionDirRegex().IsMatch(dirName)) continue;
 
             var musicDir = Path.Combine(optDir, "music");
-            if (!Directory.Exists(musicDir)) continue;
-
-            var count = ScanMusicDirectory(musicDir, dirName);
+            if (Directory.Exists(musicDir))             // 当 music 目录 存在 时
+            {
+                ScanMusicDirectory(musicDir, dirName);  // 扫描曲目
+            }
+            else                                        // 当 music 目录 不存在 时
+            {
+                // 即使没有 music，也注册为空的源
+                MusicBySource[dirName] = new List<MusicXml>();
+            }
             AvailableSources.Add(dirName);
         }
 
@@ -72,21 +78,30 @@ public partial class MusicScanner
     {
         var list = new List<MusicXml>();
 
-        foreach (var subDir in Directory.EnumerateDirectories(musicDir))
+        try
         {
-            var xmlPath = Path.Combine(subDir, "Music.xml");
-            if (!File.Exists(xmlPath)) continue;
+            foreach (var subDir in Directory.EnumerateDirectories(musicDir))
+            {
+                var xmlPath = Path.Combine(subDir, "Music.xml");
+                if (!File.Exists(xmlPath)) continue;
 
-            try
-            {
-                var music = MusicXml.Load(xmlPath, assetDir, "");
-                list.Add(music);
+                try
+                {
+                    var music = MusicXml.Load(xmlPath, assetDir, "");
+                    list.Add(music);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"加载 {xmlPath} 失败", ex);
+                    Errors.Add($"加载 {xmlPath} 失败: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                Log.Error($"加载 {xmlPath} 失败", ex);
-                Errors.Add($"加载 {xmlPath} 失败: {ex.Message}");
-            }
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            Log.Warn($"扫描时目录已被删除: {musicDir}，{ex.Message}");
+            Errors.Add($"目录访问失败: {musicDir}");
+            return 0;
         }
 
         if (list.Count > 0)
