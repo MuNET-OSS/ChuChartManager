@@ -5,6 +5,8 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/AppleChu/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/ChuModLoader/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ChuModLoader/d3d9-proxy/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/ChuModLoader/loader/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/AppleChu/target" />
       <excludeFolder url="file://$MODULE_DIR$/ChuModLoader/target" />
     </content>

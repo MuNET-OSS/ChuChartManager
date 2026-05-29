@@ -4,12 +4,12 @@ import type { SelectOption } from '@munet/ui'
 import { useI18n } from 'vue-i18n'
 import { optionDirs } from '@/store/refs'
 import DirSelect from '@/components/DirSelect'
-import { openImageFileDialog, createTrophy, createNamePlate, createAvatarAccessory, createMapIcon, createSystemVoice, getResourceList, getLocalImagePreviewUrl } from '@/api/customResource'
+import { openImageFileDialog, createTrophy, createNamePlate, createAvatarAccessory, createMapIcon, getResourceList, getLocalImagePreviewUrl } from '@/api/customResource'
 import { openAfbFileDialog, openAfbFolderDialog, extractDds } from '@/api/ddsExtractor'
 import type { ExtractResult } from '@/api/ddsExtractor'
 import CharaCreator from './CharaCreator'
 
-type ModalType = null | 'trophy' | 'namePlate' | 'avatarAccessory' | 'mapIcon' | 'systemVoice' | 'ddsExtractor'
+type ModalType = null | 'trophy' | 'namePlate' | 'avatarAccessory' | 'mapIcon' | 'ddsExtractor'
 
 export default defineComponent({
   setup() {
@@ -67,7 +67,6 @@ export default defineComponent({
       { icon: 'i-mdi-hanger', labelKey: 'tools.createAvatarAccessory', action: () => openModal('avatarAccessory'), experimental: true },
       { icon: 'i-mdi-map-marker', labelKey: 'tools.createMapIcon', action: () => openModal('mapIcon'), experimental: true },
       { icon: 'i-mdi-account', labelKey: 'tools.createChara', action: () => { showCharaCreator.value = true }, experimental: true },
-      { icon: 'i-mdi-microphone', labelKey: 'tools.createSystemVoice', action: () => openModal('systemVoice'), experimental: true },
     ])
 
     function openModal(type: ModalType) {
@@ -142,7 +141,6 @@ export default defineComponent({
         const typeMap: Record<string, string> = {
           trophy: 'trophy', namePlate: 'namePlate', frame: 'frame',
           avatarAccessory: 'avatarAccessory', mapIcon: 'mapIcon',
-          systemVoice: 'systemVoice',
         }
         const resType = typeMap[activeModal.value]
         if (!resType) { idConflict.value = false; return }
@@ -202,15 +200,6 @@ export default defineComponent({
               imagePath: imagePath.value,
             })
             break
-          case 'systemVoice':
-            await createSystemVoice({
-              targetDir: targetDir.value,
-              id: resourceId.value,
-              name: resourceName.value,
-              explainText: explainText.value,
-              imagePath: imagePath.value,
-            })
-            break
         }
         addToast({ message: t('tools.createSuccess'), type: 'success' })
         closeModal()
@@ -223,7 +212,7 @@ export default defineComponent({
     }
 
     const needsImage = computed(() =>
-      activeModal.value === 'namePlate' || activeModal.value === 'mapIcon' || activeModal.value === 'systemVoice'
+      activeModal.value === 'namePlate' || activeModal.value === 'mapIcon'
     )
 
     const modalTitle = computed(() => {
@@ -233,7 +222,6 @@ export default defineComponent({
         case 'namePlate': return t('tools.createNamePlate')
         case 'avatarAccessory': return t('tools.createAvatarAccessory')
         case 'mapIcon': return t('tools.createMapIcon')
-        case 'systemVoice': return t('tools.createSystemVoice')
         default: return ''
       }
     })

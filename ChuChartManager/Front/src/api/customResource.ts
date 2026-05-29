@@ -125,18 +125,6 @@ export async function addCharaVariant(params: AddCharaVariantParams): Promise<vo
   await apiClient.post('/api/CustomResource/AddCharaVariant', params)
 }
 
-export interface CreateSystemVoiceParams {
-  targetDir: string
-  id: number
-  name: string
-  explainText: string
-  imagePath: string
-}
-
-export async function createSystemVoice(params: CreateSystemVoiceParams): Promise<void> {
-  await apiClient.post('/api/CustomResource/CreateSystemVoice', params)
-}
-
 export interface SystemVoiceCueInfo {
   cueCount: number
   id: number

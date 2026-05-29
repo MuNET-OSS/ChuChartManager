@@ -192,7 +192,6 @@ tools:
   createNamePlate: ネームプレート作成
   createMapIcon: マップアイコン作成
   createChara: キャラクター作成
-  createSystemVoice: システムボイス作成
   createFrame: フレーム作成
   createAvatarAccessory: 衣装作成
   accessoryCategory: 装着部位

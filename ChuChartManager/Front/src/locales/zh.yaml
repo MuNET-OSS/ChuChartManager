@@ -201,7 +201,6 @@ tools:
   createNamePlate: 创建名牌
   createMapIcon: 创建地图图标
   createChara: 创建角色
-  createSystemVoice: 创建系统语音
   createFrame: 创建底框
   createAvatarAccessory: 创建衣装
   accessoryCategory: 部位
