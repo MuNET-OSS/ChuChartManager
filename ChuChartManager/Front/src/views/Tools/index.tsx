@@ -375,12 +375,10 @@ export default defineComponent({
                 </div>
                 <div class="flex gap-3">
                   <div class="flex-1">
-                    <label class="block text-sm op-60 mb-1">{t('imgToDds.width')}</label>
-                    <NumberInput v-model:value={imgWidth.value} min={0} max={8192} placeholder={t('imgToDds.auto')} />
+                    <label class="block text-sm op-60 mb-1">{t('imgToDds.width')}<span class="text-xs op-50 ml-1">({t('imgToDds.auto')})</span></label>
                   </div>
                   <div class="flex-1">
-                    <label class="block text-sm op-60 mb-1">{t('imgToDds.height')}</label>
-                    <NumberInput v-model:value={imgHeight.value} min={0} max={8192} placeholder={t('imgToDds.auto')} />
+                    <label class="block text-sm op-60 mb-1">{t('imgToDds.height')}<span class="text-xs op-50 ml-1">({t('imgToDds.auto')})</span></label>
                   </div>
                 </div>
                 <label class="flex items-center gap-2 text-sm cursor-pointer">
