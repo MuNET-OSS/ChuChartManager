@@ -1,8 +1,8 @@
-using System.Text;
 using ChuChartManager;
 using ChuChartManager.CLI.Commands;
 using ChuChartManager.CLI.Utils;
 using Spectre.Console.Cli;
+using System.Text;
 
 Console.OutputEncoding = Encoding.UTF8;
 Console.CancelKeyPress += (_, _) => TerminalProgress.Clear();
@@ -22,15 +22,17 @@ app.Configure(config =>
         .WithDescription("查看单曲详细信息")
         .WithExample("info", "-p", "G:\\", "-i", "100");
 
-    config.AddCommand<ExportMp3Command>("export-mp3")
-        .WithDescription("导出曲目音频为 MP3")
-        .WithExample("export-mp3", "-p", "G:\\", "-i", "100")
-        .WithExample("export-mp3", "-p", "G:\\", "-a", "-o", "mp3_output");
+    config.AddCommand<MakeAcbCommand>("makeacb")
+        .WithDescription("将音频文件转换为 ACB 格式")
+        .WithExample("makeacb", "audio.wav")
+        .WithExample("makeacb", "audio.mp3", "-O", "output.acb")
+        .WithExample("makeacb", "audio1.wav", "audio2.mp3");
 
-    config.AddCommand<ExportJacketCommand>("export-jacket")
-        .WithDescription("导出曲目封面为 PNG")
-        .WithExample("export-jacket", "-p", "G:\\", "-i", "100")
-        .WithExample("export-jacket", "-p", "G:\\", "-a", "-o", "jacket_output");
+    config.AddCommand<MakeDdsCommand>("makedds")
+        .WithDescription("将图片文件转换为 DDS 格式")
+        .WithExample("makedds", "cover.png")
+        .WithExample("makedds", "cover.jpg", "-O", "output.dds")
+        .WithExample("makedds", "img1.png", "img2.jpg");
 
     config.AddCommand<ValidateCommand>("validate")
         .WithDescription("检查数据完整性（缺音频、缺封面、XML 损坏）")
