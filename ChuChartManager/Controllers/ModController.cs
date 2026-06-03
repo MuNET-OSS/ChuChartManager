@@ -87,6 +87,9 @@ public class ModController : ControllerBase
         if (string.IsNullOrEmpty(loaderUrl))
             return NotFound("No release found");
 
+        if (!IsAllowedDownloadUrl(loaderUrl))
+            return BadRequest("下载 URL 不在白名单内");
+
         var binPath = Path.Combine(gamePath, "bin");
         var loaderData = await Http.GetByteArrayAsync(loaderUrl);
         await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "version.dll"), loaderData);
@@ -119,6 +122,9 @@ public class ModController : ControllerBase
         if (string.IsNullOrEmpty(url))
             return NotFound("No release found");
 
+        if (!IsAllowedDownloadUrl(url))
+            return BadRequest("下载 URL 不在白名单内");
+
         var data = await Http.GetByteArrayAsync(url);
         var modsDir = Path.Combine(binPath, "mods");
         Directory.CreateDirectory(modsDir);
@@ -137,6 +143,19 @@ public class ModController : ControllerBase
 
     public record InstallRequest(string? Url);
 
+    private static bool IsAllowedDownloadUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url)) return false;
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && uri.Host is "github.com" or "objects.githubusercontent.com" or "api.github.com"
+            && uri.AbsolutePath.StartsWith("/MuNET-OSS/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsValidModId(string modId)
+    {
+        return !string.IsNullOrEmpty(modId) && System.Text.RegularExpressions.Regex.IsMatch(modId, @"^[A-Za-z0-9_-]+$");
+    }
+
     private static async Task<GitHubRelease?> GetLatestRelease(string repo, string assetName)
     {
         try
@@ -153,6 +172,9 @@ public class ModController : ControllerBase
     [HttpGet("manifest/{modId}")]
     public ActionResult<object> GetManifest(string modId)
     {
+        if (!IsValidModId(modId))
+            return BadRequest("无效的 modId");
+
         var source = Path.Combine(StaticSettings.ExeDir, "Resources", modId, "manifest.toml");
         if (!System.IO.File.Exists(source))
             return NotFound();
@@ -164,6 +186,8 @@ public class ModController : ControllerBase
     [HttpGet("config/{modId}")]
     public ActionResult<ModConfigRequest> GetConfig(string modId)
     {
+        if (!IsValidModId(modId))
+            return BadRequest("无效的 modId");
         if (!TryResolveGameFile($"{modId}.toml", out var path))
             return BadRequest("GamePath not set");
         if (!System.IO.File.Exists(path))
@@ -181,6 +205,8 @@ public class ModController : ControllerBase
     [HttpPut("config/{modId}")]
     public ActionResult SaveConfig(string modId, [FromBody] ModConfigRequest request)
     {
+        if (!IsValidModId(modId))
+            return BadRequest("无效的 modId");
         if (!TryResolveGameFile($"{modId}.toml", out var path))
             return BadRequest("GamePath not set");
 

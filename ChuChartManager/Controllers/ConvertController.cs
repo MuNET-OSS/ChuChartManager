@@ -72,7 +72,7 @@ public class ConvertController : ControllerBase
         catch (ConversionException ex)
         {
             allAlerts.AddRange(ex.Alerts);
-            return Ok(new ConvertResult
+            return BadRequest(new ConvertResult
             {
                 Success = false,
                 Output = "",
@@ -82,7 +82,7 @@ public class ConvertController : ControllerBase
         }
         catch (Exception ex)
         {
-            return Ok(new ConvertResult
+            return StatusCode(500, new ConvertResult
             {
                 Success = false,
                 Output = "",

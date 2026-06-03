@@ -21,7 +21,9 @@ public class Config
     public void Save()
     {
         Directory.CreateDirectory(AppDataDir);
-        File.WriteAllText(ConfigFilePath, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+        var tmpPath = ConfigFilePath + ".tmp";
+        File.WriteAllText(tmpPath, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+        File.Move(tmpPath, ConfigFilePath, overwrite: true);
     }
 
     public static Config Load()
@@ -31,8 +33,15 @@ public class Config
         {
             return JsonSerializer.Deserialize<Config>(File.ReadAllText(ConfigFilePath)) ?? new Config();
         }
-        catch
+        catch (Exception ex)
         {
+            var backupPath = ConfigFilePath + ".bak";
+            try
+            {
+                File.Copy(ConfigFilePath, backupPath, overwrite: true);
+            }
+            catch { }
+            Log.Warn($"配置文件损坏，已备份到 {backupPath}: {ex.Message}");
             return new Config();
         }
     }
