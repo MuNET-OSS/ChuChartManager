@@ -17,6 +17,12 @@ public class EmoteController : ControllerBase
         public long FileSize { get; set; }
     }
 
+    private static string? SafeGameFilePath(string filePath)
+    {
+        if (string.IsNullOrEmpty(StaticSettings.GamePath)) return null;
+        return PathGuard.FileExistsWithin(StaticSettings.GamePath, filePath, out var safe) ? safe : null;
+    }
+
     [HttpGet]
     public ActionResult<List<EmoteDataItem>> GetEmoteDataList([FromQuery] string? source = null)
     {
@@ -54,8 +60,8 @@ public class EmoteController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.FilePath))
             return BadRequest("文件路径不能为空");
 
-        if (!System.IO.File.Exists(request.FilePath))
-            return BadRequest("文件不存在");
+        if (SafeGameFilePath(request.FilePath) == null)
+            return BadRequest("文件不在游戏目录范围内");
 
         var viewerPath = Path.Combine(StaticSettings.ExeDir, "tools", "FreeMoteViewer.exe");
         if (!System.IO.File.Exists(viewerPath))
@@ -93,7 +99,7 @@ public class EmoteController : ControllerBase
     [HttpGet]
     public ActionResult GetEmoteWebGLData([FromQuery] string filePath)
     {
-        if (string.IsNullOrWhiteSpace(filePath) || !System.IO.File.Exists(filePath))
+        if (SafeGameFilePath(filePath) == null)
             return NotFound();
 
         if (WebGLCache.TryGetValue(filePath, out var cached))
@@ -123,14 +129,16 @@ public class EmoteController : ControllerBase
                 var decompileProc = Process.Start(new ProcessStartInfo
                 {
                     FileName = decompilePath,
-                    Arguments = $"\"{tempEmtbytes}\"",
                     UseShellExecute = false,
                     WorkingDirectory = tempDir,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
+                    ArgumentList = { tempEmtbytes },
                 });
                 decompileProc?.WaitForExit(30000);
+                if (decompileProc == null || decompileProc.ExitCode != 0)
+                    return BadRequest($"PsbDecompile 失败，退出码: {decompileProc?.ExitCode ?? -1}");
 
                 var jsonPath = Path.Combine(tempDir, baseName + ".json");
                 if (!System.IO.File.Exists(jsonPath))
@@ -145,14 +153,16 @@ public class EmoteController : ControllerBase
                 var buildProc = Process.Start(new ProcessStartInfo
                 {
                     FileName = buildPath,
-                    Arguments = $"-p ems -o \"{outputPath}\" \"{jsonPath}\"",
                     UseShellExecute = false,
                     WorkingDirectory = tempDir,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     CreateNoWindow = true,
+                    ArgumentList = { "-p", "ems", "-o", outputPath, jsonPath },
                 });
                 buildProc?.WaitForExit(30000);
+                if (buildProc == null || buildProc.ExitCode != 0)
+                    return BadRequest($"PsBuild 失败，退出码: {buildProc?.ExitCode ?? -1}");
 
                 if (!System.IO.File.Exists(outputPath))
                     return BadRequest("PsBuild 失败：未生成 pure.psb 文件");

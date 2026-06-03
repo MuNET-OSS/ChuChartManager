@@ -65,10 +65,18 @@ public static class ServerManager
         {
             serverOptions.Limits.MaxRequestBodySize = null;
             serverOptions.Listen(IPAddress.Loopback, 0);
+#if !DEBUG
             if (export)
             {
-                serverOptions.Listen(IPAddress.Any, 5001);
+                serverOptions.Listen(IPAddress.Any, 5001, listenOptions =>
+                {
+                    listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                    {
+                        ServerCertificate = GetCert()
+                    });
+                });
             }
+#endif
         });
 
         builder.Services
@@ -114,6 +122,7 @@ public static class ServerManager
         {
             App.UseAuthentication();
             App.UseAuthorization();
+            App.UseMiddleware<AuthenticationMiddleware>();
         }
 
         App

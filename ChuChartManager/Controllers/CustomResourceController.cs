@@ -413,6 +413,12 @@ public class CustomResourceController : ControllerBase
         if (string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
             return NotFound();
 
+        var safe = PathGuard.EnsureWithin(StaticSettings.GamePath, path)
+                   ?? PathGuard.EnsureWithin(StaticSettings.AppDataDir, path)
+                   ?? PathGuard.EnsureWithin(StaticSettings.ExeDir, path);
+        if (safe == null)
+            return Forbid();
+
         var ext = Path.GetExtension(path).ToLowerInvariant();
         var mime = ext switch
         {
