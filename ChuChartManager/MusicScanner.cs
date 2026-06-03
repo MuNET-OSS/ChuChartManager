@@ -5,7 +5,7 @@ namespace ChuChartManager;
 
 public partial class MusicScanner
 {
-    [GeneratedRegex(@"^[A-Z](\w+)$")]
+    [GeneratedRegex(@"^[A-Z][A-Za-z0-9_-]*$")]
     private static partial Regex OptionDirRegex();
 
     private readonly string _gamePath;
@@ -49,6 +49,7 @@ public partial class MusicScanner
         if (!Directory.Exists(optionRoot))
         {
             Log.Warn($"option 目录不存在: {optionRoot}");
+            Errors.Add($"option 目录不存在: {optionRoot}");
             return;
         }
 

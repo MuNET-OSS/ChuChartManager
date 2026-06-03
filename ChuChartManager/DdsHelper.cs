@@ -13,7 +13,7 @@ public static class DdsHelper
     {
         var encoder = CreateEncoder();
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(pngPath);
-        var size = (image.Width / 4) * 4;
+        var size = ((image.Width + 3) / 4) * 4;
         if (size == 0) size = 4;
         image.Mutate(x => x.Resize(size, size));
         using var fs = File.Create(ddsPath);
@@ -36,7 +36,7 @@ public static class DdsHelper
     {
         var encoder = CreateEncoder();
         using var image = SixLabors.ImageSharp.Image.Load<Rgba32>(pngBytes);
-        var size = (image.Width / 4) * 4;
+        var size = ((image.Width + 3) / 4) * 4;
         if (size == 0) size = 4;
         image.Mutate(x => x.Resize(size, size));
         using var ms = new MemoryStream();

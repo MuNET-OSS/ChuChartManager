@@ -51,7 +51,7 @@ public class FumenData
 
     public static FumenData FromXml(XmlNode node)
     {
-        var typeId = int.Parse(node.SelectSingleNode("type/id")?.InnerText ?? "0");
+        var typeId = int.TryParse(node.SelectSingleNode("type/id")?.InnerText, out var tid) ? tid : 0;
         var typeStr = node.SelectSingleNode("type/str")?.InnerText ?? "";
 
         return new FumenData

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Xml;
 
@@ -93,15 +94,18 @@ public class MusicXml
         var fumenNodes = root.SelectNodes("fumens/MusicFumenData");
         if (fumenNodes != null)
         {
-            for (var i = 0; i < Math.Min(fumenNodes.Count, 6); i++)
+            foreach (XmlNode fumenNode in fumenNodes)
             {
-                Fumens[i] = FumenData.FromXml(fumenNodes[i]!);
-                if (string.IsNullOrEmpty(Fumens[i].FilePath)) continue;
-                var c2sPath = Path.Combine(MusicDirectory, Fumens[i].FilePath);
+                var fumen = FumenData.FromXml(fumenNode);
+                var idx = (int)fumen.Difficulty;
+                if (idx < 0 || idx >= Fumens.Length) continue;
+                Fumens[idx] = fumen;
+                if (string.IsNullOrEmpty(Fumens[idx].FilePath)) continue;
+                var c2sPath = Path.Combine(MusicDirectory, Fumens[idx].FilePath);
                 if (!File.Exists(c2sPath)) continue;
-                if (string.IsNullOrEmpty(Fumens[i].NotesDesigner))
-                    Fumens[i].NotesDesigner = FumenData.ReadCreatorFromC2s(c2sPath);
-                Fumens[i].NoteCount = FumenData.CountNotesFromC2s(c2sPath);
+                if (string.IsNullOrEmpty(Fumens[idx].NotesDesigner))
+                    Fumens[idx].NotesDesigner = FumenData.ReadCreatorFromC2s(c2sPath);
+                Fumens[idx].NoteCount = FumenData.CountNotesFromC2s(c2sPath);
             }
         }
     }
@@ -125,7 +129,7 @@ public class MusicXml
         {
             if (!line.StartsWith("BPM_DEF")) continue;
             var parts = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2 && float.TryParse(parts[1], out var bpm))
+            if (parts.Length >= 2 && float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var bpm))
                 return bpm;
         }
         return 0;
