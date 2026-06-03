@@ -62,7 +62,7 @@ public class InfoCommand : Command<InfoCommand.Settings>
 
         for (int i = 0; i < 6; i++)
         {
-            var f = music.Fumens[i];
+            var f = i < music.Fumens.Length ? music.Fumens[i] : null;
             if (f == null)
             {
                 table.AddRow(DiffNames[i], "-", "-", "否");

@@ -30,7 +30,7 @@ public class DebugCommand : Command
         if (exception != null)
         {
             Console.Error.WriteLine($"发生错误: {exception}");
-            throw exception;
+            return 1;
         }
         return 0;
     }

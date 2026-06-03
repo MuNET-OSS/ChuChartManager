@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button, TextInput, NumberInput, Select, Modal, addToast } from '@munet/ui'
 import { getGenreMap, getSources, importMusicCheck, importMusicExecute } from '@/api'
@@ -31,7 +31,27 @@ const genreMap = ref<Record<number, string>>({})
 const sources = ref<string[]>([])
 
 const showForm = computed(() => step.value === 'form' || step.value === 'executing')
-const coverUrl = computed(() => coverFile.value ? URL.createObjectURL(coverFile.value) : '')
+const coverUrl = ref('')
+
+let currentCoverUrl: string | null = null
+watch(coverFile, (file) => {
+  if (currentCoverUrl) {
+    URL.revokeObjectURL(currentCoverUrl)
+    currentCoverUrl = null
+  }
+  if (file) {
+    currentCoverUrl = URL.createObjectURL(file)
+    coverUrl.value = currentCoverUrl
+  } else {
+    coverUrl.value = ''
+  }
+})
+
+onUnmounted(() => {
+  if (currentCoverUrl) {
+    URL.revokeObjectURL(currentCoverUrl)
+  }
+})
 
 const genreOptions = computed(() =>
   Object.entries(genreMap.value).map(([id, name]) => ({ label: name, value: Number(id) }))
