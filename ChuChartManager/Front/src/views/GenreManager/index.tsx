@@ -148,11 +148,12 @@ export default defineComponent({
                           <span class="i-material-symbols-done text-6 c-gray-6" />
                         </Button>
                       ) : isConfirming ? (
-                        <Button danger={!deleteLoad.value} variant="secondary"
-                          onClick={() => del(it.id)} ing={deleteLoad.value}
-                          onMouseleave={() => confirmDeleteId.value = -1}>
-                          {!deleteLoad.value && <span class="i-material-symbols-delete-outline text-6 c-gray-6" />}
-                        </Button>
+                        <div onMouseleave={() => confirmDeleteId.value = -1}>
+                          <Button danger={!deleteLoad.value} variant="secondary"
+                            onClick={() => del(it.id)} ing={deleteLoad.value}>
+                            {!deleteLoad.value && <span class="i-material-symbols-delete-outline text-6 c-gray-6" />}
+                          </Button>
+                        </div>
                       ) : (
                         <div class="flex gap-2">
                           <Button class="w-0 grow-1" variant="secondary" onClick={() => editingId.value = it.id}>
@@ -188,11 +189,12 @@ export default defineComponent({
                           <span class="i-material-symbols-done text-6 c-gray-6" />
                         </Button>
                       ) : isConfirming ? (
-                        <Button danger={!deleteLoad.value} variant="secondary"
-                          onClick={() => del(it.id)} ing={deleteLoad.value}
-                          onMouseleave={() => confirmDeleteId.value = -1}>
-                          {!deleteLoad.value && <span class="i-material-symbols-delete-outline text-6 c-gray-6" />}
-                        </Button>
+                        <div onMouseleave={() => confirmDeleteId.value = -1}>
+                          <Button danger={!deleteLoad.value} variant="secondary"
+                            onClick={() => del(it.id)} ing={deleteLoad.value}>
+                            {!deleteLoad.value && <span class="i-material-symbols-delete-outline text-6 c-gray-6" />}
+                          </Button>
+                        </div>
                       ) : (
                         <div class="flex gap-2">
                           <Button class="w-0 grow-1" variant="secondary" onClick={() => editingId.value = it.id}>
@@ -213,7 +215,7 @@ export default defineComponent({
           </div>
         </div>
 
-        <Modal show={showCreate.value} onUpdate:show={(v: boolean) => showCreate.value = v}
+        <Modal show={showCreate.value} onUpdateShow={(v: boolean) => showCreate.value = v}
           title={`${t('common.create')}${activeTab.value === 'genre' ? t('genre.management') : t('releaseTag.management')}`} width="min(30vw,25em)">
           {{
             default: () => (
