@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { Button, TextInput, NumberInput, Select, Modal, addToast } from '@munet/ui'
 import { getGenreMap, getSources, importMusicCheck, importMusicExecute } from '@/api'
 import type { ImportCheckResult } from '@/api'
+import { getReleaseTagMap } from '@/api/releaseTag'
 import { selectedSource } from '@/store/refs'
 import BottomOverlay from '@/components/BottomOverlay.vue'
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
@@ -22,12 +23,14 @@ const checkResult = ref<ImportCheckResult | null>(null)
 const title = ref('')
 const artist = ref('')
 const genreId = ref(0)
+const releaseTagId = ref(0)
 const targetDir = ref('')
 const musicId = ref(8000)
 
 const diffNames = ['BASIC', 'ADVANCED', 'EXPERT', 'MASTER', 'ULTIMA']
 
 const genreMap = ref<Record<number, string>>({})
+const releaseTagMap = ref<Record<number, string>>({})
 const sources = ref<string[]>([])
 
 const showForm = computed(() => step.value === 'form' || step.value === 'executing')
@@ -56,13 +59,17 @@ onUnmounted(() => {
 const genreOptions = computed(() =>
   Object.entries(genreMap.value).map(([id, name]) => ({ label: name, value: Number(id) }))
 )
+const releaseTagOptions = computed(() =>
+  Object.entries(releaseTagMap.value).map(([id, name]) => ({ label: name, value: Number(id) }))
+)
 const sourceOptions = computed(() =>
   sources.value.filter(s => s !== 'A000').map(s => ({ label: s, value: s }))
 )
 
 onMounted(async () => {
-  const [g, s] = await Promise.all([getGenreMap(), getSources()])
+  const [g, r, s] = await Promise.all([getGenreMap(), getReleaseTagMap(), getSources()])
   genreMap.value = g
+  releaseTagMap.value = r
   sources.value = s
   if (sourceOptions.value.length > 0) {
     const current = selectedSource.value
@@ -142,6 +149,7 @@ async function doImport() {
 
   try {
     const genreName = genreMap.value[genreId.value] || ''
+    const releaseTagStr = releaseTagMap.value[releaseTagId.value] || ''
     const result = await importMusicExecute({
       charts: chartFiles.value,
       audio: audioFile.value,
@@ -151,6 +159,8 @@ async function doImport() {
       artist: artist.value,
       genreId: genreId.value,
       genreName,
+      releaseTagId: releaseTagId.value,
+      releaseTagStr,
       targetDir: targetDir.value,
     })
 
@@ -245,6 +255,10 @@ defineExpose({ startImport })
           <div>
             <label class="block text-sm op-60 mb-1">{{ t('music.genre') }}</label>
             <Select :options="genreOptions" v-model:value="genreId" :disabled="loading" />
+          </div>
+          <div>
+            <label class="block text-sm op-60 mb-1">{{ t('music.releaseTag') }}</label>
+            <Select :options="releaseTagOptions" v-model:value="releaseTagId" :disabled="loading" />
           </div>
           <div>
             <label class="block text-sm op-60 mb-1">{{ t('music.importTargetDir') }}</label>

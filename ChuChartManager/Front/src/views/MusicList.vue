@@ -6,9 +6,10 @@ import { useStorage } from '@vueuse/core'
 import { VList } from 'virtua/vue'
 import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, importJacket, importChart, getExportChartUrl, getExportOptUrl, getExportCustomUrl, openExplorer, openXml, changeId, deleteMusic, setJacket, setAudio, replaceChart, isWebView, getBaseUrl } from '@/api'
 import type { MusicListItem } from '@/api'
+import { getReleaseTagMap } from '@/api/releaseTag'
 import { loadMusic as loadPlayerMusic, stop as stopPlayer } from '@/store/player'
 import { setStatus } from '@/store/status'
-import { leftPanel, selectedSource, optionDirs, selectMusicId } from '@/store/refs'
+import { leftPanel, selectedSource, optionDirs, selectMusicId, genreRevision, releaseTagRevision } from '@/store/refs'
 import OptionDirsManager from '@/views/MusicList/OptionDirsManager/index'
 import ImportMusicModal from '@/views/ImportMusicModal.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
@@ -53,6 +54,7 @@ watch(() => selectedSource.value, async (val) => {
 
 const musicList = ref<MusicListItem[]>([])
 const genreMap = ref<Record<number, string>>({})
+const releaseTagMap = ref<Record<number, string>>({})
 const selectedMusic = ref<MusicListItem | null>(null)
 const loading = ref(true)
 
@@ -64,6 +66,7 @@ const diffFilter = ref<string | number>('-1')
 const editName = ref('')
 const editArtist = ref('')
 const editGenreId = ref<string | number>('-1')
+const editReleaseTagId = ref<string | number>('0')
 const editFumens = ref<{ enable: boolean; level: number; levelDecimal: number; notesDesigner: string; noteCount: number }[]>([])
 const selectedDiff = ref(0)
 
@@ -101,6 +104,10 @@ const genreEditOptions = computed<SelectOption[]>(() =>
   Object.entries(genreMap.value).map(([id, name]) => ({ label: name, value: id }))
 )
 
+const releaseTagEditOptions = computed<SelectOption[]>(() =>
+  Object.entries(releaseTagMap.value).map(([id, name]) => ({ label: name, value: id }))
+)
+
 const sortOptions = computed<SelectOption[]>(() => [
   { label: t('music.sortById'), value: 'id' },
   { label: t('music.sortByName'), value: 'name' },
@@ -123,9 +130,10 @@ const filteredList = computed(() => {
 
 onMounted(async () => {
   await ensureBackendUrl()
-  const [srcList, genres] = await Promise.all([getSources(), getGenreMap()])
+  const [srcList, genres, releaseTags] = await Promise.all([getSources(), getGenreMap(), getReleaseTagMap()])
   sources.value = srcList
   genreMap.value = genres
+  releaseTagMap.value = releaseTags
   if (srcList.length > 0) {
     const restored = srcList.includes(savedSource.value) ? savedSource.value : srcList[0]
     selectedSource.value = restored
@@ -140,9 +148,10 @@ async function loadMusic() {
 }
 
 async function refresh() {
-  const [srcList, genres] = await Promise.all([getSources(), getGenreMap()])
+  const [srcList, genres, releaseTags] = await Promise.all([getSources(), getGenreMap(), getReleaseTagMap()])
   sources.value = srcList
   genreMap.value = genres
+  releaseTagMap.value = releaseTags
   if (srcList.length > 0) {
     const restored = srcList.includes(selectedSource.value) ? selectedSource.value : srcList[0]
     selectedSource.value = restored
@@ -150,6 +159,14 @@ async function refresh() {
   }
   setStatus(t('music.statusLine', { tracks: musicList.value.length, options: sources.value.length }))
 }
+
+watch(genreRevision, async () => {
+  genreMap.value = await getGenreMap()
+})
+
+watch(releaseTagRevision, async () => {
+  releaseTagMap.value = await getReleaseTagMap()
+})
 
 defineExpose({ refresh })
 
@@ -173,6 +190,7 @@ function selectMusic(music: MusicListItem) {
   editName.value = music.name
   editArtist.value = music.artist
   editGenreId.value = String(music.genreId)
+  editReleaseTagId.value = String(music.releaseTagId >= 0 ? music.releaseTagId : 0)
   editFumens.value = music.fumens.map(f => ({
     enable: f?.enable ?? false,
     level: f?.level ?? 0,
@@ -195,11 +213,15 @@ async function onSave() {
     artist: editArtist.value,
     genreId: Number(editGenreId.value),
     genreName: genreMap.value[Number(editGenreId.value)] || '',
+    releaseTagId: Number(editReleaseTagId.value),
+    releaseTagStr: releaseTagMap.value[Number(editReleaseTagId.value)] || '',
     fumens,
   })
   m.name = editName.value
   m.artist = editArtist.value
   m.genreId = Number(editGenreId.value)
+  m.releaseTagId = Number(editReleaseTagId.value)
+  m.releaseTagStr = releaseTagMap.value[Number(editReleaseTagId.value)] || ''
   fumens.forEach(fd => {
     const f = m.fumens[fd.index]
     if (f) { f.enable = fd.enable; f.level = fd.level; f.levelDecimal = fd.levelDecimal; f.notesDesigner = fd.notesDesigner }
@@ -533,7 +555,8 @@ const copyExportOptions = computed(() => {
           <div class="flex-1 min-w-0">
             <h2 class="text-xl font-bold mb-1">{{ selectedMusic.name }}</h2>
             <p class="op-60 mb-2">{{ selectedMusic.artist }}</p>
-            <p class="text-sm op-40 mb-3">{{ genreMap[selectedMusic.genreId] || '' }}</p>
+            <p class="text-sm op-40 mb-1">{{ genreMap[selectedMusic.genreId] || '' }}</p>
+            <p class="text-sm op-40 mb-3">{{ releaseTagMap[selectedMusic.releaseTagId] || selectedMusic.releaseTagStr || '' }}</p>
             <div class="flex gap-2 flex-wrap items-center">
               <template v-for="(f, i) in selectedMusic.fumens" :key="i">
                 <span v-if="f?.enable" class="rounded-full px-2.5 py-0.5 text-sm font-medium" :style="getDiffBadgeStyle(i)">{{ diffNames[i] }} {{ i === 5 && selectedMusic.worldsEndTag ? selectedMusic.worldsEndTag : f.levelDisplay }}</span>
@@ -546,6 +569,7 @@ const copyExportOptions = computed(() => {
           <div><label class="block text-sm op-60 mb-1">{{ t('music.songTitle') }}</label><TextInput v-model:value="editName" :disabled="isA000" /></div>
           <div><label class="block text-sm op-60 mb-1">{{ t('music.artist') }}</label><TextInput v-model:value="editArtist" :disabled="isA000" /></div>
           <div><label class="block text-sm op-60 mb-1">{{ t('music.genre') }}</label><Select :options="genreEditOptions" v-model:value="editGenreId" :disabled="isA000" /></div>
+          <div><label class="block text-sm op-60 mb-1">{{ t('music.releaseTag') }}</label><Select :options="releaseTagEditOptions" v-model:value="editReleaseTagId" :disabled="isA000" /></div>
         </div>
 
         <div class="flex items-center gap-2 mt-4">

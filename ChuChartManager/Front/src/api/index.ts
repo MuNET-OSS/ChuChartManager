@@ -36,6 +36,8 @@ export interface MusicListItem {
   artist: string
   genreId: number
   genres: string[]
+  releaseTagId: number
+  releaseTagStr: string
   assetDir: string
   hasJacket: boolean
   worldsEndTag: string
@@ -77,6 +79,8 @@ export async function saveMusic(id: number, assetDir: string, dto: {
   artist: string
   genreId?: number
   genreName?: string
+  releaseTagId?: number
+  releaseTagStr?: string
   fumens?: { index: number; enable: boolean; level: number; levelDecimal: number; notesDesigner: string }[]
 }): Promise<void> {
   await apiClient.post(`/api/Music/SaveMusic?id=${id}&assetDir=${assetDir}`, dto)
@@ -101,6 +105,8 @@ export async function createMusic(dto: {
   artist: string
   genreId: number
   genreName: string
+  releaseTagId: number
+  releaseTagStr?: string
 }): Promise<void> {
   await apiClient.post('/api/Music/CreateMusic', dto)
 }
@@ -149,6 +155,8 @@ export async function importMusicExecute(params: {
   artist: string
   genreId: number
   genreName: string
+  releaseTagId: number
+  releaseTagStr: string
   targetDir: string
 }): Promise<ImportExecuteResult> {
   const form = new FormData()
@@ -160,6 +168,8 @@ export async function importMusicExecute(params: {
   form.append('artist', params.artist)
   form.append('genreId', params.genreId.toString())
   form.append('genreName', params.genreName)
+  form.append('releaseTagId', params.releaseTagId.toString())
+  form.append('releaseTagStr', params.releaseTagStr)
   form.append('targetDir', params.targetDir)
   const { data } = await apiClient.post('/api/Music/ImportMusicExecute', form, { timeout: 120000 })
   return data

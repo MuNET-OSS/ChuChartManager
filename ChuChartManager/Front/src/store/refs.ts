@@ -12,7 +12,17 @@ export const selectedSource = ref('A000')
 export const sidebarActive = ref<SidebarKey>('charts')
 /** 设为正数时 MusicList 会跳转到该 ID 并选中 */
 export const selectMusicId = ref(-1)
+export const genreRevision = ref(0)
+export const releaseTagRevision = ref(0)
 
 export async function updateOptionDirs() {
   optionDirs.value = await getOptionDirs()
+}
+
+export function notifyGenreChanged() {
+  genreRevision.value++
+}
+
+export function notifyReleaseTagChanged() {
+  releaseTagRevision.value++
 }

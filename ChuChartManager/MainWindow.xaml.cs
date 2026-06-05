@@ -133,7 +133,14 @@ public partial class MainWindow : Window
         GenreFilter.SelectionChanged -= GenreFilter_Changed;
         GenreFilter.Items.Clear();
         GenreFilter.Items.Add(new ComboBoxItem { Content = "全部流派", Tag = -1 });
-        foreach (var (id, name) in MusicScanner.GenreMap.OrderBy(kv => kv.Key))
+        var genreMap = MusicScanner.BuildGenreMap(_scanner);
+        foreach (var sort in GenreSortXml.ScanAll(_config.GamePath))
+        foreach (var (id, name) in sort.Entries)
+        {
+            if (!genreMap.ContainsKey(id))
+                genreMap[id] = string.IsNullOrWhiteSpace(name) ? $"Genre {id}" : name;
+        }
+        foreach (var (id, name) in genreMap)
             GenreFilter.Items.Add(new ComboBoxItem { Content = name, Tag = id });
         GenreFilter.SelectedIndex = 0;
         GenreFilter.SelectionChanged += GenreFilter_Changed;
@@ -149,7 +156,14 @@ public partial class MainWindow : Window
         PopulateCards(_scanner.AvailableSources.FirstOrDefault() ?? "A000");
 
         CmbGenre.Items.Clear();
-        foreach (var (id, name) in MusicScanner.GenreMap.OrderBy(kv => kv.Key))
+        var genreMap = MusicScanner.BuildGenreMap(_scanner);
+        foreach (var sort in GenreSortXml.ScanAll(_config.GamePath))
+        foreach (var (id, name) in sort.Entries)
+        {
+            if (!genreMap.ContainsKey(id))
+                genreMap[id] = string.IsNullOrWhiteSpace(name) ? $"Genre {id}" : name;
+        }
+        foreach (var (id, name) in genreMap)
             CmbGenre.Items.Add(new ComboBoxItem { Content = name, Tag = id });
 
         MusicListBox.IsEnabled = true;

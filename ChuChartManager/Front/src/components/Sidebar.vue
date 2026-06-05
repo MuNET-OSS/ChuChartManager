@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { rescanOptions } from '@/api/option'
 
-export type SidebarKey = 'charts' | 'course' | 'resources' | 'event' | 'emote' | 'mods' | 'loginBonus' | 'batch' | 'tools' | 'settings'
+export type SidebarKey = 'charts' | 'course' | 'resources' | 'genre' | 'event' | 'emote' | 'mods' | 'loginBonus' | 'batch' | 'tools' | 'settings'
 
 const { t } = useI18n()
 
@@ -13,6 +13,7 @@ const emit = defineEmits<{ 'update:active': [val: SidebarKey], 'refresh': [] }>(
 const items = computed(() => [
   { key: 'charts' as const, icon: 'i-mdi-music-note', label: t('sidebar.charts') },
   { key: 'resources' as const, icon: 'i-mdi-package-variant-closed', label: t('sidebar.resources') },
+  { key: 'genre' as const, icon: 'i-mdi-tag-multiple', label: t('sidebar.genre') },
   { key: 'batch' as const, icon: 'i-mdi-playlist-edit', label: t('sidebar.batch') },
   { key: 'mods' as const, icon: 'i-mdi-puzzle', label: t('sidebar.mods') },
   { key: 'course' as const, icon: 'i-mdi-trophy-variant', label: t('sidebar.course') },

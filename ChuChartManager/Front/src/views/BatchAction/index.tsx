@@ -1,6 +1,7 @@
 import { defineComponent, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getMusicList, getGenreMap, type MusicListItem } from '@/api'
+import { getReleaseTagMap } from '@/api/releaseTag'
 import MusicSelector from './MusicSelector'
 import ChooseAction from './ChooseAction'
 import EditProps from './EditProps'
@@ -20,6 +21,7 @@ export default defineComponent({
     const step = ref(STEP.None)
     const allMusic = ref<MusicListItem[]>([])
     const genreMap = ref<Record<number, string>>({})
+    const releaseTagMap = ref<Record<number, string>>({})
     const selected = ref<MusicListItem[]>([])
 
     const reset = () => {
@@ -28,9 +30,10 @@ export default defineComponent({
     }
 
     onMounted(async () => {
-      const [music, genres] = await Promise.all([getMusicList(), getGenreMap()])
+      const [music, genres, releaseTags] = await Promise.all([getMusicList(), getGenreMap(), getReleaseTagMap()])
       allMusic.value = music
       genreMap.value = genres
+      releaseTagMap.value = releaseTags
       step.value = STEP.Select
     })
 
@@ -58,6 +61,7 @@ export default defineComponent({
           <EditProps
             selectedMusic={selected.value}
             genreMap={genreMap.value}
+            releaseTagMap={releaseTagMap.value}
             closeModal={reset}
             onListUpdated={(list: MusicListItem[]) => { allMusic.value = list }}
           />

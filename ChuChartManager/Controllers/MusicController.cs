@@ -44,6 +44,8 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             Artist = m.Artist,
             GenreId = m.GenreId,
             Genres = m.Genres,
+            ReleaseTagId = m.ReleaseTagId,
+            ReleaseTagStr = m.ReleaseTagStr,
             AssetDir = m.AssetDir,
             HasJacket = m.GetJacketFullPath() != null,
             WorldsEndTag = m.WorldsEndTag,
@@ -74,7 +76,18 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
     [HttpGet]
     public ActionResult<Dictionary<int, string>> GetGenreMap()
     {
-        return Ok(MusicScanner.GenreMap);
+        var map = MusicScanner.BuildGenreMap(scannerService.Scanner);
+        var gamePath = StaticSettings.GamePath;
+        if (!string.IsNullOrEmpty(gamePath))
+        {
+            foreach (var sort in GenreSortXml.ScanAll(gamePath))
+            foreach (var (id, name) in sort.Entries)
+            {
+                if (!map.ContainsKey(id))
+                    map[id] = string.IsNullOrWhiteSpace(name) ? $"Genre {id}" : name;
+            }
+        }
+        return Ok(map);
     }
 
     [HttpGet]
@@ -136,6 +149,14 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             if (genreIdNode != null) genreIdNode.InnerText = dto.GenreId.ToString();
             music.GenreId = dto.GenreId;
             if (dto.GenreName != null) music.Genres = [dto.GenreName];
+        }
+
+        if (dto.ReleaseTagId >= 0)
+        {
+            var releaseTagStr = ResolveReleaseTagStr(dto.ReleaseTagId, dto.ReleaseTagStr);
+            SetStringId(root, "releaseTagName", dto.ReleaseTagId, releaseTagStr);
+            music.ReleaseTagId = dto.ReleaseTagId;
+            music.ReleaseTagStr = releaseTagStr;
         }
 
         if (dto.Fumens != null)
@@ -258,13 +279,14 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             return BadRequest("该 ID 的曲目目录已存在");
 
         Directory.CreateDirectory(targetDir);
+        var releaseTagStr = ResolveReleaseTagStr(dto.ReleaseTagId, dto.ReleaseTagStr);
 
         var xmlDoc = new System.Xml.XmlDocument();
         xmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <MusicData xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"">
   <dataName>{musicDirName}</dataName>
   <netOpenName><id>2800</id><str>v2_45 00_0</str><data /></netOpenName>
-  <releaseTagName><id>0</id><str>v1 1.00.00</str><data /></releaseTagName>
+  <releaseTagName><id>{dto.ReleaseTagId}</id><str>{System.Security.SecurityElement.Escape(releaseTagStr)}</str><data /></releaseTagName>
   <disableFlag>false</disableFlag>
   <name><id>{dto.Id}</id><str>{System.Security.SecurityElement.Escape(dto.Name)}</str><data /></name>
   <sortName>{System.Security.SecurityElement.Escape(dto.Name.Length > 0 ? dto.Name[..1] : "")}</sortName>
@@ -600,6 +622,14 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 music.GenreId = dto.GenreId;
             }
 
+            if (dto.ReleaseTagId >= 0)
+            {
+                var releaseTagStr = ResolveReleaseTagStr(dto.ReleaseTagId, dto.ReleaseTagStr);
+                SetStringId(root, "releaseTagName", dto.ReleaseTagId, releaseTagStr);
+                music.ReleaseTagId = dto.ReleaseTagId;
+                music.ReleaseTagStr = releaseTagStr;
+            }
+
             if (dto.Fumens != null)
             {
                 var fumenNodes = root.SelectNodes("fumens/MusicFumenData");
@@ -771,6 +801,8 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         [FromForm] string? artist = "",
         [FromForm] int genreId = 0,
         [FromForm] string? genreName = "",
+        [FromForm] int releaseTagId = 0,
+        [FromForm] string? releaseTagStr = "",
         [FromForm] string? targetDir = "")
     {
         if (string.IsNullOrEmpty(StaticSettings.GamePath))
@@ -936,12 +968,13 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             var jaketFileXml = jacketFileName != null
                 ? $"<path>{jacketFileName}</path>"
                 : "<path />";
+            releaseTagStr = ResolveReleaseTagStr(releaseTagId, releaseTagStr);
 
             var xmlDoc = new System.Xml.XmlDocument();
             xmlDoc.LoadXml($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <MusicData>
   <dataName>{musicDirName}</dataName>
-  <releaseTagName><id>0</id><str>v1 1.00.00</str><data /></releaseTagName>
+  <releaseTagName><id>{releaseTagId}</id><str>{System.Security.SecurityElement.Escape(releaseTagStr)}</str><data /></releaseTagName>
   <netOpenName><id>2800</id><str>v2_45 00_0</str><data /></netOpenName>
   <disableFlag>false</disableFlag>
   <exType>0</exType>
@@ -1028,6 +1061,48 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
     {
         if (!scanner.MusicBySource.TryGetValue(assetDir, out var list)) return null;
         return list.FirstOrDefault(m => m.Id == id);
+    }
+
+    private static string ResolveReleaseTagStr(int releaseTagId, string? fallback)
+    {
+        if (!string.IsNullOrWhiteSpace(fallback)) return fallback;
+
+        var gamePath = StaticSettings.GamePath;
+        if (!string.IsNullOrEmpty(gamePath))
+        {
+            var tag = ReleaseTagXml.ScanAll(gamePath).FirstOrDefault(x => x.Id == releaseTagId);
+            if (tag != null) return tag.VersionStr;
+        }
+
+        return releaseTagId == 0 ? "v1 1.00.00" : $"ReleaseTag {releaseTagId}";
+    }
+
+    private static void SetStringId(System.Xml.XmlNode root, string nodeName, int id, string str)
+    {
+        var doc = root.OwnerDocument ?? throw new InvalidOperationException("OwnerDocument not found");
+        var node = root.SelectSingleNode(nodeName);
+        if (node == null)
+        {
+            node = doc.CreateElement(nodeName);
+            root.AppendChild(node);
+        }
+
+        SetChildText(doc, node, "id", id.ToString());
+        SetChildText(doc, node, "str", str);
+        if (node.SelectSingleNode("data") == null)
+            node.AppendChild(doc.CreateElement("data"));
+    }
+
+    private static void SetChildText(System.Xml.XmlDocument doc, System.Xml.XmlNode parent, string nodeName, string value)
+    {
+        var node = parent.SelectSingleNode(nodeName);
+        if (node == null)
+        {
+            node = doc.CreateElement(nodeName);
+            parent.AppendChild(node);
+        }
+
+        node.InnerText = value;
     }
 
     private static readonly object JacketLock = new();
@@ -1306,6 +1381,8 @@ public class MusicListItem
     public string Artist { get; set; } = "";
     public int GenreId { get; set; }
     public List<string> Genres { get; set; } = [];
+    public int ReleaseTagId { get; set; }
+    public string ReleaseTagStr { get; set; } = "";
     public string AssetDir { get; set; } = "";
     public bool HasJacket { get; set; }
     public string WorldsEndTag { get; set; } = "";
@@ -1330,6 +1407,8 @@ public class MusicEditDto
     public string Artist { get; set; } = "";
     public int GenreId { get; set; } = -1;
     public string? GenreName { get; set; }
+    public int ReleaseTagId { get; set; } = -1;
+    public string? ReleaseTagStr { get; set; }
     public FumenEditDto[]? Fumens { get; set; }
 }
 
@@ -1357,6 +1436,8 @@ public class CreateMusicDto
     public string Artist { get; set; } = "";
     public int GenreId { get; set; }
     public string GenreName { get; set; } = "";
+    public int ReleaseTagId { get; set; }
+    public string? ReleaseTagStr { get; set; }
 }
 
 public class MusicIdAndAssetDir
@@ -1375,6 +1456,8 @@ public class BatchSetPropsDto
     public MusicIdAndAssetDir[] Ids { get; set; } = [];
     public int GenreId { get; set; } = -1;
     public string? GenreName { get; set; }
+    public int ReleaseTagId { get; set; } = -1;
+    public string? ReleaseTagStr { get; set; }
     public FumenEditDto[]? Fumens { get; set; }
 }
 

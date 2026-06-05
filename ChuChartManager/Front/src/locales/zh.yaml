@@ -2,6 +2,8 @@ sidebar:
   charts: 谱面
   course: 段位
   resources: 资源
+  genre: 流派
+  releaseTag: 版本标签
   mods: Mod
   loginBonus: 登录奖励
   event: 活动
@@ -10,6 +12,27 @@ sidebar:
   tools: 工具
   settings: 设置
   refresh: 刷新数据
+genre:
+  management: 流派管理
+  empty: 暂无自定义流派
+  name: 流派名称
+  nameRequired: 请输入流派名称
+  namePlaceholder: 输入流派名称
+  saved: 流派已保存
+  created: 流派已创建
+  deleted: 流派已删除
+  deleteConfirm: 确定删除此流派？
+  idConflict: ID 已被占用
+  totalCount: "共 {count} 个流派"
+  showBuiltIn: 显示内置
+  custom: 自定义
+  builtIn: 内置
+releaseTag:
+  management: 版本标签管理
+  versionStr: 标签字符串
+  titleName: 标题名称
+  showBuiltIn: 显示内置
+  idConflict: ID 已被占用
 settings:
   title: 设置
   appearance: 外观
@@ -109,6 +132,7 @@ music:
   songTitle: 曲名
   artist: 曲师
   genre: 流派
+  releaseTag: 版本标签
   enableDiff: 启用此难度
   chartAuthor: 作者
   chartLevel: 显示等级
@@ -348,6 +372,7 @@ batch:
     none: 无
     genre: 按流派
   genre: 分类
+  releaseTag: 版本标签
   execute: 执行
   executing: 执行中…
   noMusicSelected: 请先选择曲目

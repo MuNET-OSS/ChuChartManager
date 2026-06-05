@@ -2,6 +2,8 @@ sidebar:
   charts: Charts
   course: Course
   resources: Resources
+  genre: Genre
+  releaseTag: Release Tags
   mods: Mods
   loginBonus: Login Bonus
   event: Events
@@ -10,6 +12,27 @@ sidebar:
   tools: Tools
   settings: Settings
   refresh: Refresh Data
+genre:
+  management: Genre Manager
+  empty: No custom genres
+  name: Genre Name
+  nameRequired: Please enter a genre name
+  namePlaceholder: Enter genre name
+  saved: Genre saved
+  created: Genre created
+  deleted: Genre deleted
+  deleteConfirm: Delete this genre?
+  idConflict: ID already in use
+  totalCount: "{count} genres total"
+  showBuiltIn: Show built-in
+  custom: Custom
+  builtIn: Built-in
+releaseTag:
+  management: Release Tag Manager
+  versionStr: Tag String
+  titleName: Title Name
+  showBuiltIn: Show built-in
+  idConflict: ID already in use
 settings:
   title: Settings
   appearance: Appearance
@@ -109,6 +132,7 @@ music:
   songTitle: Title
   artist: Artist
   genre: Genre
+  releaseTag: Release Tag
   enableDiff: Enable this difficulty
   chartAuthor: Author
   chartLevel: Display Level
@@ -348,6 +372,7 @@ batch:
     none: None
     genre: By genre
   genre: Genre
+  releaseTag: Release Tag
   execute: Execute
   executing: Executing…
   noMusicSelected: Please select music first

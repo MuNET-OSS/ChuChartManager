@@ -20,6 +20,8 @@ public class MusicXml
     public string Artist { get; set; } = "";
     public List<string> Genres { get; set; } = [];
     public int GenreId { get; set; } = -1;
+    public int ReleaseTagId { get; set; } = -1;
+    public string ReleaseTagStr { get; set; } = "";
     public string WorksName { get; set; } = "";
     public string JacketFileName { get; set; } = "";
     public string CueFileName { get; set; } = "";
@@ -77,6 +79,9 @@ public class MusicXml
         WorldsEndTagId = int.TryParse(root.SelectSingleNode("worldsEndTagName/id")?.InnerText, out var weId) ? weId : -1;
         WorldsEndTag = root.SelectSingleNode("worldsEndTagName/str")?.InnerText ?? "";
         IsWorldsEnd = ExType == 2;
+
+        ReleaseTagId = int.TryParse(root.SelectSingleNode("releaseTagName/id")?.InnerText, out var rtId) ? rtId : -1;
+        ReleaseTagStr = root.SelectSingleNode("releaseTagName/str")?.InnerText ?? "";
 
         var genreNodes = root.SelectNodes("genreNames/list/StringID");
         if (genreNodes != null)

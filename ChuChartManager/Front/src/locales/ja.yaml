@@ -2,6 +2,8 @@ sidebar:
   charts: 譜面
   course: 段位
   resources: リソース
+  genre: ジャンル
+  releaseTag: バージョンタグ
   mods: Mod
   loginBonus: ログインボーナス
   event: イベント
@@ -10,6 +12,27 @@ sidebar:
   tools: ツール
   settings: 設定
   refresh: データ更新
+genre:
+  management: ジャンル管理
+  empty: カスタムジャンルなし
+  name: ジャンル名
+  nameRequired: ジャンル名を入力してください
+  namePlaceholder: ジャンル名を入力
+  saved: ジャンルを保存しました
+  created: ジャンルを作成しました
+  deleted: ジャンルを削除しました
+  deleteConfirm: このジャンルを削除しますか？
+  idConflict: ID が既に使用されています
+  totalCount: "全 {count} ジャンル"
+  showBuiltIn: 標準を表示
+  custom: カスタム
+  builtIn: 標準
+releaseTag:
+  management: バージョンタグ管理
+  versionStr: タグ文字列
+  titleName: タイトル名
+  showBuiltIn: 標準を表示
+  idConflict: ID が既に使用されています
 settings:
   title: 設定
   appearance: 外観
@@ -109,6 +132,7 @@ music:
   songTitle: 曲名
   artist: アーティスト
   genre: ジャンル
+  releaseTag: バージョンタグ
   enableDiff: この難易度を有効にする
   chartAuthor: 作者
   chartLevel: 表示レベル
@@ -339,6 +363,7 @@ batch:
     none: なし
     genre: ジャンル別
   genre: ジャンル
+  releaseTag: バージョンタグ
   execute: 実行
   executing: 実行中…
   noMusicSelected: 楽曲を選択してください

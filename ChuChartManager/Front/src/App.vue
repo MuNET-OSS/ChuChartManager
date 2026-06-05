@@ -6,6 +6,7 @@ import StatusBar from '@/components/StatusBar.vue'
 import MusicList from '@/views/MusicList.vue'
 import Course from '@/views/Course/index'
 import ResourceManager from '@/views/ResourceManager/index'
+import GenreManager from '@/views/GenreManager/index'
 import ModManager from '@/views/ModManager.vue'
 import LoginBonus from '@/views/LoginBonus/index'
 import EventManager from '@/views/Event/index'
@@ -48,6 +49,7 @@ const handleRefresh = () => {
           <MusicList v-show="sidebarActive === 'charts'" ref="musicListRef" />
           <Course v-if="sidebarActive === 'course'" />
           <ResourceManager v-if="sidebarActive === 'resources'" />
+          <GenreManager v-if="sidebarActive === 'genre'" />
           <ModManager v-if="sidebarActive === 'mods'" />
           <EventManager v-if="sidebarActive === 'event'" />
           <EmoteManager v-if="sidebarActive === 'emote'" />

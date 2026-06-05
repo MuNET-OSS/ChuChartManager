@@ -14,17 +14,6 @@ public partial class MusicScanner
     public List<string> AvailableSources { get; } = [];
     public List<string> Errors { get; } = [];
 
-    public static readonly Dictionary<int, string> GenreMap = new()
-    {
-        [0] = "POPS & ANIME",
-        [2] = "niconico",
-        [3] = "東方Project",
-        [5] = "ORIGINAL",
-        [6] = "VARIETY",
-        [7] = "イロドリミドリ",
-        [9] = "ゲキマイ",
-    };
-
     public MusicScanner(string gamePath)
     {
         _gamePath = gamePath;
@@ -73,6 +62,25 @@ public partial class MusicScanner
 
         var total = MusicBySource.Values.Sum(l => l.Count);
         Log.Info($"扫描完成: {total} 首曲目, {AvailableSources.Count} 个 option, {Errors.Count} 个错误");
+    }
+
+    public static Dictionary<int, string> BuildGenreMap(MusicScanner? scanner)
+    {
+        var map = new Dictionary<int, string>();
+        if (scanner != null)
+        {
+            foreach (var (_, musics) in scanner.MusicBySource)
+            {
+                foreach (var m in musics)
+                {
+                    if (m.GenreId < 0 || map.ContainsKey(m.GenreId)) continue;
+                    var name = m.Genres.Count > 0 ? m.Genres[0] : "";
+                    if (!string.IsNullOrEmpty(name))
+                        map[m.GenreId] = name;
+                }
+            }
+        }
+        return map;
     }
 
     private int ScanMusicDirectory(string musicDir, string assetDir)

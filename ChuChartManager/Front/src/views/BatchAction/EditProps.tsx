@@ -8,17 +8,24 @@ export default defineComponent({
   props: {
     selectedMusic: { type: Array as PropType<MusicListItem[]>, required: true },
     genreMap: { type: Object as PropType<Record<number, string>>, required: true },
+    releaseTagMap: { type: Object as PropType<Record<number, string>>, required: true },
     closeModal: { type: Function as PropType<() => void>, required: true },
     onListUpdated: { type: Function as PropType<(list: MusicListItem[]) => void>, required: true },
   },
   setup(props) {
     const { t } = useI18n()
     const genreId = ref(-1)
+    const releaseTagId = ref(-1)
     const loading = ref(false)
 
     const genreOptions = (): SelectOption[] => [
       { label: t('batch.notChange'), value: -1 },
       ...Object.entries(props.genreMap).map(([id, name]) => ({ label: name, value: Number(id) })),
+    ]
+
+    const releaseTagOptions = (): SelectOption[] => [
+      { label: t('batch.notChange'), value: -1 },
+      ...Object.entries(props.releaseTagMap).map(([id, name]) => ({ label: name, value: Number(id) })),
     ]
 
     const save = async () => {
@@ -29,6 +36,8 @@ export default defineComponent({
           ids,
           genreId: genreId.value,
           genreName: props.genreMap[genreId.value] ?? '',
+          releaseTagId: releaseTagId.value,
+          releaseTagStr: props.releaseTagMap[releaseTagId.value] ?? '',
         })
         addToast({ message: t('batch.done'), type: 'success' })
         props.onListUpdated(await getMusicList())
@@ -47,6 +56,10 @@ export default defineComponent({
         <div class="mt-4 max-w-md">
           <label class="text-xs op-50 mb-1 block">{t('batch.genre')}</label>
           <Select v-model:value={genreId.value} options={genreOptions()} />
+        </div>
+        <div class="mt-4 max-w-md">
+          <label class="text-xs op-50 mb-1 block">{t('batch.releaseTag')}</label>
+          <Select v-model:value={releaseTagId.value} options={releaseTagOptions()} />
         </div>
         <div class="flex justify-end gap-2 mt-4">
           <Button onClick={props.closeModal} disabled={loading.value}>{t('batch.previous')}</Button>
