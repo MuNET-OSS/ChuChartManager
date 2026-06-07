@@ -17,7 +17,6 @@ groups = [
     { id = "audio", label = { zh = "音频", en = "Audio" }, sections = ["ForceSharedAudio", "Force2chAudio"] },
     { id = "network", label = { zh = "网络", en = "Network" }, sections = ["DisableEncryption", "DisableTLS"] },
     { id = "compatibility", label = { zh = "兼容", en = "Compatibility" }, sections = ["BypassAppUser"] },
-    { id = "ux", label = { zh = "体验", en = "UX" }, sections = ["ExitConfirm", "DeviceLostFix"] },
 ]
 
 [[config.sections]]
