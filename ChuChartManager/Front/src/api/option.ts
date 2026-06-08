@@ -4,6 +4,7 @@ export interface OptionDirInfo {
   dirName: string
   musicCount: number
   isCustom: boolean
+  version: string
 }
 
 export interface ConflictEntry {

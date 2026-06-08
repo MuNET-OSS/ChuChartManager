@@ -82,6 +82,7 @@ export default defineComponent({
         <div class="grow-1 min-w-0">
           <div class="truncate">
             {props.dir.dirName}
+            {props.dir.version && <span class="op-70"> (Ver.{props.dir.version})</span>}
           </div>
           <div class="text-xs op-50">
             {t('optionDir.musicCount', { count: props.dir.musicCount })}

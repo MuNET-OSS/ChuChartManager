@@ -1,6 +1,6 @@
 namespace ChuChartManager;
 
-public static class AppMain
+public partial class AppMain
 {
     public static Browser? BrowserWin { get; set; }
     public static OobeBrowser? OobeBrowserWin { get; set; }

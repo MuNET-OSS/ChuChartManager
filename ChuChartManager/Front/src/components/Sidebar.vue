@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { rescanOptions } from '@/api/option'
+import VersionInfo from '@/components/VersionInfo'
 
 export type SidebarKey = 'charts' | 'course' | 'resources' | 'genre' | 'event' | 'emote' | 'mods' | 'loginBonus' | 'batch' | 'tools' | 'settings'
 
@@ -66,6 +67,7 @@ const handleRefresh = async () => {
       <span class="i-ic-baseline-refresh text-6" :class="{ 'animate-spin': refreshing }" />
       <span class="tooltip">{{ t('sidebar.refresh') }}</span>
     </div>
+    <VersionInfo />
   </div>
 </template>
 

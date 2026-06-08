@@ -54,6 +54,10 @@ settings:
   appDesc: CHUNITHM 谱面管理工具
   language: 语言
   switchMode: 切换工作模式
+about:
+  title: 关于
+  version: 应用版本
+  gameVersion: 游戏版本
 oobe:
   welcomeMessage: 欢迎使用 ChuChartManager
   selectGameDir: 选择游戏目录

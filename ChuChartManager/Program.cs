@@ -16,6 +16,7 @@ public static class Program
         if (hasGamePath)
         {
             StaticSettings.GamePath = StaticSettings.Config.GamePath;
+            StaticSettings.ReadGameVersion();
             var scanner = new MusicScanner(StaticSettings.GamePath);
             scanner.ScanAll();
             StaticSettings.Scanner = scanner;

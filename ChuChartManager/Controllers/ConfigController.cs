@@ -38,6 +38,7 @@ public class ConfigController : ControllerBase
         var scanner = new MusicScanner(gamePath);
         scanner.ScanAll();
         StaticSettings.Scanner = scanner;
+        StaticSettings.ReadGameVersion();
 
         return Ok();
     }
@@ -97,6 +98,7 @@ public class ConfigController : ControllerBase
         var scanner = new MusicScanner(StaticSettings.GamePath);
         scanner.ScanAll();
         StaticSettings.Scanner = scanner;
+        StaticSettings.ReadGameVersion();
         return Ok();
     }
 

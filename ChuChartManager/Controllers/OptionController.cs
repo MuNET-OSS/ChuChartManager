@@ -7,7 +7,7 @@ namespace ChuChartManager.Controllers;
 [Route("api/[controller]/[action]")]
 public class OptionController(MusicScannerService scannerService) : ControllerBase
 {
-    public record OptionDirInfo(string DirName, int MusicCount, bool IsCustom);
+    public record OptionDirInfo(string DirName, int MusicCount, bool IsCustom, string Version);
     public record ConflictEntry(int MusicId, string MusicName, string Dir, string ConflictDir);
 
     [HttpGet]
@@ -26,7 +26,8 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
                 var markPath = Path.Combine(StaticSettings.GamePath, "bin", "option", source, "CustomChartsMark.txt");
                 isCustom = System.IO.File.Exists(markPath);
             }
-            return new OptionDirInfo(source, musicCount, isCustom);
+            var version = ReadOptVersion(source);
+            return new OptionDirInfo(source, musicCount, isCustom, version);
         }).ToList();
 
         return Ok(result);
@@ -207,5 +208,44 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
             System.IO.File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), true);
         foreach (var dir in Directory.GetDirectories(source))
             CopyDirectory(dir, Path.Combine(dest, Path.GetFileName(dir)));
+    }
+
+    private static string ReadOptVersion(string dirName)
+    {
+        var path = ResolveOptRoot(dirName);
+        if (path == null) return "";
+        var confPath = Path.Combine(path, "data.conf");
+        if (!System.IO.File.Exists(confPath)) return "";
+
+        try
+        {
+            int major = 0, minor = 0, release = 0;
+            foreach (var line in System.IO.File.ReadLines(confPath))
+            {
+                if (line.StartsWith("VerMajor")) major = int.Parse(line.Split('=')[1].Trim());
+                if (line.StartsWith("VerMinor")) minor = int.Parse(line.Split('=')[1].Trim());
+                if (line.StartsWith("VerRelease")) release = int.Parse(line.Split('=')[1].Trim());
+            }
+            var version = major > 0 ? $"{major}.{minor:D2}" : "";
+            if (version.Length > 0 && release != 0)
+                version += "-" + ReleaseToLetters(release);
+            return version;
+        }
+        catch
+        {
+            return "";
+        }
+    }
+
+    private static string ReleaseToLetters(int release)
+    {
+        var result = "";
+        while (release > 0)
+        {
+            release--;
+            result = (char)('A' + release % 26) + result;
+            release /= 26;
+        }
+        return result;
     }
 }

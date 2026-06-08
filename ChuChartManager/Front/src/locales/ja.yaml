@@ -54,6 +54,10 @@ settings:
   appDesc: CHUNITHM 譜面管理ツール
   language: 言語
   switchMode: モード切替
+about:
+  title: について
+  version: アプリバージョン
+  gameVersion: ゲームバージョン
 oobe:
   welcomeMessage: ChuChartManager へようこそ
   selectGameDir: ゲームディレクトリを選択

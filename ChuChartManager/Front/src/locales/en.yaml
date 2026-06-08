@@ -54,6 +54,10 @@ settings:
   appDesc: CHUNITHM Chart Management Tool
   language: Language
   switchMode: Switch Mode
+about:
+  title: About
+  version: App Version
+  gameVersion: Game Version
 oobe:
   welcomeMessage: Welcome to ChuChartManager
   selectGameDir: Select Game Directory

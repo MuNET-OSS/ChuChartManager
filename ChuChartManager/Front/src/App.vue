@@ -17,7 +17,7 @@ import Settings from '@/views/Settings.vue'
 import Oobe from '@/views/Oobe/index'
 import { ensureBackendUrl } from '@/api'
 import { loadLocaleFromBackend } from '@/locales'
-import { updateOptionDirs, sidebarActive } from '@/store/refs'
+import { updateOptionDirs, sidebarActive, updateAppVersion } from '@/store/refs'
 
 const hash = window.location.hash.replace('#', '')
 const isOobeWindow = hash === 'oobe' || hash === 'mode-select'
@@ -30,6 +30,7 @@ onMounted(async () => {
   await ensureBackendUrl()
   await loadLocaleFromBackend()
   updateOptionDirs()
+  updateAppVersion()
   ready.value = true
 })
 

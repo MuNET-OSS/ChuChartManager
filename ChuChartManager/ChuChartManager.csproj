@@ -11,11 +11,23 @@
     <StartupObject>ChuChartManager.Program</StartupObject>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <NoWarn>NU1605</NoWarn>
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
   <ItemGroup>
+    <None Include="..\LICENSE">
+	  <Link>LICENSE</Link>
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="icon.ico" CopyToOutputDirectory="PreserveNewest" />
     <None Include="tools\ugctool.exe" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Resources\template_music.acb" CopyToOutputDirectory="PreserveNewest" />

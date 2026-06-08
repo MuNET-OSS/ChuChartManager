@@ -60,6 +60,11 @@ const loading = ref(true)
 
 const isA000 = computed(() => selectedSource.value === 'A000')
 
+const currentOptVersion = computed(() => {
+  const dir = optionDirs.value.find(d => d.dirName === selectedSource.value)
+  return dir?.version || ''
+})
+
 const genreFilter = ref<string | number>('-1')
 const diffFilter = ref<string | number>('-1')
 
@@ -493,6 +498,7 @@ const copyExportOptions = computed(() => {
               @click="leftPanel = 'optionDirs'"
             >
               <span class="truncate">{{ selectedSource || 'A000' }}</span>
+              <span v-if="currentOptVersion" class="op-70">(Ver.{{ currentOptVersion }})</span>
             </div>
             <Select :options="sortOptions" v-model:value="musicSortMode" class="w-40! shrink-0" />
           </div>
