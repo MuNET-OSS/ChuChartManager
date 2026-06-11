@@ -65,16 +65,6 @@
     <Compile Remove="Front\**" />
     <Content Remove="Front\**" />
     <None Remove="Front\**" />
-    <Compile Remove="App.xaml.cs" />
-    <Compile Remove="MainWindow.xaml.cs" />
-    <Compile Remove="StartupWindow.xaml.cs" />
-    <Compile Remove="WebPreviewWindow.xaml.cs" />
-    <Compile Remove="DwmHelper.cs" />
-    <Compile Remove="Models\DiffBadge.cs" />
-    <Compile Remove="Models\MusicRow.cs" />
-    <Compile Remove="Models\DifficultyItem.cs" />
-    <Page Remove="**\*.xaml" />
-    <ApplicationDefinition Remove="App.xaml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
