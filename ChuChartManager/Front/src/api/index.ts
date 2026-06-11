@@ -60,6 +60,11 @@ export async function getMusicList(source?: string): Promise<MusicListItem[]> {
   return data
 }
 
+export async function getStartupErrors(): Promise<string[]> {
+  const { data } = await apiClient.get('/api/AppStatus/GetStartupErrors')
+  return data
+}
+
 export async function getSources(): Promise<string[]> {
   const { data } = await apiClient.get('/api/Music/GetSources')
   return data

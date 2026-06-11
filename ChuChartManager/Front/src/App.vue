@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { modalShowing, GlobalElementsContainer } from '@munet/ui'
 import Sidebar from '@/components/Sidebar.vue'
 import StatusBar from '@/components/StatusBar.vue'
+import StartupErrorDialog from '@/components/StartupErrorDialog'
 import MusicList from '@/views/MusicList.vue'
 import Course from '@/views/Course/index'
 import ResourceManager from '@/views/ResourceManager/index'
@@ -44,6 +45,7 @@ const handleRefresh = () => {
     <Oobe v-if="isOobeWindow" :initStep="oobeInitStep" />
     <div v-else class="content-root" :class="{ 'modal-open': modalShowing }">
       <GlobalElementsContainer />
+      <StartupErrorDialog />
       <div class="main-layout">
         <Sidebar v-model:active="sidebarActive" @refresh="handleRefresh" />
         <div class="main-content">

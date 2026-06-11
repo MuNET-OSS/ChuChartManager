@@ -58,6 +58,9 @@ about:
   title: 关于
   version: 应用版本
   gameVersion: 游戏版本
+startup:
+  errorTitle: 启动时发生错误
+  fixPrompt: 请检查并修复以上问题，必要时手动修改或删除对应文件。
 oobe:
   welcomeMessage: 欢迎使用 ChuChartManager
   selectGameDir: 选择游戏目录

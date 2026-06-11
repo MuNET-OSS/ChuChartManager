@@ -58,6 +58,9 @@ about:
   title: について
   version: アプリバージョン
   gameVersion: ゲームバージョン
+startup:
+  errorTitle: 起動時にエラーが発生しました
+  fixPrompt: 上記の問題を確認して修正してください。必要に応じて該当ファイルを手動で編集または削除してください。
 oobe:
   welcomeMessage: ChuChartManager へようこそ
   selectGameDir: ゲームディレクトリを選択

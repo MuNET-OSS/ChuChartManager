@@ -58,6 +58,9 @@ about:
   title: About
   version: App Version
   gameVersion: Game Version
+startup:
+  errorTitle: Errors occurred during startup
+  fixPrompt: Please review and fix the issues above. Edit or remove the affected files manually if necessary.
 oobe:
   welcomeMessage: Welcome to ChuChartManager
   selectGameDir: Select Game Directory
