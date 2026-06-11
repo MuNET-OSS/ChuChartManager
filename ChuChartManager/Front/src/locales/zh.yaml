@@ -206,6 +206,15 @@ music:
   exportFailed: "导出失败: {error}"
   clickToReplaceJacket: 点击替换封面
   replaceAudio: 替换音频
+  editPreview: 编辑试听
+  previewHint: 拖动选区调整试听区间，或用下方输入框精确设置
+  previewStart: 起点（秒）
+  previewEnd: 终点（秒）
+  previewPlayRegion: 试听选区
+  previewSaved: 试听区间已保存
+  previewSaveFailed: 试听区间保存失败
+  previewStartGtEnd: 起点必须小于终点
+  previewEndLtStart: 终点必须大于起点
   audioImporting: 正在导入音频...
   audioReplaced: 音频替换成功
   audioReplaceFailed: "音频替换失败: {error}"

@@ -78,6 +78,20 @@ export interface BatchDeleteResult {
   error?: string
 }
 
+export interface AudioPreviewTime {
+  startMs: number
+  endMs: number
+}
+
+export async function getAudioPreview(id: number, assetDir: string): Promise<AudioPreviewTime> {
+  const { data } = await apiClient.get('/api/Music/GetAudioPreview', { params: { id, assetDir } })
+  return data
+}
+
+export async function setAudioPreview(id: number, assetDir: string, startMs: number, endMs: number): Promise<void> {
+  await apiClient.post('/api/Music/SetAudioPreview', { startMs, endMs }, { params: { id, assetDir } })
+}
+
 export async function batchDelete(items: { id: number; assetDir: string }[]): Promise<BatchDeleteResult[]> {
   const { data } = await apiClient.post('/api/Music/BatchDelete', { ids: items })
   return data

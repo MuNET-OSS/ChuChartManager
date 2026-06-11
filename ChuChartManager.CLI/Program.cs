@@ -38,6 +38,11 @@ app.Configure(config =>
         .WithDescription("检查数据完整性（缺音频、缺封面、XML 损坏）")
         .WithExample("validate", "-p", "G:\\");
 
+    config.AddCommand<PreviewCommand>("preview")
+        .WithDescription("查看或写入 ACB 试听预览区间")
+        .WithExample("preview", "music0820.acb")
+        .WithExample("preview", "music0820.acb", "-s", "5000", "-e", "20000");
+
     config.AddCommand<DebugCommand>("debug")
         .WithDescription("以控制台模式启动主程序，用于查看日志输出");
 });

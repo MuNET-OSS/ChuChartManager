@@ -31,6 +31,7 @@
     <None Include="icon.ico" CopyToOutputDirectory="PreserveNewest" />
     <None Include="tools\ugctool.exe" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Resources\template_music.acb" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Resources\template_preview.acb" CopyToOutputDirectory="PreserveNewest" />
 <Content Include="Resources\AppleChu\*.toml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\FreeMote\FreeMote.Tools.Viewer\bin\Release\net48\**" Link="tools\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\FreeMote\FreeMote.Tools.PsbDecompile\bin\Release\net48\**" Link="tools\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

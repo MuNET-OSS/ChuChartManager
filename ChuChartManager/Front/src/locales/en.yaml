@@ -206,6 +206,15 @@ music:
   exportFailed: "Export failed: {error}"
   clickToReplaceJacket: Click to replace jacket
   replaceAudio: Replace Audio
+  editPreview: Edit Preview
+  previewHint: Drag the region to adjust the preview range, or set it precisely below
+  previewStart: Start (s)
+  previewEnd: End (s)
+  previewPlayRegion: Play Region
+  previewSaved: Preview range saved
+  previewSaveFailed: Failed to save preview range
+  previewStartGtEnd: Start must be less than end
+  previewEndLtStart: End must be greater than start
   audioImporting: Importing audio...
   audioReplaced: Audio replaced
   audioReplaceFailed: "Audio replace failed: {error}"

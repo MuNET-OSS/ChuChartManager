@@ -17,6 +17,7 @@ import BottomOverlay from '@/components/BottomOverlay.vue'
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
 import MusicIdConflictNotifier from '@/components/MusicIdConflictNotifier'
 import ProblemsDisplay from '@/components/ProblemsDisplay'
+import AudioPreviewEditor from '@/components/AudioPreviewEditor'
 import { BlobWriter, ZipReader } from '@zip.js/zip.js'
 import getSubDirFile from '@/utils/getSubDirFile'
 import { useI18n } from 'vue-i18n'
@@ -636,7 +637,10 @@ const copyExportOptions = computed(() => {
 
         <div class="flex items-center gap-2 mt-4">
           <PlayerBar class="grow" />
-          <Button v-if="!isA000" class="ws-nowrap shrink-0" @click="handleReplaceAudio">{{ t('music.replaceAudio') }}</Button>
+          <template v-if="!isA000">
+            <AudioPreviewEditor :id="selectedMusic.id" :assetDir="selectedMusic.assetDir" />
+            <Button class="ws-nowrap shrink-0" @click="handleReplaceAudio">{{ t('music.replaceAudio') }}</Button>
+          </template>
         </div>
 
         <div class="mt-6">

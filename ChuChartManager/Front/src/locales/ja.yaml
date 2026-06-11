@@ -206,6 +206,15 @@ music:
   exportFailed: "エクスポート失敗: {error}"
   clickToReplaceJacket: クリックでジャケットを置換
   replaceAudio: 音声を置換
+  editPreview: 試聴を編集
+  previewHint: 選択範囲をドラッグして試聴区間を調整、または下の入力欄で精密に設定
+  previewStart: 開始（秒）
+  previewEnd: 終了（秒）
+  previewPlayRegion: 選択範囲を試聴
+  previewSaved: 試聴区間を保存しました
+  previewSaveFailed: 試聴区間の保存に失敗しました
+  previewStartGtEnd: 開始は終了より小さくする必要があります
+  previewEndLtStart: 終了は開始より大きくする必要があります
   audioImporting: 音声をインポート中...
   audioReplaced: 音声を置換しました
   audioReplaceFailed: "音声の置換に失敗: {error}"

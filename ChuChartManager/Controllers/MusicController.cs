@@ -250,6 +250,44 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         return File(mp3Stream.ToArray(), "audio/mpeg", $"{music.CueFileName}.mp3");
     }
 
+    [HttpGet]
+    public ActionResult<AcbPreviewHelper.PreviewTime> GetAudioPreview([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var acbPath = AudioHelper.FindAcbPath(music);
+        if (acbPath == null) return NotFound("未找到 ACB");
+
+        return Ok(AcbPreviewHelper.Read(acbPath) ?? new AcbPreviewHelper.PreviewTime(-1, -1));
+    }
+
+    public record SetAudioPreviewDto(double StartMs, double EndMs);
+
+    [HttpPost]
+    public ActionResult SetAudioPreview([FromQuery] int id, [FromQuery] string assetDir, [FromBody] SetAudioPreviewDto dto)
+    {
+        if (assetDir == "A000") return BadRequest("不能修改 A000 的曲目");
+
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var music = FindMusic(scanner, id, assetDir);
+        if (music == null) return NotFound();
+
+        var acbPath = AudioHelper.FindAcbPath(music);
+        var awbPath = AudioHelper.FindAwbPath(music);
+        if (acbPath == null || awbPath == null) return NotFound("未找到 ACB/AWB");
+
+        if (dto.EndMs <= dto.StartMs) return BadRequest("预览结束时间必须大于起点");
+
+        AcbPreviewHelper.Write(acbPath, awbPath, id, (uint)Math.Max(0, dto.StartMs), (uint)dto.EndMs);
+        return Ok();
+    }
+
     [HttpPost]
     public ActionResult CopyMusic([FromBody] CopyMusicDto dto)
     {

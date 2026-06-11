@@ -40,6 +40,15 @@ public class AudioHelper : IDisposable
         return File.Exists(awbPath) ? awbPath : null;
     }
 
+    public static string? FindAcbPath(MusicXml music)
+    {
+        var sourceRoot = Path.GetDirectoryName(Path.GetDirectoryName(music.MusicDirectory));
+        if (sourceRoot == null) return null;
+
+        var acbPath = Path.Combine(sourceRoot, "cueFile", $"cueFile{music.Id:D6}", $"{music.CueFileName}.acb");
+        return File.Exists(acbPath) ? acbPath : null;
+    }
+
     public static byte[]? ExtractHcaFromAwb(string awbPath)
     {
         var archive = new CriAfs2Archive();
