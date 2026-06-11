@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { Button, Select, TextInput, CheckBox, DropMenu, NumberInput, Modal, theme } from '@munet/ui'
 import type { SelectOption } from '@munet/ui'
-import { useStorage } from '@vueuse/core'
+import { useStorage, useDropZone } from '@vueuse/core'
 import { VList } from 'virtua/vue'
 import { getMusicList, getSources, getGenreMap, getJacketUrl, saveMusic, getExportMp3Url, ensureBackendUrl, importJacket, importChart, getExportChartUrl, getExportOptUrl, getExportCustomUrl, openExplorer, openXml, changeId, deleteMusic, setJacket, setAudio, replaceChart, isWebView, getBaseUrl } from '@/api'
 import type { MusicListItem } from '@/api'
@@ -15,6 +15,7 @@ import ImportMusicModal from '@/views/ImportMusicModal.vue'
 import PlayerBar from '@/components/PlayerBar.vue'
 import BottomOverlay from '@/components/BottomOverlay.vue'
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
+import MusicIdConflictNotifier from '@/components/MusicIdConflictNotifier'
 import { BlobWriter, ZipReader } from '@zip.js/zip.js'
 import getSubDirFile from '@/utils/getSubDirFile'
 import { useI18n } from 'vue-i18n'
@@ -272,6 +273,13 @@ async function exportToFolder(url: string) {
   }
 }
 
+async function applyJacket(file: File) {
+  if (!selectedMusic.value) return
+  await setJacket(selectedMusic.value.id, selectedMusic.value.assetDir, file)
+  selectedMusic.value.hasJacket = true
+  setStatus(t('music.jacketImported'))
+}
+
 async function handleSetJacket() {
   if (!selectedMusic.value) return
   let fileHandle: FileSystemFileHandle
@@ -281,13 +289,21 @@ async function handleSetJacket() {
       types: [{ description: 'Image', accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.bmp'] } }],
     })
   } catch { return }
-  const file = await fileHandle.getFile()
-  await setJacket(selectedMusic.value.id, selectedMusic.value.assetDir, file)
-  selectedMusic.value.hasJacket = true
-  setStatus(t('music.jacketImported'))
+  await applyJacket(await fileHandle.getFile())
 }
 
 const showAudioOverlay = ref(false)
+
+async function applyAudio(file: File) {
+  if (!selectedMusic.value) return
+  setStatus(t('music.audioImporting'))
+  try {
+    await setAudio(selectedMusic.value.id, selectedMusic.value.assetDir, file)
+    setStatus(t('music.audioReplaced'))
+  } catch (e: any) {
+    setStatus(t('music.audioReplaceFailed', { error: e?.response?.data || e?.message }))
+  }
+}
 
 async function handleReplaceAudio() {
   if (!selectedMusic.value) return
@@ -303,17 +319,25 @@ async function handleReplaceAudio() {
     return
   }
   showAudioOverlay.value = false
-  const file = await fileHandle.getFile()
-  setStatus(t('music.audioImporting'))
-  try {
-    await setAudio(selectedMusic.value.id, selectedMusic.value.assetDir, file)
-    setStatus(t('music.audioReplaced'))
-  } catch (e: any) {
-    setStatus(t('music.audioReplaceFailed', { error: e?.response?.data || e?.message }))
-  }
+  await applyAudio(await fileHandle.getFile())
 }
 
 const showChartOverlay = ref(false)
+
+async function applyChart(diffIndex: number, file: File) {
+  if (!selectedMusic.value) return
+  try {
+    const res = await replaceChart(selectedMusic.value.id, selectedMusic.value.assetDir, diffIndex, file)
+    if (res.imported) {
+      const suffix = res.convertedFrom ? ` (${res.convertedFrom.toUpperCase()} → C2S)` : ''
+      setStatus(t('music.chartImported', { diff: diffNames[diffIndex], suffix }))
+      await loadMusic()
+      selectMusic(selectedMusic.value)
+    }
+  } catch (e: any) {
+    setStatus(t('music.chartReplaceFailed', { error: e?.response?.data?.error || e?.message }))
+  }
+}
 
 async function handleReplaceChart(diffIndex: number) {
   if (!selectedMusic.value) return
@@ -329,18 +353,7 @@ async function handleReplaceChart(diffIndex: number) {
     return
   }
   showChartOverlay.value = false
-  const file = await fileHandle.getFile()
-  try {
-    const res = await replaceChart(selectedMusic.value.id, selectedMusic.value.assetDir, diffIndex, file)
-    if (res.imported) {
-      const suffix = res.convertedFrom ? ` (${res.convertedFrom.toUpperCase()} → C2S)` : ''
-      setStatus(t('music.chartImported', { diff: diffNames[diffIndex], suffix }))
-      await loadMusic()
-      selectMusic(selectedMusic.value)
-    }
-  } catch (e: any) {
-    setStatus(t('music.chartReplaceFailed', { error: e?.response?.data?.error || e?.message }))
-  }
+  await applyChart(diffIndex, await fileHandle.getFile())
 }
 
 function handleExportChart(diffIndex: number, format: 'c2s' | 'ugc' | 'sus') {
@@ -429,6 +442,35 @@ async function handleChangeId() {
   }
 }
 
+const rootRef = ref<HTMLDivElement>()
+const importModalRef = ref<InstanceType<typeof ImportMusicModal> | null>(null)
+
+async function onDrop(_files: File[] | null, e: DragEvent) {
+  const items = e.dataTransfer?.items
+  if (!items?.length) return
+  const handles = (await Promise.all(Array.from(items).map(item => item.getAsFileSystemHandle())))
+    .filter(h => h != null)
+  if (!handles.length) return
+
+  if (handles[0].kind === 'directory') {
+    importModalRef.value?.startImportWithHandle(handles[0] as FileSystemDirectoryHandle)
+    return
+  }
+
+  if (handles.length !== 1 || isA000.value || !selectedMusic.value) return
+  const file = await (handles[0] as FileSystemFileHandle).getFile()
+  const name = file.name.toLowerCase()
+  if (/\.(png|jpe?g|bmp)$/.test(name)) await applyJacket(file)
+  else if (/\.(wav|mp3|ogg|awb)$/.test(name)) await applyAudio(file)
+  else if (/\.(c2s|ugc|sus)$/.test(name)) await applyChart(selectedDiff.value, file)
+}
+
+const { isOverDropZone } = useDropZone(rootRef, {
+  onDrop,
+  multiple: true,
+  preventDefaultForUnhandled: true,
+})
+
 const copyExportOptions = computed(() => {
   if (!selectedMusic.value) return []
   const m = selectedMusic.value
@@ -482,7 +524,13 @@ const copyExportOptions = computed(() => {
 </script>
 
 <template>
-  <div class="h-full flex">
+  <div ref="rootRef" class="h-full flex relative">
+    <div
+      v-if="isOverDropZone"
+      class="absolute inset-0 z-100 bg-white/50 backdrop-blur-sm flex items-center justify-center text-xl pointer-events-none"
+    >
+      {{ t('music.dropHint') }}
+    </div>
     <div class="w-40em max-w-[40vw] border-r border-white/10 flex flex-col relative">
       <Transition
         enter-active-class="panel-transition"
@@ -551,7 +599,7 @@ const copyExportOptions = computed(() => {
         <template v-else-if="isA000">
           <span class="text-sm op-50">{{ t('music.a000Hint') }}</span>
         </template>
-        <ImportMusicModal v-if="!isA000" @imported="refresh" />
+        <ImportMusicModal ref="importModalRef" :show-button="!isA000" @imported="refresh" />
       </div>
 
       <div v-if="selectedMusic" class="of-y-auto cst flex-1 min-h-0 p-6">
@@ -559,7 +607,10 @@ const copyExportOptions = computed(() => {
           <img v-if="selectedMusic.hasJacket" :src="getJacketUrl(selectedMusic.id, selectedMusic.assetDir)" class="w-48 h-48 rounded-lg object-cover shrink-0 cursor-pointer hover:op-80 transition-opacity" :title="t('music.clickToReplaceJacket')" @click="!isA000 && handleSetJacket()" />
           <div v-else class="w-48 h-48 rounded-lg bg-white/10 flex items-center justify-center op-30 text-2xl shrink-0 cursor-pointer hover:op-50 transition-opacity" @click="!isA000 && handleSetJacket()">?</div>
           <div class="flex-1 min-w-0">
-            <h2 class="text-xl font-bold mb-1">{{ selectedMusic.name }}</h2>
+            <h2 class="text-xl font-bold mb-1 flex items-center gap-2">
+              {{ selectedMusic.name }}
+              <MusicIdConflictNotifier :id="selectedMusic.id" :assetDir="selectedMusic.assetDir" />
+            </h2>
             <p class="op-60 mb-2">{{ selectedMusic.artist }}</p>
             <p class="text-sm op-40 mb-1">{{ genreMap[selectedMusic.genreId] || '' }}</p>
             <p class="text-sm op-40 mb-3">{{ releaseTagMap[selectedMusic.releaseTagId] || selectedMusic.releaseTagStr || '' }}</p>

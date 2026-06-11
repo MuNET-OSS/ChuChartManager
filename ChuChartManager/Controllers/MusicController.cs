@@ -74,6 +74,20 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
     }
 
     [HttpGet]
+    public ActionResult<List<string>> GetIdConflicts([FromQuery] int id, [FromQuery] string assetDir)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return Ok(new List<string>());
+
+        var dirs = scanner.MusicBySource
+            .Where(kv => kv.Key != assetDir && kv.Value.Any(m => m.Id == id))
+            .Select(kv => kv.Key)
+            .OrderBy(d => d)
+            .ToList();
+        return Ok(dirs);
+    }
+
+    [HttpGet]
     public ActionResult<Dictionary<int, string>> GetGenreMap()
     {
         var map = MusicScanner.BuildGenreMap(scannerService.Scanner);

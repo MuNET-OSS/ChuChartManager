@@ -10,6 +10,7 @@ import BottomOverlay from '@/components/BottomOverlay.vue'
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
 
 const emit = defineEmits<{ imported: [] }>()
+const props = withDefaults(defineProps<{ showButton?: boolean }>(), { showButton: true })
 const { t } = useI18n()
 
 const loading = ref(false)
@@ -107,6 +108,10 @@ async function startImport() {
     return
   }
 
+  await startImportWithHandle(dirHandle)
+}
+
+async function startImportWithHandle(dirHandle: FileSystemDirectoryHandle) {
   step.value = 'checking'
 
   const files: File[] = []
@@ -184,11 +189,11 @@ function close() {
   step.value = 'idle'
 }
 
-defineExpose({ startImport })
+defineExpose({ startImport, startImportWithHandle })
 </script>
 
 <template>
-  <Button @click="startImport">{{ t('music.importMusic') }}</Button>
+  <Button v-if="props.showButton" @click="startImport">{{ t('music.importMusic') }}</Button>
 
   <BottomOverlay :show="step === 'picking'" :title="t('music.importSelectFolder')">
     <div class="flex flex-col gap-3 items-center text-white">

@@ -65,6 +65,11 @@ export async function getStartupErrors(): Promise<string[]> {
   return data
 }
 
+export async function getIdConflicts(id: number, assetDir: string): Promise<string[]> {
+  const { data } = await apiClient.get('/api/Music/GetIdConflicts', { params: { id, assetDir } })
+  return data
+}
+
 export async function getSources(): Promise<string[]> {
   const { data } = await apiClient.get('/api/Music/GetSources')
   return data

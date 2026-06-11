@@ -125,6 +125,8 @@ music:
   worldsEnd: "WORLD'S END"
   trackCount: "{count} 曲"
   statusLine: "{tracks} 曲 | {options} オプション"
+  idConflictWarning: このIDは以下のoptionディレクトリにも存在し、ゲーム内で競合する可能性があります：
+  dropHint: ドロップしてファイルをインポート
   saved: "保存しました: {name}"
   copiedTo: "{dir} にコピーしました"
   copyFailed: "コピー失敗: {error}"

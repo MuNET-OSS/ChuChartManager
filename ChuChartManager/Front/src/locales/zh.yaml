@@ -125,6 +125,8 @@ music:
   worldsEnd: "WORLD'S END"
   trackCount: "{count} 首"
   statusLine: "{tracks} 首曲目 | {options} 个 option"
+  idConflictWarning: 此 ID 在以下 option 目录中也存在，游戏内可能相互覆盖：
+  dropHint: 松开以导入文件
   saved: "已保存: {name}"
   copiedTo: "已复制到 {dir}"
   copyFailed: "复制失败: {error}"

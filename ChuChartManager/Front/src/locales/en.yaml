@@ -125,6 +125,8 @@ music:
   worldsEnd: "WORLD'S END"
   trackCount: "{count} tracks"
   statusLine: "{tracks} tracks | {options} options"
+  idConflictWarning: "This ID also exists in the following option directories and may conflict in game:"
+  dropHint: Drop to import files
   saved: "Saved: {name}"
   copiedTo: "Copied to {dir}"
   copyFailed: "Copy failed: {error}"

@@ -1,6 +1,8 @@
 interface FileSystemFileHandle {
   getFile(): Promise<File>
   createWritable(): Promise<FileSystemWritableFileStream>
+  readonly kind: 'file'
+  readonly name: string
 }
 
 interface FileSystemDirectoryHandle {
@@ -32,4 +34,8 @@ interface ShowDirectoryPickerOptions {
 interface Window {
   showOpenFilePicker(options?: ShowOpenFilePickerOptions): Promise<FileSystemFileHandle[]>
   showDirectoryPicker(options?: ShowDirectoryPickerOptions): Promise<FileSystemDirectoryHandle>
+}
+
+interface DataTransferItem {
+  getAsFileSystemHandle(): Promise<FileSystemDirectoryHandle | FileSystemFileHandle | null>
 }
