@@ -123,6 +123,13 @@ common:
   import: インポート
   loading: 読み込み中…
   error: エラー
+error:
+  title: エラーが発生しました
+  detail: エラー詳細
+  copy: コピー
+  copied: クリップボードにコピーしました
+  copyFailed: コピーに失敗しました
+  report: GitHub に報告
 music:
   sortById: ID
   sortByName: 名前

@@ -123,6 +123,13 @@ common:
   import: Import
   loading: Loading...
   error: Error
+error:
+  title: An error occurred
+  detail: Error details
+  copy: Copy
+  copied: Copied to clipboard
+  copyFailed: Copy failed
+  report: Report on GitHub
 music:
   sortById: ID
   sortByName: Name

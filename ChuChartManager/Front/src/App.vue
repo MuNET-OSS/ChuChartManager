@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar.vue'
 import StatusBar from '@/components/StatusBar.vue'
 import StartupErrorDialog from '@/components/StartupErrorDialog'
 import ChangelogModal from '@/components/ChangelogModal'
+import ErrorDialog from '@/components/ErrorDialog'
 import MusicList from '@/views/MusicList.vue'
 import Course from '@/views/Course/index'
 import ResourceManager from '@/views/ResourceManager/index'
@@ -50,6 +51,7 @@ const handleRefresh = () => {
       <GlobalElementsContainer />
       <StartupErrorDialog />
       <ChangelogModal :ready="ready" />
+      <ErrorDialog />
       <div class="main-layout">
         <Sidebar v-model:active="sidebarActive" @refresh="handleRefresh" />
         <div class="main-content">

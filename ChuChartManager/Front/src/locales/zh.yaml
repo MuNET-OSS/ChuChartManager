@@ -123,6 +123,13 @@ common:
   import: 导入
   loading: 加载中…
   error: 错误
+error:
+  title: 发生错误
+  detail: 错误详情
+  copy: 复制
+  copied: 已复制到剪贴板
+  copyFailed: 复制失败
+  report: 反馈到 GitHub
 music:
   sortById: ID
   sortByName: 名称
