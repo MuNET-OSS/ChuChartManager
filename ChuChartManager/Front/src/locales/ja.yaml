@@ -61,6 +61,10 @@ about:
 startup:
   errorTitle: 起動時にエラーが発生しました
   fixPrompt: 上記の問題を確認して修正してください。必要に応じて該当ファイルを手動で編集または削除してください。
+problems:
+  NoAudio: 音声がありません
+  NoJacket: ジャケットがありません
+  NoEnabledFumen: 有効な難易度がありません
 oobe:
   welcomeMessage: ChuChartManager へようこそ
   selectGameDir: ゲームディレクトリを選択

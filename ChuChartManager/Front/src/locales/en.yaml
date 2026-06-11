@@ -61,6 +61,10 @@ about:
 startup:
   errorTitle: Errors occurred during startup
   fixPrompt: Please review and fix the issues above. Edit or remove the affected files manually if necessary.
+problems:
+  NoAudio: Missing audio
+  NoJacket: Missing jacket
+  NoEnabledFumen: No enabled difficulty
 oobe:
   welcomeMessage: Welcome to ChuChartManager
   selectGameDir: Select Game Directory

@@ -59,7 +59,8 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
                 LevelDisplay = f.LevelDisplay,
                 NotesDesigner = f.NotesDesigner,
                 NoteCount = f.NoteCount
-            }).ToArray()
+            }).ToArray(),
+            Problems = MusicValidator.Validate(m)
         }).ToList();
 
         return Ok(result);
@@ -1402,6 +1403,7 @@ public class MusicListItem
     public string WorldsEndTag { get; set; } = "";
     public bool IsWorldsEnd { get; set; }
     public FumenSummary?[] Fumens { get; set; } = new FumenSummary?[6];
+    public List<string> Problems { get; set; } = [];
 }
 
 public class FumenSummary

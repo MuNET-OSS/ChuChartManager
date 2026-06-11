@@ -43,6 +43,7 @@ export interface MusicListItem {
   worldsEndTag: string
   isWorldsEnd: boolean
   fumens: (FumenSummary | null)[]
+  problems: string[]
 }
 
 export interface FumenSummary {

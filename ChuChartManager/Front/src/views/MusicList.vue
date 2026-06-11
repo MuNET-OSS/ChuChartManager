@@ -16,6 +16,7 @@ import PlayerBar from '@/components/PlayerBar.vue'
 import BottomOverlay from '@/components/BottomOverlay.vue'
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
 import MusicIdConflictNotifier from '@/components/MusicIdConflictNotifier'
+import ProblemsDisplay from '@/components/ProblemsDisplay'
 import { BlobWriter, ZipReader } from '@zip.js/zip.js'
 import getSubDirFile from '@/utils/getSubDirFile'
 import { useI18n } from 'vue-i18n'
@@ -566,7 +567,10 @@ const copyExportOptions = computed(() => {
               <div v-else class="h-16 w-16 shrink-0 bg-white/10 flex items-center justify-center text-xs op-40 rd">?</div>
               <div class="flex flex-col grow-1 w-0">
                 <div class="text-xs op-50">{{ String(music.id).padStart(4, '0') }}</div>
-                <div class="text-ellipsis of-hidden ws-nowrap">{{ music.name }}</div>
+                <div class="text-ellipsis of-hidden ws-nowrap flex items-center gap-1">
+                  <span class="text-ellipsis of-hidden ws-nowrap">{{ music.name }}</span>
+                  <ProblemsDisplay :problems="music.problems" inline />
+                </div>
                 <div class="flex gap-1 mt-auto items-center">
                   <template v-for="(f, i) in music.fumens" :key="i">
                     <span v-if="f?.enable" class="rounded-full px-2 text-sm leading-6 font-medium" :style="getDiffBadgeStyle(i)">{{ i === 5 && music.worldsEndTag ? music.worldsEndTag : f.levelDisplay }}</span>
@@ -619,6 +623,7 @@ const copyExportOptions = computed(() => {
                 <span v-if="f?.enable" class="rounded-full px-2.5 py-0.5 text-sm font-medium" :style="getDiffBadgeStyle(i)">{{ diffNames[i] }} {{ i === 5 && selectedMusic.worldsEndTag ? selectedMusic.worldsEndTag : f.levelDisplay }}</span>
               </template>
             </div>
+            <ProblemsDisplay v-if="selectedMusic.problems.length" :problems="selectedMusic.problems" class="mt-3" />
           </div>
         </div>
 

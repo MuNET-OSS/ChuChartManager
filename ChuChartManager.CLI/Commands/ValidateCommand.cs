@@ -23,34 +23,29 @@ public class ValidateCommand : AsyncCommand<ValidateCommand.Settings>
 
         int total = 0, missingAudio = 0, missingJacket = 0, noDiffs = 0;
 
+        var labels = new Dictionary<string, string>
+        {
+            [MusicValidator.NoAudio] = "[yellow]无音频[/]",
+            [MusicValidator.NoJacket] = "[yellow]无封面[/]",
+            [MusicValidator.NoEnabledFumen] = "[yellow]无启用难度[/]",
+        };
+
         foreach (var list in scanner.MusicBySource.Values)
         {
             foreach (var music in list)
             {
                 total++;
-                var issues = new List<string>();
+                var problems = MusicValidator.Validate(music);
 
-                if (AudioHelper.FindAwbPath(music) == null)
+                if (problems.Contains(MusicValidator.NoAudio)) missingAudio++;
+                if (problems.Contains(MusicValidator.NoJacket)) missingJacket++;
+                if (problems.Contains(MusicValidator.NoEnabledFumen)) noDiffs++;
+
+                if (problems.Count > 0)
                 {
-                    missingAudio++;
-                    issues.Add("[yellow]无音频[/]");
-                }
-
-                if (music.GetJacketFullPath() == null)
-                {
-                    missingJacket++;
-                    issues.Add("[yellow]无封面[/]");
-                }
-
-                var enabledCount = music.Fumens.Count(f => f is { Enable: true });
-                if (enabledCount == 0)
-                {
-                    noDiffs++;
-                    issues.Add("[yellow]无启用难度[/]");
-                }
-
-                if (issues.Count > 0)
+                    var issues = problems.Select(p => labels.GetValueOrDefault(p, p));
                     AnsiConsole.MarkupLine($"  #{music.Id:D4} {Markup.Escape(music.Name)}: {string.Join(", ", issues)}");
+                }
             }
         }
 

@@ -61,6 +61,10 @@ about:
 startup:
   errorTitle: 启动时发生错误
   fixPrompt: 请检查并修复以上问题，必要时手动修改或删除对应文件。
+problems:
+  NoAudio: 缺少音频
+  NoJacket: 缺少封面
+  NoEnabledFumen: 没有启用的难度
 oobe:
   welcomeMessage: 欢迎使用 ChuChartManager
   selectGameDir: 选择游戏目录
