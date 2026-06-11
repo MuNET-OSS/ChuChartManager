@@ -43,7 +43,7 @@ public class ModController : ControllerBase
     private const string AppleChuAsset = "AppleChu.dll";
 
     public record GitHubRelease(string Tag_name, GitHubAsset[] Assets);
-    public record GitHubAsset(string Name, string Browser_download_url);
+    public record GitHubAsset(string Name, string Browser_download_url, string? Digest);
     public record VersionInfo(string Latest, string Installed, string DownloadUrl);
 
     private static readonly HttpClient Http = new();
@@ -92,12 +92,16 @@ public class ModController : ControllerBase
 
         var binPath = Path.Combine(gamePath, "bin");
         var loaderData = await Http.GetByteArrayAsync(loaderUrl);
+        if (!VerifyDigest(loaderData, FindAssetDigest(release, loaderUrl)))
+            return BadRequest("version.dll 校验失败，文件可能已损坏或被篡改");
         await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "version.dll"), loaderData);
 
         var proxyUrl = release?.Assets.FirstOrDefault(a => a.Name == ProxyAsset)?.Browser_download_url;
         if (!string.IsNullOrEmpty(proxyUrl))
         {
             var proxyData = await Http.GetByteArrayAsync(proxyUrl);
+            if (!VerifyDigest(proxyData, FindAssetDigest(release, proxyUrl)))
+                return BadRequest("d3d9.dll 校验失败，文件可能已损坏或被篡改");
             await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "d3d9.dll"), proxyData);
         }
 
@@ -113,12 +117,10 @@ public class ModController : ControllerBase
 
         var binPath = Path.Combine(gamePath, "bin");
 
+        var release = await GetLatestRelease(AppleChuRepo, AppleChuAsset);
         var url = request?.Url;
         if (string.IsNullOrEmpty(url))
-        {
-            var release = await GetLatestRelease(AppleChuRepo, AppleChuAsset);
             url = release?.Assets.FirstOrDefault(a => a.Name == AppleChuAsset)?.Browser_download_url;
-        }
         if (string.IsNullOrEmpty(url))
             return NotFound("No release found");
 
@@ -126,6 +128,8 @@ public class ModController : ControllerBase
             return BadRequest("下载 URL 不在白名单内");
 
         var data = await Http.GetByteArrayAsync(url);
+        if (!VerifyDigest(data, FindAssetDigest(release, url)))
+            return BadRequest("AppleChu.dll 校验失败，文件可能已损坏或被篡改");
         var modsDir = Path.Combine(binPath, "mods");
         Directory.CreateDirectory(modsDir);
         await System.IO.File.WriteAllBytesAsync(Path.Combine(modsDir, "AppleChu.dll"), data);
@@ -149,6 +153,22 @@ public class ModController : ControllerBase
         return Uri.TryCreate(url, UriKind.Absolute, out var uri)
             && uri.Host is "github.com" or "objects.githubusercontent.com" or "api.github.com"
             && uri.AbsolutePath.StartsWith("/MuNET-OSS/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string? FindAssetDigest(GitHubRelease? release, string url)
+    {
+        return release?.Assets.FirstOrDefault(a => a.Browser_download_url == url)?.Digest;
+    }
+
+    private static bool VerifyDigest(byte[] data, string? digest)
+    {
+        // 旧 Release 资产没有 digest 字段时跳过校验
+        if (string.IsNullOrEmpty(digest)) return true;
+        if (!digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)) return true;
+
+        var expected = digest["sha256:".Length..];
+        var actual = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data));
+        return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsValidModId(string modId)
