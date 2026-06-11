@@ -133,7 +133,7 @@ export default defineComponent({
 
     return () => (
       <>
-        <Button onClick={() => show.value = true}>{t('music.editPreview')}</Button>
+        <Button class="ws-nowrap shrink-0" onClick={() => show.value = true}>{t('music.editPreview')}</Button>
         <Modal width="min(90vw,55em)" title={t('music.editPreview')} v-model:show={show.value}>
           {{
             default: () => (
