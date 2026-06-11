@@ -42,6 +42,7 @@
     <PackageReference Include="NAudio" Version="2.3.0" />
     <PackageReference Include="NAudio.Lame" Version="2.1.0" />
     <PackageReference Include="Pfim" Version="0.11.4" />
+    <PackageReference Include="SingleInstanceCore" Version="2.2.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="Tomlyn" Version="2.4.0" />
     <PackageReference Include="YAXLib" Version="2.15.0" />

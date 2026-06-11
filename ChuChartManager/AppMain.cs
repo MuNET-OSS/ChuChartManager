@@ -1,6 +1,8 @@
+using SingleInstanceCore;
+
 namespace ChuChartManager;
 
-public partial class AppMain
+public partial class AppMain : ISingleInstance
 {
     public static Browser? BrowserWin { get; set; }
     public static OobeBrowser? OobeBrowserWin { get; set; }
@@ -54,5 +56,20 @@ public partial class AppMain
         {
             Application.Exit();
         }
+    }
+
+    /// <summary>第二个实例启动时，把已有窗口带到前台</summary>
+    public void OnInstanceInvoked(string[] args)
+    {
+        UiContext?.Post(_ =>
+        {
+            var win = (Form?)(BrowserWin is { IsDisposed: false } ? BrowserWin : null)
+                      ?? (OobeBrowserWin is { IsDisposed: false } ? OobeBrowserWin : null);
+            if (win == null) return;
+
+            if (win.WindowState == FormWindowState.Minimized)
+                win.WindowState = FormWindowState.Normal;
+            win.Activate();
+        }, null);
     }
 }
