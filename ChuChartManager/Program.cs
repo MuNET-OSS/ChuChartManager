@@ -28,7 +28,15 @@ public static class Program
                 var scanner = new MusicScanner(StaticSettings.GamePath);
                 scanner.ScanAll();
                 StaticSettings.Scanner = scanner;
+            }
 
+            if (!WebViewHelper.IsRuntimeAvailable())
+            {
+                AppMain.LauncherWin = new LauncherForm();
+                AppMain.LauncherWin.Show();
+            }
+            else if (hasGamePath)
+            {
                 AppMain.BrowserWin = new Browser();
                 AppMain.BrowserWin.Show();
             }

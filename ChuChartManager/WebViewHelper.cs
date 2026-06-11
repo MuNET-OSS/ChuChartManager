@@ -4,6 +4,18 @@ namespace ChuChartManager;
 
 public static class WebViewHelper
 {
+    public static bool IsRuntimeAvailable()
+    {
+        try
+        {
+            return !string.IsNullOrEmpty(CoreWebView2Environment.GetAvailableBrowserVersionString());
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public static void SetupCoreWebView2(CoreWebView2 coreWebView2, Uri? loopbackUrl)
     {
         coreWebView2.SetVirtualHostNameToFolderMapping(

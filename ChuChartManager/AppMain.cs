@@ -6,6 +6,7 @@ public partial class AppMain : ISingleInstance
 {
     public static Browser? BrowserWin { get; set; }
     public static OobeBrowser? OobeBrowserWin { get; set; }
+    public static LauncherForm? LauncherWin { get; set; }
     public static SynchronizationContext? UiContext { get; set; }
 
     public static void ShowBrowser(string loopbackUrl)
