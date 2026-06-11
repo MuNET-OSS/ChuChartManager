@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@f3ve/vue-markdown-it": "^0.2.3",
     "@fontsource/noto-sans-sc": "^5.2.9",
     "@fontsource/quicksand": "^5.2.10",
     "@munet/ui": "workspace:*",

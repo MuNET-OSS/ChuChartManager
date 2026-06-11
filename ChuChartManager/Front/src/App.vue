@@ -4,6 +4,7 @@ import { modalShowing, GlobalElementsContainer } from '@munet/ui'
 import Sidebar from '@/components/Sidebar.vue'
 import StatusBar from '@/components/StatusBar.vue'
 import StartupErrorDialog from '@/components/StartupErrorDialog'
+import ChangelogModal from '@/components/ChangelogModal'
 import MusicList from '@/views/MusicList.vue'
 import Course from '@/views/Course/index'
 import ResourceManager from '@/views/ResourceManager/index'
@@ -19,6 +20,7 @@ import Oobe from '@/views/Oobe/index'
 import { ensureBackendUrl } from '@/api'
 import { loadLocaleFromBackend } from '@/locales'
 import { updateOptionDirs, sidebarActive, updateAppVersion } from '@/store/refs'
+import { checkAppUpdate } from '@/store/appUpdate'
 
 const hash = window.location.hash.replace('#', '')
 const isOobeWindow = hash === 'oobe' || hash === 'mode-select'
@@ -31,7 +33,8 @@ onMounted(async () => {
   await ensureBackendUrl()
   await loadLocaleFromBackend()
   updateOptionDirs()
-  updateAppVersion()
+  await updateAppVersion()
+  checkAppUpdate()
   ready.value = true
 })
 
@@ -46,6 +49,7 @@ const handleRefresh = () => {
     <div v-else class="content-root" :class="{ 'modal-open': modalShowing }">
       <GlobalElementsContainer />
       <StartupErrorDialog />
+      <ChangelogModal :ready="ready" />
       <div class="main-layout">
         <Sidebar v-model:active="sidebarActive" @refresh="handleRefresh" />
         <div class="main-content">

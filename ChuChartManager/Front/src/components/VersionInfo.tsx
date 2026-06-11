@@ -2,6 +2,7 @@ import { computed, defineComponent, ref } from 'vue'
 import { Modal } from '@munet/ui'
 import { useI18n } from 'vue-i18n'
 import { appVersion } from '@/store/refs'
+import { appUpdateInfo, hasUpdate, openChangelog } from '@/store/appUpdate'
 
 export default defineComponent({
   setup() {
@@ -15,6 +16,9 @@ export default defineComponent({
         onClick={() => show.value = true}
       >
         v{displayVersion.value}
+        {hasUpdate.value && (
+          <div class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-#f64861 border-2 border-white" />
+        )}
 
         <Modal
           width="min(85vw,30em)"
@@ -30,6 +34,20 @@ export default defineComponent({
               <div class="text-sm op-60">{t('about.gameVersion')}</div>
               <div>{appVersion.value.gameVersionStr}</div>
             </div>
+            {hasUpdate.value && (
+              <div class="flex items-center justify-between gap-2 bg-#f6486118 rd p-2.5">
+                <div>
+                  <div class="text-sm c-#f64861">{t('about.updateAvailable')}</div>
+                  <div class="font-medium">v{appUpdateInfo.value?.version}</div>
+                </div>
+                <div
+                  class="px-3 py-1 rounded-md cursor-pointer bg-avatarMenuButton text-sm"
+                  onClick={() => { if (appUpdateInfo.value) openChangelog(appUpdateInfo.value.version) }}
+                >
+                  {t('about.viewChangelog')}
+                </div>
+              </div>
+            )}
             <div class="op-60 text-center text-xs mt-4">
               © 2026 MuNET Team
               <br />
