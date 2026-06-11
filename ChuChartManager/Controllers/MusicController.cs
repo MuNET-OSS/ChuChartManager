@@ -444,7 +444,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
 
     [HttpPut]
     [DisableRequestSizeLimit]
-    public ActionResult SetAudio([FromQuery] int id, [FromQuery] string assetDir, IFormFile file)
+    public ActionResult SetAudio([FromQuery] int id, [FromQuery] string assetDir, IFormFile file, [FromQuery] float padding = 0)
     {
         var scanner = scannerService.Scanner;
         if (scanner == null) return NotFound();
@@ -470,7 +470,7 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
             }
             else
             {
-                AudioHelper.ImportAudioToMusic(music, tempPath);
+                AudioHelper.ImportAudioToMusic(music, tempPath, padding);
             }
         }
         finally

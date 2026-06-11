@@ -206,6 +206,8 @@ music:
   exportFailed: "Export failed: {error}"
   clickToReplaceJacket: Click to replace jacket
   replaceAudio: Replace Audio
+  audioOffset: Audio Offset
+  audioOffsetHint: Positive inserts silence at the start (delays audio), negative trims the start (advances audio), in seconds. Use to align audio with the chart; leave 0 if unsure
   editPreview: Edit Preview
   previewHint: Drag the region to adjust; Ctrl+click sets start / Shift+click sets end; set precisely below; scroll to zoom
   previewStart: Start (s)

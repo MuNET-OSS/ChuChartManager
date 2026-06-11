@@ -206,6 +206,8 @@ music:
   exportFailed: "エクスポート失敗: {error}"
   clickToReplaceJacket: クリックでジャケットを置換
   replaceAudio: 音声を置換
+  audioOffset: 音声オフセット
+  audioOffsetHint: 正の値は先頭に無音を挿入（音声を遅らせる）、負の値は先頭を削る（音声を早める）、単位は秒。譜面と音源の同期に使用、不明なら 0
   editPreview: 試聴を編集
   previewHint: 範囲をドラッグして調整、Ctrl+クリックで開始 / Shift+クリックで終了、下の入力欄で精密設定、ホイールでズーム
   previewStart: 開始（秒）

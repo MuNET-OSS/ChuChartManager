@@ -244,10 +244,10 @@ export async function setJacket(id: number, assetDir: string, file: File): Promi
   await apiClient.put(`/api/Music/SetJacket?id=${id}&assetDir=${assetDir}`, form)
 }
 
-export async function setAudio(id: number, assetDir: string, file: File): Promise<void> {
+export async function setAudio(id: number, assetDir: string, file: File, padding = 0): Promise<void> {
   const form = new FormData()
   form.append('file', file)
-  await apiClient.put(`/api/Music/SetAudio?id=${id}&assetDir=${assetDir}`, form, { timeout: 120000 })
+  await apiClient.put(`/api/Music/SetAudio?id=${id}&assetDir=${assetDir}&padding=${padding}`, form, { timeout: 120000 })
 }
 
 export async function replaceChart(id: number, assetDir: string, diffIndex: number, file: File): Promise<{ imported: boolean; convertedFrom?: string; alerts?: string[] }> {

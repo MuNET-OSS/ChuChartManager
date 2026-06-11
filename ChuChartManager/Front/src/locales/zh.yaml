@@ -206,6 +206,8 @@ music:
   exportFailed: "导出失败: {error}"
   clickToReplaceJacket: 点击替换封面
   replaceAudio: 替换音频
+  audioOffset: 音频偏移
+  audioOffsetHint: 正值在开头插入静音（声音延后），负值裁掉开头（声音提前），单位秒。用于对齐音源与谱面，不确定就填 0
   editPreview: 编辑试听
   previewHint: 拖动选区调整试听区间，Ctrl+点击设起点 / Shift+点击设终点，或用下方输入框精确设置；滚轮缩放波形
   previewStart: 起点（秒）

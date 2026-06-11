@@ -296,16 +296,20 @@ async function handleSetJacket() {
 
 const showAudioOverlay = ref(false)
 
-async function applyAudio(file: File) {
+async function applyAudio(file: File, padding = 0) {
   if (!selectedMusic.value) return
   setStatus(t('music.audioImporting'))
   try {
-    await setAudio(selectedMusic.value.id, selectedMusic.value.assetDir, file)
+    await setAudio(selectedMusic.value.id, selectedMusic.value.assetDir, file, padding)
     setStatus(t('music.audioReplaced'))
   } catch (e: any) {
     setStatus(t('music.audioReplaceFailed', { error: e?.response?.data || e?.message }))
   }
 }
+
+const showOffsetModal = ref(false)
+const audioOffset = ref(0)
+let pendingAudioFile: File | null = null
 
 async function handleReplaceAudio() {
   if (!selectedMusic.value) return
@@ -321,7 +325,22 @@ async function handleReplaceAudio() {
     return
   }
   showAudioOverlay.value = false
-  await applyAudio(await fileHandle.getFile())
+  pendingAudioFile = await fileHandle.getFile()
+  if (pendingAudioFile.name.toLowerCase().endsWith('.awb')) {
+    await applyAudio(pendingAudioFile)
+    pendingAudioFile = null
+    return
+  }
+  audioOffset.value = 0
+  showOffsetModal.value = true
+}
+
+async function confirmAudioOffset() {
+  showOffsetModal.value = false
+  if (!pendingAudioFile) return
+  const file = pendingAudioFile
+  pendingAudioFile = null
+  await applyAudio(file, audioOffset.value)
 }
 
 const showChartOverlay = ref(false)
@@ -668,6 +687,16 @@ const copyExportOptions = computed(() => {
       </div>
       <div v-else class="flex-1 flex items-center justify-center op-30 text-lg">{{ t('music.selectHint') }}</div>
     </div>
+
+    <Modal v-model:show="showOffsetModal" :title="t('music.audioOffset')" width="min(40vw,28em)">
+      <div class="flex flex-col gap-3">
+        <div class="text-sm op-60">{{ t('music.audioOffsetHint') }}</div>
+        <NumberInput v-model:value="audioOffset" :step="0.001" :decimal="3" class="w-full" />
+      </div>
+      <template #actions>
+        <Button class="w-0 grow" @click="confirmAudioOffset">{{ t('common.confirm') }}</Button>
+      </template>
+    </Modal>
 
     <Modal v-model:show="showChangeId" :title="t('music.changeId')" width="min(30vw,25em)">
       <div class="flex flex-col gap-3">

@@ -1,6 +1,7 @@
 using ChuChartManager.Models;
 using SonicAudioLib.Archives;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 using NAudio.Lame;
 using VGAudio.Codecs.CriHca;
 using VGAudio.Containers.Hca;
@@ -190,22 +191,9 @@ public class AudioHelper : IDisposable
         return ConvertStream.ConvertFile(options, wavStream, FileType.Wave, FileType.Hca);
     }
 
-    public static void ImportAudioToMusic(MusicXml music, string audioPath)
+    public static void ImportAudioToMusic(MusicXml music, string audioPath, float padding = 0)
     {
-        byte[] wavBytes;
-        var ext = Path.GetExtension(audioPath).ToLowerInvariant();
-        if (ext == ".wav")
-        {
-            wavBytes = File.ReadAllBytes(audioPath);
-        }
-        else
-        {
-            using var reader = new AudioFileReader(audioPath);
-            using var wavMs = new MemoryStream();
-            var pcm16 = reader.ToWaveProvider16();
-            WaveFileWriter.WriteWavFileToStream(wavMs, pcm16);
-            wavBytes = wavMs.ToArray();
-        }
+        var wavBytes = ConvertToWav(audioPath, padding);
 
         var hcaBytes = EncodeWavToHca(wavBytes);
         if (hcaBytes == null || hcaBytes.Length == 0)
@@ -219,6 +207,29 @@ public class AudioHelper : IDisposable
         Directory.CreateDirectory(cueFileDir);
 
         RepackAcbWithHca(cueFileDir, cueFileName, hcaBytes);
+    }
+
+    // padding>0 开头插静音（声音延后）；padding<0 裁掉开头（声音提前），用于对齐已编译谱面
+    private static byte[] ConvertToWav(string audioPath, float padding)
+    {
+        if (padding == 0 && Path.GetExtension(audioPath).Equals(".wav", StringComparison.OrdinalIgnoreCase))
+            return File.ReadAllBytes(audioPath);
+
+        using var reader = new AudioFileReader(audioPath);
+        ISampleProvider sample = reader;
+        if (padding > 0)
+        {
+            var silence = new SilenceProvider(reader.WaveFormat).ToSampleProvider().Take(TimeSpan.FromSeconds(padding));
+            sample = silence.FollowedBy(sample);
+        }
+        else if (padding < 0)
+        {
+            sample = sample.Skip(TimeSpan.FromSeconds(-padding));
+        }
+
+        using var ms = new MemoryStream();
+        WaveFileWriter.WriteWavFileToStream(ms, sample.ToWaveProvider16());
+        return ms.ToArray();
     }
 
     public static void RepackAcbWithHca(string cueFileDir, string cueFileName, byte[] hcaBytes)
