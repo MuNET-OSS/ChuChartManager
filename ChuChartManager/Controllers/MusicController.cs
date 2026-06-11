@@ -1357,6 +1357,58 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         return Ok();
     }
 
+    public record BatchDeleteResult(int Id, string AssetDir, bool Ok, string? Error);
+
+    [HttpPost]
+    public ActionResult<List<BatchDeleteResult>> BatchDelete([FromBody] BatchMusicIdDto dto)
+    {
+        var scanner = scannerService.Scanner;
+        if (scanner == null) return NotFound();
+
+        var results = new List<BatchDeleteResult>();
+        foreach (var item in dto.Ids)
+        {
+            try
+            {
+                if (item.AssetDir == "A000")
+                {
+                    results.Add(new BatchDeleteResult(item.Id, item.AssetDir, false, "不能删除 A000 的曲目"));
+                    continue;
+                }
+
+                var music = FindMusic(scanner, item.Id, item.AssetDir);
+                if (music == null)
+                {
+                    results.Add(new BatchDeleteResult(item.Id, item.AssetDir, false, "曲目不存在"));
+                    continue;
+                }
+
+                if (Directory.Exists(music.MusicDirectory))
+                    Directory.Delete(music.MusicDirectory, true);
+
+                var optRoot = ResolveOptRoot(item.AssetDir);
+                if (optRoot != null)
+                {
+                    var cueDir = Path.Combine(optRoot, "cueFile", $"cueFile{item.Id:D6}");
+                    if (Directory.Exists(cueDir))
+                        Directory.Delete(cueDir, true);
+                }
+
+                results.Add(new BatchDeleteResult(item.Id, item.AssetDir, true, null));
+            }
+            catch (Exception ex)
+            {
+                results.Add(new BatchDeleteResult(item.Id, item.AssetDir, false, ex.Message));
+            }
+        }
+
+        var newScanner = new MusicScanner(StaticSettings.GamePath);
+        newScanner.ScanAll();
+        StaticSettings.Scanner = newScanner;
+
+        return Ok(results);
+    }
+
     [HttpPost]
     public ActionResult OpenExplorer([FromQuery] int id, [FromQuery] string assetDir)
     {

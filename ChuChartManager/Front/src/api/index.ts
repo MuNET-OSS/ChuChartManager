@@ -71,6 +71,18 @@ export async function getIdConflicts(id: number, assetDir: string): Promise<stri
   return data
 }
 
+export interface BatchDeleteResult {
+  id: number
+  assetDir: string
+  ok: boolean
+  error?: string
+}
+
+export async function batchDelete(items: { id: number; assetDir: string }[]): Promise<BatchDeleteResult[]> {
+  const { data } = await apiClient.post('/api/Music/BatchDelete', { ids: items })
+  return data
+}
+
 export async function getSources(): Promise<string[]> {
   const { data } = await apiClient.get('/api/Music/GetSources')
   return data

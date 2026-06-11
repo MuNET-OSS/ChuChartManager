@@ -390,6 +390,7 @@ batch:
   executing: Executing…
   noMusicSelected: Please select music first
   done: Done
+  deletePartial: "Delete finished: {ok} succeeded, {fail} failed"
   downloading: Downloading…
   next: Next
   previous: Previous

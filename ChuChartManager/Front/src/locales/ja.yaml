@@ -381,6 +381,7 @@ batch:
   executing: 実行中…
   noMusicSelected: 楽曲を選択してください
   done: 完了
+  deletePartial: "削除完了：成功 {ok} 件、失敗 {fail} 件"
   downloading: ダウンロード中…
   next: 次へ
   previous: 戻る

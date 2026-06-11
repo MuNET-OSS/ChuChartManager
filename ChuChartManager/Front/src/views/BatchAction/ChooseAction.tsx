@@ -3,8 +3,7 @@ import { Button, Radio, Select, Popover, addToast } from '@munet/ui'
 import type { SelectOption } from '@munet/ui'
 import { useI18n } from 'vue-i18n'
 import { useStorage } from '@vueuse/core'
-import { apiClient, getMusicList, type MusicListItem } from '@/api'
-import { deleteMusic } from '@/api/customResource'
+import { apiClient, getMusicList, batchDelete, type MusicListItem } from '@/api'
 import { STEP } from './index'
 import remoteExport from './remoteExport'
 
@@ -72,8 +71,14 @@ export default defineComponent({
         case OPTIONS.Delete: {
           loading.value = true
           try {
-            for (const m of props.selectedMusic) await deleteMusic(m.id, m.assetDir)
-            addToast({ message: t('batch.done'), type: 'success' })
+            const items = props.selectedMusic.map(m => ({ id: m.id, assetDir: m.assetDir }))
+            const results = await batchDelete(items)
+            const failed = results.filter(r => !r.ok)
+            if (failed.length) {
+              addToast({ message: t('batch.deletePartial', { ok: results.length - failed.length, fail: failed.length }), type: 'error' })
+            } else {
+              addToast({ message: t('batch.done'), type: 'success' })
+            }
             props.onListUpdated(await getMusicList())
             props.continue(STEP.Select)
           } catch (e: any) {

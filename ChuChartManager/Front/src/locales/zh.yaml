@@ -390,6 +390,7 @@ batch:
   executing: 执行中…
   noMusicSelected: 请先选择曲目
   done: 完成
+  deletePartial: "删除完成：成功 {ok} 个，失败 {fail} 个"
   downloading: 正在下载…
   next: 下一步
   previous: 上一步
