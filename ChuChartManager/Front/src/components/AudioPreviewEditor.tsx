@@ -1,8 +1,12 @@
 import { computed, defineComponent, ref, watch } from 'vue'
 import { Button, Modal, NumberInput, addToast } from '@munet/ui'
 import { useI18n } from 'vue-i18n'
+import { useMagicKeys } from '@vueuse/core'
 import WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin, { type Region } from 'wavesurfer.js/dist/plugins/regions.esm.js'
+import ZoomPlugin from 'wavesurfer.js/dist/plugins/zoom.esm.js'
+import HoverPlugin from 'wavesurfer.js/dist/plugins/hover.esm.js'
+import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'
 import { getAudioPreview, setAudioPreview, getAudioUrl } from '@/api'
 import { globalCapture } from '@/utils/globalCapture'
 
@@ -26,6 +30,7 @@ export default defineComponent({
     let ws: WaveSurfer | undefined
     let region: Region | undefined
     let updatingFromInput = false
+    const { ctrl, shift } = useMagicKeys()
 
     const playIcon = computed(() => isPlaying.value ? 'i-mdi-pause' : 'i-mdi-play')
 
@@ -83,7 +88,12 @@ export default defineComponent({
         waveColor: 'rgb(107,203,152)',
         progressColor: 'rgb(33,194,118)',
         url: getAudioUrl(props.id, props.assetDir),
-        plugins: [regions],
+        plugins: [
+          regions,
+          ZoomPlugin.create({ scale: 0.05 }),
+          HoverPlugin.create({ lineColor: 'rgba(89,89,89,0.8)' }),
+          TimelinePlugin.create(),
+        ],
       })
 
       ws.on('decode', dur => {
@@ -99,6 +109,26 @@ export default defineComponent({
         region.on('update', syncFromRegion)
         region.on('update-end', syncFromRegion)
         dataLoad.value = false
+      })
+
+      ws.on('click', progress => {
+        if (!region || !ws) return
+        const time = ws.getDuration() * progress
+        if (ctrl.value) {
+          if (time >= region.end) {
+            addToast({ message: t('music.previewStartGtEnd'), type: 'error' })
+            return
+          }
+          region.setOptions({ start: time })
+          syncFromRegion()
+        } else if (shift.value) {
+          if (time <= region.start) {
+            addToast({ message: t('music.previewEndLtStart'), type: 'error' })
+            return
+          }
+          region.setOptions({ end: time, start: region.start })
+          syncFromRegion()
+        }
       })
 
       regions.on('region-out', () => {
@@ -134,7 +164,7 @@ export default defineComponent({
     return () => (
       <>
         <Button class="ws-nowrap shrink-0" onClick={() => show.value = true}>{t('music.editPreview')}</Button>
-        <Modal width="min(90vw,55em)" title={t('music.editPreview')} v-model:show={show.value}>
+        <Modal width="min(60vw,80em)" title={t('music.editPreview')} v-model:show={show.value} esc={false}>
           {{
             default: () => (
               <div class="relative flex flex-col gap-3">

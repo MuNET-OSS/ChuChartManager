@@ -207,7 +207,7 @@ music:
   clickToReplaceJacket: クリックでジャケットを置換
   replaceAudio: 音声を置換
   editPreview: 試聴を編集
-  previewHint: 選択範囲をドラッグして試聴区間を調整、または下の入力欄で精密に設定
+  previewHint: 範囲をドラッグして調整、Ctrl+クリックで開始 / Shift+クリックで終了、下の入力欄で精密設定、ホイールでズーム
   previewStart: 開始（秒）
   previewEnd: 終了（秒）
   previewPlayRegion: 選択範囲を試聴

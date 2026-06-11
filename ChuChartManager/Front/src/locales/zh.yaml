@@ -207,7 +207,7 @@ music:
   clickToReplaceJacket: 点击替换封面
   replaceAudio: 替换音频
   editPreview: 编辑试听
-  previewHint: 拖动选区调整试听区间，或用下方输入框精确设置
+  previewHint: 拖动选区调整试听区间，Ctrl+点击设起点 / Shift+点击设终点，或用下方输入框精确设置；滚轮缩放波形
   previewStart: 起点（秒）
   previewEnd: 终点（秒）
   previewPlayRegion: 试听选区

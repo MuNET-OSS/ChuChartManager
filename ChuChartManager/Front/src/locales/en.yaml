@@ -207,7 +207,7 @@ music:
   clickToReplaceJacket: Click to replace jacket
   replaceAudio: Replace Audio
   editPreview: Edit Preview
-  previewHint: Drag the region to adjust the preview range, or set it precisely below
+  previewHint: Drag the region to adjust; Ctrl+click sets start / Shift+click sets end; set precisely below; scroll to zoom
   previewStart: Start (s)
   previewEnd: End (s)
   previewPlayRegion: Play Region
