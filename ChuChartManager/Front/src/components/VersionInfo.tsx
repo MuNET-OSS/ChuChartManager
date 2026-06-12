@@ -21,11 +21,12 @@ export default defineComponent({
         )}
 
         <Modal
-          width="min(85vw,30em)"
+          width="min(85vw,60em)"
           title={t('about.title')}
           v-model:show={show.value}
         >
-          <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-3" style={{ containerType: 'inline-size' }}>
+            <img src="/logo-wide.png" class="w-[58cqw] mx-auto mt-2 mb-6" />
             <div>
               <div class="text-sm op-60">{t('about.version')}</div>
               <div>v{appVersion.value.version}</div>
