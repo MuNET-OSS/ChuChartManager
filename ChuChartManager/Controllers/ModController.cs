@@ -11,7 +11,7 @@ namespace ChuChartManager.Controllers;
 public class ModController : ControllerBase
 {
     public record ModInfo(string Name, string Version);
-    public record ModStatus(bool LoaderInstalled, bool ProxyInstalled, List<ModInfo> Mods);
+    public record ModStatus(bool LoaderInstalled, List<ModInfo> Mods);
     public record ModSectionConfig(bool Enabled, Dictionary<string, object?> Entries);
     public record ModConfigRequest(Dictionary<string, ModSectionConfig> Sections);
 
@@ -20,11 +20,10 @@ public class ModController : ControllerBase
     {
         var gamePath = StaticSettings.GamePath;
         if (string.IsNullOrEmpty(gamePath))
-            return Ok(new ModStatus(false, false, []));
+            return Ok(new ModStatus(false, []));
 
         var binPath = Path.Combine(gamePath, "bin");
-        var loaderInstalled = System.IO.File.Exists(Path.Combine(binPath, "version.dll"));
-        var proxyInstalled = System.IO.File.Exists(Path.Combine(binPath, "d3d9.dll"));
+        var loaderInstalled = System.IO.File.Exists(Path.Combine(binPath, "winhttp.dll"));
         var modsPath = Path.Combine(binPath, "mods");
         var mods = Directory.Exists(modsPath)
             ? Directory.GetFiles(modsPath, "*.dll", SearchOption.TopDirectoryOnly)
@@ -33,12 +32,11 @@ public class ModController : ControllerBase
                 .ToList()
             : [];
 
-        return Ok(new ModStatus(loaderInstalled, proxyInstalled, mods));
+        return Ok(new ModStatus(loaderInstalled, mods));
     }
 
     private const string LoaderRepo = "MuNET-OSS/ChuModLoader";
-    private const string LoaderAsset = "version.dll";
-    private const string ProxyAsset = "d3d9.dll";
+    private const string LoaderAsset = "winhttp.dll";
     private const string AppleChuRepo = "MuNET-OSS/AppleChu";
     private const string AppleChuAsset = "AppleChu.dll";
 
@@ -60,14 +58,12 @@ public class ModController : ControllerBase
         var applechu = await GetLatestRelease(AppleChuRepo, AppleChuAsset);
 
         var binPath = string.IsNullOrEmpty(StaticSettings.GamePath) ? "" : Path.Combine(StaticSettings.GamePath, "bin");
-        var loaderInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "version.dll"));
-        var proxyInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "d3d9.dll"));
+        var loaderInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "winhttp.dll"));
         var appleChuInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "mods", "AppleChu.dll"));
 
         return Ok(new
         {
             loader = new VersionInfo(loader?.Tag_name ?? "", loaderInstalled ? "installed" : "", loader?.Assets.FirstOrDefault(a => a.Name == LoaderAsset)?.Browser_download_url ?? ""),
-            proxy = new VersionInfo(loader?.Tag_name ?? "", proxyInstalled ? "installed" : "", loader?.Assets.FirstOrDefault(a => a.Name == ProxyAsset)?.Browser_download_url ?? ""),
             applechu = new VersionInfo(applechu?.Tag_name ?? "", appleChuInstalled ? "installed" : "", applechu?.Assets.FirstOrDefault(a => a.Name == AppleChuAsset)?.Browser_download_url ?? ""),
         });
     }
@@ -93,17 +89,8 @@ public class ModController : ControllerBase
         var binPath = Path.Combine(gamePath, "bin");
         var loaderData = await Http.GetByteArrayAsync(loaderUrl);
         if (!VerifyDigest(loaderData, FindAssetDigest(release, loaderUrl)))
-            return BadRequest("version.dll 校验失败，文件可能已损坏或被篡改");
-        await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "version.dll"), loaderData);
-
-        var proxyUrl = release?.Assets.FirstOrDefault(a => a.Name == ProxyAsset)?.Browser_download_url;
-        if (!string.IsNullOrEmpty(proxyUrl))
-        {
-            var proxyData = await Http.GetByteArrayAsync(proxyUrl);
-            if (!VerifyDigest(proxyData, FindAssetDigest(release, proxyUrl)))
-                return BadRequest("d3d9.dll 校验失败，文件可能已损坏或被篡改");
-            await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "d3d9.dll"), proxyData);
-        }
+            return BadRequest("winhttp.dll 校验失败，文件可能已损坏或被篡改");
+        await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "winhttp.dll"), loaderData);
 
         return Ok();
     }

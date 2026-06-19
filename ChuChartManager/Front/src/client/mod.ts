@@ -3,7 +3,6 @@ import axios from 'axios'
 
 export interface ModStatus {
   loaderInstalled: boolean
-  proxyInstalled: boolean
   mods: { name: string; version: string }[]
 }
 
@@ -58,7 +57,6 @@ export interface VersionInfo {
 
 export interface LatestVersions {
   loader: VersionInfo
-  proxy: VersionInfo
   applechu: VersionInfo
 }
 

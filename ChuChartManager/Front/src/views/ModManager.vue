@@ -23,7 +23,6 @@ const hasLoadedConfig = ref(false)
 
 const appleChu = computed(() => status.value?.mods.find(mod => mod.name.toLowerCase() === MOD_ID.toLowerCase()))
 const loaderOk = computed(() => status.value?.loaderInstalled ?? false)
-const proxyOk = computed(() => status.value?.proxyInstalled ?? false)
 const modOk = computed(() => !!appleChu.value)
 const configOk = computed(() => !!manifest.value && !!config.value)
 
@@ -103,11 +102,6 @@ watch(config, () => {
       <span>ChuModLoader:</span>
       <span :class="loaderOk ? 'c-green-6' : 'c-red-6'">{{ loaderOk ? t('mods.installed') : t('mods.notInstalled') }}</span>
       <Button v-if="!loaderOk" :disabled="installing" @click="doInstall('loader')">{{ t('mods.install') }}</Button>
-
-      <div class="w-4" />
-
-      <span>d3d9 proxy:</span>
-      <span :class="proxyOk ? 'c-green-6' : 'c-red-6'">{{ proxyOk ? t('mods.installed') : t('mods.notInstalled') }}</span>
 
       <div class="w-4" />
 
