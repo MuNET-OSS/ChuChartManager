@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { TextInput } from '@munet/ui'
 import { locale } from '@/locales'
 import type { Manifest, ManifestSection, ModConfig } from '@/client/mod'
@@ -10,19 +11,31 @@ const props = defineProps<{
   config: ModConfig
 }>()
 
+const { t } = useI18n()
 const language = computed(() => locale.value.startsWith('zh') ? 'zh' : 'en')
 const selectedGroupId = ref(props.manifest.ui.groups[0]?.id ?? '')
 const search = ref('')
 
-const sectionsById = computed(() => new Map(props.manifest.config.sections.map(section => [section.id, section])))
-const selectedGroup = computed(() => props.manifest.ui.groups.find(group => group.id === selectedGroupId.value) ?? props.manifest.ui.groups[0])
+const displaySections = computed(() => props.manifest.config.sections.filter(section => !section.hidden))
+const sectionsById = computed(() => new Map(displaySections.value.map(section => [section.id, section])))
+const groups = computed(() => {
+  const result = props.manifest.ui.groups.map(group => ({ ...group }))
+  const groupedIds = new Set(result.flatMap(group => group.sections))
+  const ungrouped = displaySections.value.filter(section => !groupedIds.has(section.id)).map(section => section.id)
+  if (ungrouped.length)
+    result.push({ id: '__other', label: { zh: t('mods.other'), en: t('mods.other') }, sections: ungrouped })
+  return result.filter(group => group.sections.some(id => sectionsById.value.has(id)))
+})
+const selectedGroup = computed(() => groups.value.find(group => group.id === selectedGroupId.value) ?? groups.value[0])
 
 const visibleSections = computed(() => {
   const query = search.value.trim().toLowerCase()
-  const ids = selectedGroup.value?.sections ?? []
-  return ids
-    .map(id => sectionsById.value.get(id))
-    .filter((section): section is ManifestSection => !!section)
+  const candidates = query
+    ? displaySections.value
+    : (selectedGroup.value?.sections ?? [])
+      .map(id => sectionsById.value.get(id))
+      .filter((section): section is ManifestSection => !!section)
+  return candidates
     .filter(section => {
       if (!query) return true
       const label = section.label?.[language.value] ?? ''
@@ -48,12 +61,12 @@ function ensureState(section: ManifestSection) {
 </script>
 
 <template>
-  <div class="grid grid-cols-[15em_auto] gap-0 min-h-0 flex-1">
-    <aside class="flex flex-col gap-0.5 of-y-auto h-full">
+  <div class="flex flex-col md:grid md:grid-cols-[15em_minmax(0,1fr)] gap-0 min-h-0 flex-1">
+    <aside class="flex md:flex-col gap-0.5 of-x-auto md:of-y-auto md:of-x-hidden shrink-0 md:h-full pb-1 md:pb-0">
       <div
-        v-for="group in manifest.ui.groups"
+        v-for="group in groups"
         :key="group.id"
-        :class="['px-3 py-1.5 rd cursor-pointer text-sm transition-colors', selectedGroupId === group.id ? 'bg-[oklch(0.68_0.17_var(--hue)/0.22)] c-[oklch(0.78_0.17_var(--hue))]' : 'hover:bg-white/8']"
+        :class="['px-3 py-1.5 rd cursor-pointer text-sm transition-colors whitespace-nowrap', selectedGroup?.id === group.id ? 'bg-[oklch(0.68_0.17_var(--hue)/0.22)] c-[oklch(0.58_0.17_var(--hue))]' : 'hover:bg-black/5']"
         @click="selectedGroupId = group.id"
       >
         {{ group.label?.[language] || group.id }}

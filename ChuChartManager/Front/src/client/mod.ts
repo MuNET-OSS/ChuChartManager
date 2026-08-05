@@ -2,8 +2,10 @@ import { apiClient } from '@/api'
 import axios from 'axios'
 
 export interface ModStatus {
-  loaderInstalled: boolean
-  mods: { name: string; version: string }[]
+  installed: boolean
+  version: string
+  amdaemonInstalled: boolean
+  amdaemonVersion: string
 }
 
 export interface LocalizedText {
@@ -17,17 +19,25 @@ export interface ManifestSection {
   description?: LocalizedText
   default_enabled: boolean
   always_enabled?: boolean
+  hidden?: boolean
   entries?: ManifestEntry[]
 }
 
 export interface ManifestEntry {
   key: string
-  type: 'bool' | 'int' | 'float' | 'string'
+  type: 'bool' | 'int' | 'float' | 'string' | 'string_array'
   default: unknown
   min?: number
   max?: number
+  hidden?: boolean
+  options?: ManifestOption[]
   label: LocalizedText
   description?: LocalizedText
+}
+
+export interface ManifestOption {
+  value: string | number
+  label: LocalizedText
 }
 
 export interface Manifest {
@@ -56,9 +66,16 @@ export interface VersionInfo {
 }
 
 export interface LatestVersions {
-  loader: VersionInfo
   applechu: VersionInfo
+  amdaemon: VersionInfo
+  ci?: {
+    version: string
+    commit: string
+    createdAt: string
+  }
 }
+
+export type AppleChuChannel = 'release' | 'ci'
 
 export async function getModStatus(): Promise<ModStatus> {
   const { data } = await apiClient.get('/api/mod/status')
@@ -98,12 +115,8 @@ export async function getModConfig(modId: string): Promise<ModConfig | null> {
   }
 }
 
-export async function installLoader(url?: string): Promise<void> {
-  await apiClient.post('/api/mod/install-loader', { url })
-}
-
-export async function installAppleChu(url?: string): Promise<void> {
-  await apiClient.post('/api/mod/install-applechu', { url })
+export async function installAppleChu(channel: AppleChuChannel): Promise<void> {
+  await apiClient.post('/api/mod/install-applechu', { channel })
 }
 
 export async function saveModConfig(modId: string, sections: ModConfig): Promise<void> {

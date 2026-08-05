@@ -225,8 +225,6 @@ music:
 mods:
   experimentalWarning: 此功能为实验性，可能存在不稳定的情况
   wip: 正在加载...
-  loaderNotInstalled: ChuModLoader 未安装
-  loaderInstalled: ChuModLoader 已安装
   noMods: 未检测到 Mod
   search: 搜索功能...
   on: 开
@@ -235,18 +233,20 @@ mods:
   notInstalled: 未安装
   install: 安装
   installing: 安装中...
-  installAll: 一键安装全部
-  installAllHint: 会复制 ChuModLoader 与 AppleChu 到当前游戏目录
-  installHint: 安装 Loader 与 AppleChu 后即可在这里编辑 Mod 配置。
+  installHint: 安装 AppleChu 后即可在这里编辑 Mod 配置。
   installSuccess: 安装完成
-  installLoader: 安装 Loader
-  reinstallLoader: 重新安装 Loader
-  installMod: 安装 AppleChu
-  reinstallMod: 重新安装 AppleChu
   reinstall: 重新安装
+  releaseChannel: Release 稳定版
+  ciChannel: GitHub CI 版
+  channelUnavailable: 暂不可用
   needInstall: 需要安装
   installedVersion: 已安装版本
   latestVersion: 最新版本
+  versionUnknown: 版本未知
+  amdaemonProxy: AM Daemon 代理
+  other: 其他
+  addListItem: 添加一项
+  removeListItem: 删除此项
   saving: 保存中
   configMissingTitle: 配置文件尚未生成
   configMissingHint: 请启动一次游戏以生成配置文件，然后回到此页面继续编辑。

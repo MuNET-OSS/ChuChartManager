@@ -81,6 +81,9 @@ public static class ServerManager
 
         builder.Services
             .AddSingleton(new MusicScannerService())
+            .AddSingleton<Services.AppleChuMetadataService>()
+            .AddSingleton<Services.AppleChuConfigService>()
+            .AddSingleton<Services.AppleChuDownloadService>()
             .AddEndpointsApiExplorer()
             .Configure<FormOptions>(x =>
             {

@@ -1,186 +1,425 @@
-## 这是 AppleChu 的 TOML 配置文件
-##
-## - 井号 # 开头的行为注释，被注释掉的内容不会生效
-##     - 为方便使用 VSCode 等编辑器进行编辑，被注释掉的配置内容使用一个井号 #，而注释文本使用两个井号 ##
-## - 以方括号包裹的行，如 [System]，为一个栏目
-##     - 将默认被注释（即默认禁用）的栏目取消注释即可启用
-##     - 若要禁用一个默认启用的栏目，请在栏目下添加「key = value」配置项，删除它/注释它不会有效
-## - 形如「键 = 值」为一个配置项
-##     - 配置项应用到其上方最近的栏目，请不要在一个栏目被注释掉的情况下开启其配置项（会加到上一个栏目，无效）
-##     - 当对应栏目启用时，配置项生效，无论是否将其取消注释
-##     - 注释掉的配置项保留其注释中的默认值，默认值可能会随版本更新而变化
-## - 该文件的格式和文字注释是固定的，配置文件将在启动时被重写，无法解析的内容将被删除
-##
-## 试试使用 ChuChartManager 图形化配置 AppleChu 吧！
-## https://github.com/MuNET-OSS/ChuChartManager
+## AppleChu 默认配置
+## section 存在时启用，注释 section 时关闭
 
-Version = "1"
+config_version = 1
 
-## =============================================================================
+## AM Daemon
+[Amdaemon]
+enable = true
+## 由游戏侧启动 AM Daemon
+AutoStart = false
+## 可执行文件
+Executable = "amdaemon.exe"
+## 隐藏控制台窗口
+HideWindow = false
+## 退出时终止
+TerminateOnExit = true
+## 补充 JSON 参数
+AppendConfigArgs = false
+## AM Daemon JSON 配置文件列表
+ConfigFiles = ["config_common.json", "config_server.json", "config_client.json", "config_cvt.json", "config_sp.json", "config_hook.json"]
+
+## 机台序列号模拟
+[PCBID]
+enable = true
+## 机台序列号
+serialNo = "ACAE01A99999999"
+
+## 虚拟文件系统
+[VFS]
+enable = true
+## AMFS 目录
+amfs = "amfs"
+## APPDATA 目录
+appdata = "appdata"
+## 选项资源目录
+option = "option"
+## 允许写入 AMFS 下载内容
+allowAmfsDownloads = false
+
+## AM 平台 DNS 映射
+[Dns]
+enable = true
+## 默认服务器
+default = "localhost"
+## 店内路由服务器
+router = "localhost"
+## 启动认证服务器
+startup = "localhost"
+## 计费服务器
+billing = "localhost"
+## AimeDB 服务器
+aimedb = "localhost"
+## 标题服务器
+title = "title"
+## 替换 HTTP Host
+replaceHost = false
+## 启动认证端口
+startupPort = 0
+## 计费端口
+billingPort = 0
+## AimeDB 端口
+aimedbPort = 0
+
+## NuSec/keychip 模拟
+[Keychip]
+enable = true
+## Keychip ID
+id = "A69E-01A88888888"
+## 游戏 ID
+gameId = "SDHD"
+## 平台 ID
+platformId = ""
+## 区域编号
+region = 1
+## 计费类型
+billingType = 1
+## 系统标志
+systemFlag = 100
+## 店内网络子网
+subnet = "192.168.139.0"
+## 计费 CA 证书
+billingCa = 'DEVICE\ca.crt'
+## 计费公钥
+billingPub = 'DEVICE\billing.pub'
+
+## 店内网络适配器模拟
+[NetEnv]
+enable = true
+## 机台 IP 末尾地址
+addrSuffix = 11
+## 路由 IP 末尾地址
+routerSuffix = 254
+## 虚拟网卡 MAC
+macAddr = "01:02:03:04:05:06"
+## UDP 广播地址
+broadcast = "255.255.255.255"
+
 ## 系统设置
-## =============================================================================
-
 [System]
-## 店内联机基准机/从机
-## false = 基准机（单机，或局域网中的标准机，默认）
-## true  = 从机（局域网中有 2-4 台主机时，非标准机的那些设为 true）
+enable = true
+## 开启控制台
+EnableConsole = true
+## 店内联机从机模式
 LanSlave = false
-
-## 显示器刷新率（60 或 120）
-## 仅当显示器刷新率 ≥120Hz 时填 120，否则保持 60
+## 机台模式
+Mode = "SP"
+## 刷新率
 RefreshRate = 60
 
-## =============================================================================
+## 通用设置
+[General]
+enable = false
+## 自定义版本号
+version_text = ""
+
 ## 显示设置
-## =============================================================================
-
 [Window]
-## 1 = 窗口运行；0 = 全屏运行
-windowed = 1
-## 1 = 有边框窗口；0 = 无边框窗口
-framed = 1
+enable = true
+## 窗口运行
+windowed = false
+## 显示窗口边框
+framed = true
+## 显示器编号
+monitor = 0
 
-## =============================================================================
-## 外部 IO（不填则使用内置键盘/虚拟卡仿真）
-## =============================================================================
-
-## 控制器 IO DLL（TASOLLER / Yubideck 等第三方控制器）
-[ChuniIo]
-#path = "*.dll"
-#path32 = "*.dll"
-#path64 = "*.dll"
-
-## 读卡器 IO DLL（第三方读卡器）
-[AimeIo]
-#path = "*.dll"
-#path32 = "*.dll"
-#path64 = "*.dll"
-
-## =============================================================================
-## 补丁功能
-## =============================================================================
+## D3D9Ex 与设备丢失恢复
+[D3D9Ex]
+enable = false
+## 设备丢失后自动恢复
+device_lost_recover = true
+## 快速重启补丁
+fast_restart = true
 
 ## 跳过启动画面
 [SkipStartup]
+enable = false
 
 ## 免费游玩
 [FreePlay]
-#custom_text = ""
+enable = false
+## 自定义显示文本
+custom_text = ""
 
 ## 禁用选歌计时器
 [DisableTimer]
+enable = false
 
 ## 跳过地图动画
 [SkipMapAnimation]
+enable = false
+
+## 解锁曲数上限
+[UnlockTracks]
+enable = false
+## 最大曲数
+max = 3
+
+## 自定义计时器
+[CustomTimers]
+enable = false
+## 地图选择
+map_select = 60
+## 票券选择
+ticket_select = 60
+## 课题选择
+course_select = 60
+
+## 自动游玩
+[Autoplay]
+## 只屏蔽成绩数据，角色/设置/地图进度正常保存
+enable = false
+## 切换键
+hotkey = "Home"
 
 ## 解锁 120fps
 [Unlock120fps]
-#force = true
+enable = false
 
-## 关闭网络加密（私服需要）
-[DisableEncryption]
+## 绕过 1080P 检测
+[Bypass1080p]
+enable = false
 
-## 关闭 TLS（私服需要）
-[DisableTLS]
+## 绕过 120Hz 检测
+[Bypass120hz]
+enable = false
 
 ## DPI 感知
 [DpiAware]
+enable = false
 
-## 切换窗口闪退修复
-[DeviceLostFix]
-
-## D3D9Ex 透明升级与快速重启
-[D3D9Ex]
-enable = true
-device_lost_recover = true
-fast_restart = true
-
-## 网络请求日志（诊断用：输出游戏的 WinHTTP 请求到日志）
-#[NetLog]
-
-## 自动游玩
-#[Autoplay]
-#hotkey = "Home"
-
-## FPS 显示
-#[FpsDisplay]
-
-## 帧率锁定
-#[FrameLock]
-#fps = 60
-
-## 解锁曲数上限
-#[UnlockTracks]
-#max = 3
-
-## 绕过 1080P 检测
-#[Bypass1080p]
-
-## 绕过 120Hz 检测
-#[Bypass120hz]
-
-## 绕过 AppUser 检测
-#[BypassAppUser]
-
-## 强制共享音频（采样率必须 48000Hz）
-#[ForceSharedAudio]
+## 强制共享音频
+[ForceSharedAudio]
+## 系统采样率必须为 48000Hz，可能增加延迟
+enable = false
 
 ## 强制双声道
-#[Force2chAudio]
+[Force2chAudio]
+enable = false
 
-## 自定义版本号
-#[General]
-#version_text = ""
+## 关闭网络加密
+[DisableEncryption]
+## 私服联网需要开启
+enable = true
 
-## =============================================================================
-## 高级配置（正常情况下无需修改，以下设备仿真默认启用）
-## =============================================================================
+## 关闭 TLS
+[DisableTLS]
+enable = true
 
-## IO4 USB HID（JVS 按键/投币/红外）
-#[Io4]
-#enable = true
+## 网络请求日志
+[NetLog]
+enable = false
 
-## 键盘输入（兼容 segatools 的 [io3] / [ir] / [slider] 键名）
-#[Buttons]
-#test = 0x70
-#service = 0x71
-#coin = 0x72
-#ir = 0x20
+## 全国对战 TCP 中继
+[NationalMatch]
+enable = false
 
-#[Air]
-#air1 = 0x34
-#air2 = 0x35
-#air3 = 0x36
-#air4 = 0x37
-#air5 = 0x38
-#air6 = 0x39
+## 绕过 AppUser 检测
+[BypassAppUser]
+enable = false
 
-#[Slider]
-#cell1 = 0x4C
-#cell2 = 0x4C
-#cell3 = 0x4C
-#cell4 = 0x4C
+## FPS 显示
+[FpsDisplay]
+## 需要 d3d9 proxy
+enable = false
 
-## 触摸条仿真（使用真实 AC 触摸条时设为 false，端口 COM1）
-#[SliderDevice]
-#enable = true
+## 帧率锁定
+[FrameLock]
+## 需要 d3d9 proxy
+enable = false
+## 目标帧率
+fps = 60
 
-## Aime 读卡器（使用真实读卡器时设为 false）
-#[Aime]
-#enable = true
-#aime_path = "aime.txt"
-#felica_path = "felica.txt"
-#authdata_path = "DEVICE\\authdata.bin"
-#aime_gen = true
-#felica_gen = false
-#scan = 0x0D
-#gen = 3
-#proxy_flag = 2
+## 控制器 IO DLL
+[ChuniIo]
+enable = true
+## DLL 路径
+path = ""
+## 32 位 DLL 路径
+path32 = ""
+## 64 位 DLL 路径
+path64 = ""
+
+## 读卡器 IO DLL
+[AimeIo]
+enable = true
+## DLL 路径
+path = ""
+## 32 位 DLL 路径
+path32 = ""
+## 64 位 DLL 路径
+path64 = ""
+
+## 按键输入
+[Buttons]
+enable = true
+## Test 键
+test = 112
+## Service 键
+service = 113
+## 投币键
+coin = 114
+## AIR 模拟键
+ir = 32
+
+## AIR 输入
+[Air]
+enable = true
+## AIR 1
+air1 = 52
+## AIR 2
+air2 = 53
+## AIR 3
+air3 = 54
+## AIR 4
+air4 = 55
+## AIR 5
+air5 = 56
+## AIR 6
+air6 = 57
+
+## 触摸条键位
+[Slider]
+enable = true
+## Cell 1
+cell1 = 76
+## Cell 2
+cell2 = 76
+## Cell 3
+cell3 = 76
+## Cell 4
+cell4 = 76
+## Cell 5
+cell5 = 75
+## Cell 6
+cell6 = 75
+## Cell 7
+cell7 = 75
+## Cell 8
+cell8 = 75
+## Cell 9
+cell9 = 74
+## Cell 10
+cell10 = 74
+## Cell 11
+cell11 = 74
+## Cell 12
+cell12 = 74
+## Cell 13
+cell13 = 72
+## Cell 14
+cell14 = 72
+## Cell 15
+cell15 = 72
+## Cell 16
+cell16 = 72
+## Cell 17
+cell17 = 71
+## Cell 18
+cell18 = 71
+## Cell 19
+cell19 = 71
+## Cell 20
+cell20 = 71
+## Cell 21
+cell21 = 70
+## Cell 22
+cell22 = 70
+## Cell 23
+cell23 = 70
+## Cell 24
+cell24 = 70
+## Cell 25
+cell25 = 68
+## Cell 26
+cell26 = 68
+## Cell 27
+cell27 = 68
+## Cell 28
+cell28 = 68
+## Cell 29
+cell29 = 83
+## Cell 30
+cell30 = 83
+## Cell 31
+cell31 = 83
+## Cell 32
+cell32 = 83
+
+## 灯光输出
+[Led]
+enable = true
+## 机台灯光命名管道
+cabLedOutputPipe = true
+## 机台灯光串口
+cabLedOutputSerial = false
+## 控制器灯光命名管道
+controllerLedOutputPipe = true
+## 控制器灯光串口
+controllerLedOutputSerial = false
+## OpeNITHM 灯光格式
+controllerLedOutputOpeNITHM = false
+## 灯光串口
+serialPort = "COM5"
+## 串口波特率
+serialBaud = 921600
+
+## IO4 仿真
+[Io4]
+enable = true
+## 仅前台读取输入
+foreground = true
+
+## Aime 读卡器
+[Aime]
+enable = true
+## CVT 串口号
+cvtPort = 4
+## SP 串口号
+spPort = 4
+## 使用高波特率
+highBaud = true
+## Aime 文件
+aimePath = 'DEVICE\aime.txt'
+## FeliCa 文件
+felicaPath = 'DEVICE\felica.txt'
+## 认证数据文件
+authdataPath = 'DEVICE\authdata.bin'
+## 自动生成 Aime
+aimeGen = true
+## 自动生成 FeliCa
+felicaGen = false
+## 扫卡键
+scan = 13
+## 读卡器代数
+gen = 0
+## 读卡代理标志
+proxyFlag = 2
 
 ## LED15093 灯板
-#[Led15093]
-#enable = true
+[Led15093]
+enable = true
+## 第一块灯板串口
+port0 = 0
+## 第二块灯板串口
+port1 = 0
+## 控制板型号
+boardNumber = "15093-06"
+## 应用固件芯片
+chipNumber = "6710 "
+## 引导固件芯片
+bootChipNumber = "6709 "
+## 固件版本
+fwVer = 144
+## 固件校验和
+fwSum = 44535
+## 使用高波特率
+highBaud = false
 
-## VFD 显示板（仅 SP 模式）
-#[Vfd]
-#enable = true
+## VFD 显示板
+[Vfd]
+enable = true
+## 串口号
+portNo = 0
+## 编码转换日志
+utfConversion = false

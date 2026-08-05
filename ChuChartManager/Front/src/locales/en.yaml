@@ -225,8 +225,6 @@ music:
 mods:
   experimentalWarning: This feature is experimental and may be unstable
   wip: Loading...
-  loaderNotInstalled: ChuModLoader is not installed
-  loaderInstalled: ChuModLoader is installed
   noMods: No Mods detected
   search: Search features...
   on: On
@@ -235,18 +233,20 @@ mods:
   notInstalled: Not installed
   install: Install
   installing: Installing...
-  installAll: Install all
-  installAllHint: Copies ChuModLoader and AppleChu into the current game directory
-  installHint: Install the loader and AppleChu to edit Mod settings here.
+  installHint: Install AppleChu to edit Mod settings here.
   installSuccess: Installed successfully
-  installLoader: Install Loader
-  reinstallLoader: Reinstall Loader
-  installMod: Install AppleChu
-  reinstallMod: Reinstall AppleChu
   reinstall: Reinstall
+  releaseChannel: Stable release
+  ciChannel: GitHub CI build
+  channelUnavailable: Unavailable
   needInstall: Installation needed
   installedVersion: Installed version
   latestVersion: Latest version
+  versionUnknown: Version unavailable
+  amdaemonProxy: AM Daemon proxy
+  other: Other
+  addListItem: Add item
+  removeListItem: Remove item
   saving: Saving
   configMissingTitle: Config file has not been generated
   configMissingHint: Please start the game once to generate the config file, then return here to edit it.

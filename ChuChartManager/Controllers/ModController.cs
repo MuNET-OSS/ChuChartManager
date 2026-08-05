@@ -1,98 +1,71 @@
+using System.Diagnostics;
 using System.Globalization;
-using System.Text;
+using ChuChartManager.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Tomlyn;
 using Tomlyn.Model;
 
 namespace ChuChartManager.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ModController : ControllerBase
+public class ModController(
+    AppleChuMetadataService metadataService,
+    AppleChuConfigService configService,
+    AppleChuDownloadService downloadService) : ControllerBase
 {
-    public record ModInfo(string Name, string Version);
-    public record ModStatus(bool LoaderInstalled, List<ModInfo> Mods);
-    public record ModSectionConfig(bool Enabled, Dictionary<string, object?> Entries);
-    public record ModConfigRequest(Dictionary<string, ModSectionConfig> Sections);
+    private const string AppleChuModId = "AppleChu";
+    private const string GameProxyAsset = "winhttp.dll";
+    private const string AmdaemonProxyAsset = "winmm.dll";
+
+    public record ModStatus(
+        bool Installed,
+        string Version,
+        bool AmdaemonInstalled,
+        string AmdaemonVersion);
+
+    public record ModConfigRequest(Dictionary<string, AppleChuConfigService.SectionState> Sections);
+    public record VersionInfo(string Latest, string Installed, string DownloadUrl);
+    public record InstallRequest(string? Channel);
 
     [HttpGet("status")]
     public ActionResult<ModStatus> GetStatus()
     {
         var gamePath = StaticSettings.GamePath;
         if (string.IsNullOrEmpty(gamePath))
-            return Ok(new ModStatus(false, []));
+            return Ok(new ModStatus(false, "", false, ""));
 
         var binPath = Path.Combine(gamePath, "bin");
-        var loaderInstalled = System.IO.File.Exists(Path.Combine(binPath, "winhttp.dll"));
-        var modsPath = Path.Combine(binPath, "mods");
-        var mods = Directory.Exists(modsPath)
-            ? Directory.GetFiles(modsPath, "*.dll", SearchOption.TopDirectoryOnly)
-                .Select(file => new ModInfo(Path.GetFileNameWithoutExtension(file), ""))
-                .OrderBy(mod => mod.Name, StringComparer.OrdinalIgnoreCase)
-                .ToList()
-            : [];
-
-        return Ok(new ModStatus(loaderInstalled, mods));
-    }
-
-    private const string LoaderRepo = "MuNET-OSS/ChuModLoader";
-    private const string LoaderAsset = "winhttp.dll";
-    private const string AppleChuRepo = "MuNET-OSS/AppleChu";
-    private const string AppleChuAsset = "AppleChu.dll";
-
-    public record GitHubRelease(string Tag_name, GitHubAsset[] Assets);
-    public record GitHubAsset(string Name, string Browser_download_url, string? Digest);
-    public record VersionInfo(string Latest, string Installed, string DownloadUrl);
-
-    private static readonly HttpClient Http = new();
-
-    static ModController()
-    {
-        Http.DefaultRequestHeaders.UserAgent.ParseAdd("ChuChartManager");
+        var gameProxyPath = Path.Combine(binPath, GameProxyAsset);
+        var amdaemonProxyPath = Path.Combine(binPath, AmdaemonProxyAsset);
+        return Ok(new ModStatus(
+            System.IO.File.Exists(gameProxyPath),
+            ReadVersion(gameProxyPath),
+            System.IO.File.Exists(amdaemonProxyPath),
+            ReadFileVersion(amdaemonProxyPath)));
     }
 
     [HttpGet("latest-versions")]
     public async Task<ActionResult> GetLatestVersions()
     {
-        var loader = await GetLatestRelease(LoaderRepo, LoaderAsset);
-        var applechu = await GetLatestRelease(AppleChuRepo, AppleChuAsset);
-
-        var binPath = string.IsNullOrEmpty(StaticSettings.GamePath) ? "" : Path.Combine(StaticSettings.GamePath, "bin");
-        var loaderInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "winhttp.dll"));
-        var appleChuInstalled = !string.IsNullOrEmpty(binPath) && System.IO.File.Exists(Path.Combine(binPath, "mods", "AppleChu.dll"));
+        var channels = await downloadService.GetChannelsAsync(HttpContext.RequestAborted);
+        var binPath = string.IsNullOrEmpty(StaticSettings.GamePath)
+            ? ""
+            : Path.Combine(StaticSettings.GamePath, "bin");
+        var latest = channels.Release?.Version ?? "";
 
         return Ok(new
         {
-            loader = new VersionInfo(loader?.Tag_name ?? "", loaderInstalled ? "installed" : "", loader?.Assets.FirstOrDefault(a => a.Name == LoaderAsset)?.Browser_download_url ?? ""),
-            applechu = new VersionInfo(applechu?.Tag_name ?? "", appleChuInstalled ? "installed" : "", applechu?.Assets.FirstOrDefault(a => a.Name == AppleChuAsset)?.Browser_download_url ?? ""),
+            applechu = new VersionInfo(
+                latest,
+                ReadVersion(Path.Combine(binPath, GameProxyAsset)),
+                ""),
+            amdaemon = new VersionInfo(
+                latest,
+                ReadFileVersion(Path.Combine(binPath, AmdaemonProxyAsset)),
+                ""),
+            ci = channels.Ci,
         });
-    }
-
-    [HttpPost("install-loader")]
-    public async Task<ActionResult> InstallLoader([FromBody] InstallRequest? request = null)
-    {
-        var gamePath = StaticSettings.GamePath;
-        if (string.IsNullOrEmpty(gamePath))
-            return BadRequest("GamePath not set");
-
-        var release = await GetLatestRelease(LoaderRepo, LoaderAsset);
-
-        var loaderUrl = request?.Url;
-        if (string.IsNullOrEmpty(loaderUrl))
-            loaderUrl = release?.Assets.FirstOrDefault(a => a.Name == LoaderAsset)?.Browser_download_url;
-        if (string.IsNullOrEmpty(loaderUrl))
-            return NotFound("No release found");
-
-        if (!IsAllowedDownloadUrl(loaderUrl))
-            return BadRequest("下载 URL 不在白名单内");
-
-        var binPath = Path.Combine(gamePath, "bin");
-        var loaderData = await Http.GetByteArrayAsync(loaderUrl);
-        if (!VerifyDigest(loaderData, FindAssetDigest(release, loaderUrl)))
-            return BadRequest("winhttp.dll 校验失败，文件可能已损坏或被篡改");
-        await System.IO.File.WriteAllBytesAsync(Path.Combine(binPath, "winhttp.dll"), loaderData);
-
-        return Ok();
     }
 
     [HttpPost("install-applechu")]
@@ -102,303 +75,184 @@ public class ModController : ControllerBase
         if (string.IsNullOrEmpty(gamePath))
             return BadRequest("GamePath not set");
 
-        var binPath = Path.Combine(gamePath, "bin");
-
-        var release = await GetLatestRelease(AppleChuRepo, AppleChuAsset);
-        var url = request?.Url;
-        if (string.IsNullOrEmpty(url))
-            url = release?.Assets.FirstOrDefault(a => a.Name == AppleChuAsset)?.Browser_download_url;
-        if (string.IsNullOrEmpty(url))
-            return NotFound("No release found");
-
-        if (!IsAllowedDownloadUrl(url))
-            return BadRequest("下载 URL 不在白名单内");
-
-        var data = await Http.GetByteArrayAsync(url);
-        if (!VerifyDigest(data, FindAssetDigest(release, url)))
-            return BadRequest("AppleChu.dll 校验失败，文件可能已损坏或被篡改");
-        var modsDir = Path.Combine(binPath, "mods");
-        Directory.CreateDirectory(modsDir);
-        await System.IO.File.WriteAllBytesAsync(Path.Combine(modsDir, "AppleChu.dll"), data);
-
-        var configDest = Path.Combine(binPath, "AppleChu.toml");
-        if (!System.IO.File.Exists(configDest))
-        {
-            var configSource = Path.Combine(StaticSettings.ExeDir, "Resources", "AppleChu", "default_config.toml");
-            if (System.IO.File.Exists(configSource))
-                System.IO.File.Copy(configSource, configDest);
-        }
-
-        return Ok();
-    }
-
-    public record InstallRequest(string? Url);
-
-    private static bool IsAllowedDownloadUrl(string? url)
-    {
-        if (string.IsNullOrEmpty(url)) return false;
-        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
-            && uri.Host is "github.com" or "objects.githubusercontent.com" or "api.github.com"
-            && uri.AbsolutePath.StartsWith("/MuNET-OSS/", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static string? FindAssetDigest(GitHubRelease? release, string url)
-    {
-        return release?.Assets.FirstOrDefault(a => a.Browser_download_url == url)?.Digest;
-    }
-
-    private static bool VerifyDigest(byte[] data, string? digest)
-    {
-        // 旧 Release 资产没有 digest 字段时跳过校验
-        if (string.IsNullOrEmpty(digest)) return true;
-        if (!digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase)) return true;
-
-        var expected = digest["sha256:".Length..];
-        var actual = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(data));
-        return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool IsValidModId(string modId)
-    {
-        return !string.IsNullOrEmpty(modId) && System.Text.RegularExpressions.Regex.IsMatch(modId, @"^[A-Za-z0-9_-]+$");
-    }
-
-    private static async Task<GitHubRelease?> GetLatestRelease(string repo, string assetName)
-    {
+        AppleChuDownloadService.DownloadBundle bundle;
         try
         {
-            var json = await Http.GetStringAsync($"https://api.github.com/repos/{repo}/releases/latest");
-            return System.Text.Json.JsonSerializer.Deserialize<GitHubRelease>(json, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            bundle = await downloadService.DownloadAsync(
+                request?.Channel ?? "release",
+                HttpContext.RequestAborted);
         }
-        catch
+        catch (ArgumentException error)
         {
-            return null;
+            return BadRequest(error.Message);
         }
+        catch (Exception error) when (error is InvalidDataException or InvalidOperationException)
+        {
+            return BadRequest(error.Message);
+        }
+        catch (HttpRequestException error)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, $"下载 AppleChu 失败: {error.Message}");
+        }
+
+        AppleChuMetadataService.Metadata metadata;
+        try
+        {
+            metadata = metadataService.Decode(bundle.GameProxy);
+        }
+        catch (InvalidDataException error)
+        {
+            return BadRequest($"winhttp.dll 未包含有效的 AppleChu 配置元数据: {error.Message}");
+        }
+
+        var binPath = Path.Combine(gamePath, "bin");
+        Directory.CreateDirectory(binPath);
+        await WriteAtomicallyAsync(Path.Combine(binPath, GameProxyAsset), bundle.GameProxy);
+        await WriteAtomicallyAsync(Path.Combine(binPath, AmdaemonProxyAsset), bundle.AmdaemonProxy);
+        configService.CreateIfMissing(gamePath, metadata);
+        return Ok();
     }
 
     [HttpGet("manifest/{modId}")]
     public ActionResult<object> GetManifest(string modId)
     {
-        if (!IsValidModId(modId))
-            return BadRequest("无效的 modId");
-
-        var source = Path.Combine(StaticSettings.ExeDir, "Resources", modId, "manifest.toml");
-        if (!System.IO.File.Exists(source))
+        if (!IsAppleChu(modId))
             return NotFound();
+        if (!TryGetGamePath(out var gamePath))
+            return BadRequest("GamePath not set");
 
-        var model = TomlSerializer.Deserialize<TomlTable>(System.IO.File.ReadAllText(source, Encoding.UTF8));
-        return Ok(ConvertTomlValue(model));
+        try
+        {
+            var metadata = metadataService.ReadInstalled(gamePath);
+            return Ok(ConvertTomlValue(metadata.Manifest));
+        }
+        catch (FileNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidDataException error)
+        {
+            return BadRequest(error.Message);
+        }
     }
 
     [HttpGet("config/{modId}")]
     public ActionResult<ModConfigRequest> GetConfig(string modId)
     {
-        if (!IsValidModId(modId))
-            return BadRequest("无效的 modId");
-        if (!TryResolveGameFile($"{modId}.toml", out var path))
+        if (!IsAppleChu(modId))
+            return NotFound();
+        if (!TryGetGamePath(out var gamePath))
             return BadRequest("GamePath not set");
-        if (!System.IO.File.Exists(path))
-        {
-            var template = LoadDefaultConfig(modId);
-            if (template == null)
-                return NotFound();
-            System.IO.File.WriteAllText(path, template, new UTF8Encoding(false));
-        }
 
-        var sections = ParseConfig(System.IO.File.ReadAllText(path, Encoding.UTF8));
-        return Ok(new ModConfigRequest(sections));
+        try
+        {
+            var metadata = metadataService.ReadInstalled(gamePath);
+            return Ok(new ModConfigRequest(configService.ReadOrCreate(gamePath, metadata)));
+        }
+        catch (FileNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (InvalidDataException error)
+        {
+            return BadRequest(error.Message);
+        }
     }
 
     [HttpPut("config/{modId}")]
-    public ActionResult SaveConfig(string modId, [FromBody] ModConfigRequest request)
+    public ActionResult SaveConfig(string modId, [FromBody] ModConfigRequest? request)
     {
-        if (!IsValidModId(modId))
-            return BadRequest("无效的 modId");
-        if (!TryResolveGameFile($"{modId}.toml", out var path))
+        if (!IsAppleChu(modId))
+            return NotFound();
+        if (!TryGetGamePath(out var gamePath))
             return BadRequest("GamePath not set");
+        if (request?.Sections == null)
+            return BadRequest("配置内容不能为空");
 
-        var template = LoadDefaultConfig(modId);
-        var toml = template != null
-            ? SerializeFromTemplate(template, request.Sections)
-            : SerializeConfig(request.Sections);
-        System.IO.File.WriteAllText(path, toml, new UTF8Encoding(false));
-        return Ok();
-    }
-
-    private static bool TryResolveGameFile(string relativePath, out string path)
-    {
-        path = "";
-        if (string.IsNullOrEmpty(StaticSettings.GamePath))
-            return false;
-
-        path = Path.Combine(StaticSettings.GamePath, "bin", relativePath);
-        return true;
-    }
-
-    private static Dictionary<string, ModSectionConfig> ParseConfig(string toml)
-    {
-        var sections = new Dictionary<string, ModSectionConfig>(StringComparer.OrdinalIgnoreCase);
-        string? currentSection = null;
-
-        foreach (var rawLine in toml.Replace("\r\n", "\n").Split('\n'))
-        {
-            var trimmed = rawLine.Trim();
-            if (trimmed.Length == 0)
-                continue;
-
-            var uncommented = trimmed.StartsWith('#') ? trimmed[1..].TrimStart() : trimmed;
-            if (uncommented.StartsWith('[') && uncommented.EndsWith(']'))
-            {
-                currentSection = uncommented[1..^1].Trim();
-                if (!sections.ContainsKey(currentSection))
-                    sections[currentSection] = new ModSectionConfig(!trimmed.StartsWith('#'), []);
-                continue;
-            }
-
-            if (currentSection == null)
-                continue;
-
-            var isDisabledEntry = trimmed.StartsWith('#');
-            var line = isDisabledEntry ? uncommented : trimmed;
-            var equalIndex = line.IndexOf('=');
-            if (equalIndex <= 0)
-                continue;
-
-            var key = line[..equalIndex].Trim();
-            var valueText = StripInlineComment(line[(equalIndex + 1)..].Trim());
-            if (string.Equals(key, "Disabled", StringComparison.OrdinalIgnoreCase)
-                && ParseTomlScalar(valueText) is bool disabled)
-            {
-                sections[currentSection] = sections[currentSection] with { Enabled = !disabled };
-                continue;
-            }
-
-            sections[currentSection].Entries[key] = ParseTomlScalar(valueText);
-        }
-
-        return sections;
-    }
-
-    private static string StripInlineComment(string value)
-    {
-        var inString = false;
-        for (var i = 0; i < value.Length; i++)
-        {
-            var ch = value[i];
-            if (ch == '"' && (i == 0 || value[i - 1] != '\\'))
-                inString = !inString;
-            if (ch == '#' && !inString)
-                return value[..i].TrimEnd();
-        }
-
-        return value;
-    }
-
-    private static object? ParseTomlScalar(string value)
-    {
         try
         {
-            var model = TomlSerializer.Deserialize<TomlTable>($"value = {value}");
-            return model != null && model.TryGetValue("value", out var parsedValue)
-                ? ConvertTomlValue(parsedValue)
-                : value.Trim().Trim('"');
+            var metadata = metadataService.ReadInstalled(gamePath);
+            configService.Save(gamePath, metadata, request.Sections);
+            return Ok();
+        }
+        catch (FileNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception error) when (error is InvalidDataException or ArgumentException)
+        {
+            return BadRequest(error.Message);
+        }
+    }
+
+    private static bool TryGetGamePath(out string gamePath)
+    {
+        gamePath = StaticSettings.GamePath ?? "";
+        return gamePath.Length > 0;
+    }
+
+    private static bool IsAppleChu(string modId) =>
+        string.Equals(modId, AppleChuModId, StringComparison.OrdinalIgnoreCase);
+
+    private static string ReadFileVersion(string path)
+    {
+        if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(path))
+            return "";
+        try
+        {
+            var versionInfo = FileVersionInfo.GetVersionInfo(path);
+            var version = versionInfo.ProductVersion ?? versionInfo.FileVersion;
+            return string.IsNullOrWhiteSpace(version) || version == "0.0.0.0" ? "" : version.Trim();
         }
         catch
         {
-            return value.Trim().Trim('"');
+            return "";
         }
     }
 
-    private static string? LoadDefaultConfig(string modId)
+    private string ReadVersion(string path)
     {
-        var source = Path.Combine(StaticSettings.ExeDir, "Resources", modId, "default_config.toml");
-        return System.IO.File.Exists(source) ? System.IO.File.ReadAllText(source, Encoding.UTF8) : null;
-    }
+        var fileVersion = ReadFileVersion(path);
+        if (!string.IsNullOrWhiteSpace(fileVersion))
+            return fileVersion;
 
-    private static string SerializeFromTemplate(string template, Dictionary<string, ModSectionConfig> sections)
-    {
-        var builder = new StringBuilder();
-        string? currentSection = null;
-        var usedEntries = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var rawLine in template.Replace("\r\n", "\n").Split('\n'))
+        if (!System.IO.File.Exists(path))
+            return "";
+        try
         {
-            var trimmed = rawLine.Trim();
-
-            var uncommented = trimmed.StartsWith('#') ? trimmed[1..].TrimStart() : trimmed;
-            if (uncommented.StartsWith('[') && uncommented.EndsWith(']'))
+            var metadata = metadataService.Read(path);
+            if (metadata.Manifest.TryGetValue("mod", out var modValue)
+                && modValue is TomlTable mod
+                && mod.TryGetValue("version", out var versionValue)
+                && versionValue is string version
+                && !string.IsNullOrWhiteSpace(version))
             {
-                currentSection = uncommented[1..^1].Trim();
-                usedEntries.Clear();
-                var enabled = sections.TryGetValue(currentSection, out var s) ? s.Enabled : !trimmed.StartsWith('#');
-                var prefix = enabled ? "" : "#";
-                builder.Append(prefix).Append('[').Append(currentSection).AppendLine("]");
-                continue;
+                return version.Trim();
             }
-
-            if (currentSection != null && !trimmed.StartsWith("##") && trimmed.Length > 0)
-            {
-                var isCommented = trimmed.StartsWith('#');
-                var line = isCommented ? uncommented : trimmed;
-                var eq = line.IndexOf('=');
-                if (eq > 0)
-                {
-                    var key = line[..eq].Trim();
-                    if (sections.TryGetValue(currentSection, out var sec) && sec.Entries.TryGetValue(key, out var val))
-                    {
-                        var prefix = sec.Enabled ? "" : "#";
-                        builder.Append(prefix).Append(key).Append(" = ").AppendLine(FormatTomlValue(val));
-                        usedEntries.Add(key);
-                        continue;
-                    }
-                }
-            }
-
-            builder.AppendLine(rawLine);
         }
-
-        return builder.ToString();
-    }
-
-    private static string SerializeConfig(Dictionary<string, ModSectionConfig> sections)
-    {
-        var builder = new StringBuilder();
-        foreach (var (sectionName, section) in sections)
+        catch (Exception error) when (error is InvalidDataException or IOException or UnauthorizedAccessException)
         {
-            var sectionPrefix = section.Enabled ? "" : "#";
-            builder.Append(sectionPrefix).Append('[').Append(sectionName).AppendLine("]");
-
-            foreach (var (key, value) in section.Entries)
-                builder.Append(sectionPrefix).Append(key).Append(" = ").AppendLine(FormatTomlValue(value));
-
-            builder.AppendLine();
+            // The normal status endpoint reports installation separately; an invalid
+            // metadata container must not turn a version lookup into a server error.
         }
 
-        return builder.ToString();
+        return "";
     }
 
-    private static string FormatTomlValue(object? value) => value switch
+    private static async Task WriteAtomicallyAsync(string path, byte[] contents)
     {
-        null => "\"\"",
-        bool b => b ? "true" : "false",
-        byte or sbyte or short or ushort or int or uint or long or ulong => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0",
-        float or double or decimal => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0",
-        System.Text.Json.JsonElement element => FormatJsonElement(element),
-        _ => $"\"{EscapeTomlString(Convert.ToString(value, CultureInfo.InvariantCulture) ?? "")}\"",
-    };
-
-    private static string FormatJsonElement(System.Text.Json.JsonElement element) => element.ValueKind switch
-    {
-        System.Text.Json.JsonValueKind.True => "true",
-        System.Text.Json.JsonValueKind.False => "false",
-        System.Text.Json.JsonValueKind.Number => element.GetRawText(),
-        System.Text.Json.JsonValueKind.String => $"\"{EscapeTomlString(element.GetString() ?? "")}\"",
-        _ => $"\"{EscapeTomlString(element.GetRawText())}\"",
-    };
-
-    private static string EscapeTomlString(string value) => value
-        .Replace("\\", "\\\\")
-        .Replace("\"", "\\\"");
+        var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await System.IO.File.WriteAllBytesAsync(temporaryPath, contents);
+            System.IO.File.Move(temporaryPath, path, true);
+        }
+        finally
+        {
+            if (System.IO.File.Exists(temporaryPath))
+                System.IO.File.Delete(temporaryPath);
+        }
+    }
 
     private static object? ConvertTomlValue(object? value) => value switch
     {
@@ -409,5 +263,4 @@ public class ModController : ControllerBase
         DateTimeOffset dateTimeOffset => dateTimeOffset.ToString("O", CultureInfo.InvariantCulture),
         _ => value,
     };
-
 }

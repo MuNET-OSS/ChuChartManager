@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { addToast, Button } from '@munet/ui'
+import { addToast, DropMenu } from '@munet/ui'
 import { debounce } from 'lodash-es'
 import { ensureBackendUrl } from '@/api'
-import { getModConfig, getModManifest, getModStatus, getLatestVersions, installAppleChu, installLoader, saveModConfig } from '@/client/mod'
-import type { Manifest, ModConfig, ModStatus, LatestVersions } from '@/client/mod'
+import { getModConfig, getModManifest, getModStatus, getLatestVersions, installAppleChu, saveModConfig } from '@/client/mod'
+import type { AppleChuChannel, Manifest, ModConfig, ModStatus, LatestVersions } from '@/client/mod'
 import ModConfigurator from './ModManager/ModConfigurator.vue'
 
 const MOD_ID = 'AppleChu'
@@ -21,10 +21,32 @@ const config = ref<ModConfig | null>(null)
 const versions = ref<LatestVersions | null>(null)
 const hasLoadedConfig = ref(false)
 
-const appleChu = computed(() => status.value?.mods.find(mod => mod.name.toLowerCase() === MOD_ID.toLowerCase()))
-const loaderOk = computed(() => status.value?.loaderInstalled ?? false)
-const modOk = computed(() => !!appleChu.value)
+const modOk = computed(() => status.value?.installed ?? false)
+const amdaemonOk = computed(() => status.value?.amdaemonInstalled ?? false)
+const installationOk = computed(() => modOk.value && amdaemonOk.value)
 const configOk = computed(() => !!manifest.value && !!config.value)
+const installOptions = computed(() => {
+  const release = versions.value?.applechu.latest
+  const ci = versions.value?.ci
+  return [
+    {
+      label: t('mods.releaseChannel'),
+      desc: release || t('mods.channelUnavailable'),
+      icon: 'i-mdi-tag-outline',
+      disabled: installing.value || !release,
+      action: () => doInstall('release'),
+    },
+    {
+      label: t('mods.ciChannel'),
+      desc: ci
+        ? `${ci.version} · ${ci.commit.slice(0, 7)} · ${new Date(ci.createdAt).toLocaleDateString()}`
+        : t('mods.channelUnavailable'),
+      icon: 'i-mdi-source-branch',
+      disabled: installing.value || !ci,
+      action: () => doInstall('ci'),
+    },
+  ]
+})
 
 const save = debounce(async () => {
   if (!config.value || !hasLoadedConfig.value) return
@@ -45,16 +67,23 @@ async function refreshModState() {
   hasLoadedConfig.value = false
   try {
     await ensureBackendUrl()
-    const [s, m, c, v] = await Promise.all([
-      getModStatus(),
+    const [s, v] = await Promise.all([getModStatus(), getLatestVersions()])
+    status.value = s
+    versions.value = v
+
+    // 未检测到游戏侧代理时，不请求配置接口，避免把“未安装”显示成模板错误。
+    if (!s.installed) {
+      manifest.value = null
+      config.value = null
+      return
+    }
+
+    const [m, c] = await Promise.all([
       getModManifest(MOD_ID),
       getModConfig(MOD_ID),
-      getLatestVersions(),
     ])
-    status.value = s
     manifest.value = m
     config.value = c
-    versions.value = v
     await nextTick()
     hasLoadedConfig.value = c != null
   } catch (e: unknown) {
@@ -64,13 +93,10 @@ async function refreshModState() {
   }
 }
 
-async function doInstall(target: 'loader' | 'applechu' | 'all') {
+async function doInstall(channel: AppleChuChannel) {
   installing.value = true
   try {
-    if (target === 'loader' || target === 'all')
-      await installLoader(versions.value?.loader.downloadUrl)
-    if (target === 'applechu' || target === 'all')
-      await installAppleChu(versions.value?.applechu.downloadUrl)
+    await installAppleChu(channel)
     await refreshModState()
     addToast({ message: t('mods.installSuccess'), type: 'success' })
   } catch (e: unknown) {
@@ -98,29 +124,42 @@ watch(config, () => {
 <template>
   <div class="p-xy h-100dvh flex flex-col of-hidden">
     <div class="text-sm op-60 mb-3 px-2 py-1.5 bg-orange/10 c-orange rd">{{ t('mods.experimentalWarning') }}</div>
-    <div v-if="!loading" class="flex gap-2 items-center flex-wrap shrink-0">
-      <span>ChuModLoader:</span>
-      <span :class="loaderOk ? 'c-green-6' : 'c-red-6'">{{ loaderOk ? t('mods.installed') : t('mods.notInstalled') }}</span>
-      <Button v-if="!loaderOk" :disabled="installing" @click="doInstall('loader')">{{ t('mods.install') }}</Button>
+    <div v-if="!loading" class="flex items-center gap-x-6 gap-y-2 flex-wrap shrink-0 px-2 pb-3 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
+      <div class="flex items-center gap-2 min-w-0">
+        <span :class="modOk ? 'i-mdi-check-circle c-green-6' : 'i-mdi-alert-circle c-red-6'" class="text-5 shrink-0" />
+        <div class="min-w-0">
+          <div class="text-sm font-medium">AppleChu</div>
+          <div class="text-xs op-55">
+            {{ modOk ? t('mods.installed') : t('mods.notInstalled') }}
+            <template v-if="status?.version"> · v{{ status.version }}</template>
+            <template v-else-if="modOk"> · {{ t('mods.versionUnknown') }}</template>
+            <template v-if="versions?.applechu.latest"> · {{ t('mods.latestVersion') }} {{ versions.applechu.latest }}</template>
+          </div>
+        </div>
+      </div>
 
-      <div class="w-4" />
+      <div class="flex items-center gap-2 min-w-0">
+        <span :class="amdaemonOk ? 'i-mdi-check-circle c-green-6' : 'i-mdi-alert-circle c-red-6'" class="text-5 shrink-0" />
+        <div class="min-w-0">
+          <div class="text-sm font-medium">{{ t('mods.amdaemonProxy') }}</div>
+          <div class="text-xs op-55">
+            {{ amdaemonOk ? t('mods.installed') : t('mods.notInstalled') }}
+            <template v-if="status?.amdaemonVersion"> · v{{ status.amdaemonVersion }}</template>
+            <template v-else-if="amdaemonOk"> · {{ t('mods.versionUnknown') }}</template>
+            <template v-if="versions?.amdaemon.latest"> · {{ t('mods.latestVersion') }} {{ versions.amdaemon.latest }}</template>
+          </div>
+        </div>
+      </div>
 
-      <span>AppleChu:</span>
-      <template v-if="modOk">
-        <span class="c-green-6">{{ t('mods.installed') }}</span>
-      </template>
-      <span v-else class="c-red-6">{{ t('mods.notInstalled') }}</span>
+      <DropMenu
+        :button-text="installing ? t('mods.installing') : installationOk ? t('mods.reinstall') : t('mods.install')"
+        :options="installOptions"
+        align="left"
+      />
 
-      <Button :disabled="installing" @click="doInstall(loaderOk && modOk ? 'applechu' : 'all')">
-        {{ modOk ? t('mods.reinstall') : t('mods.install') }}
-      </Button>
-
-      <template v-if="versions?.applechu.latest">
-        <span>{{ t('mods.latestVersion') }}:</span>
-        <span :class="versions.applechu.latest !== (manifest?.mod?.version || '') ? 'c-orange' : ''">{{ versions.applechu.latest }}</span>
-      </template>
-
-      <span v-if="saving" class="c-green-6">{{ t('mods.saving') }}...</span>
+      <span v-if="saving" class="text-xs c-green-6 ml-auto">
+        <span class="i-mdi-content-save-outline mr-1" />{{ t('mods.saving') }}...
+      </span>
     </div>
 
     <!-- 内容区 -->
@@ -131,7 +170,7 @@ watch(config, () => {
       <div class="text-8">{{ t('common.error') }}</div>
       <div class="c-gray-5 text-lg">{{ error }}</div>
     </div>
-    <div v-else-if="!loaderOk || !modOk" class="flex-1 flex flex-col gap-2 justify-center items-center min-h-100">
+    <div v-else-if="!modOk" class="flex-1 flex flex-col gap-2 justify-center items-center min-h-100">
       <div class="text-8">{{ t('mods.needInstall') }}</div>
       <div class="c-gray-5 text-lg">{{ t('mods.installHint') }}</div>
     </div>

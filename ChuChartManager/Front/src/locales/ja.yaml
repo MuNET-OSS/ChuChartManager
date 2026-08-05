@@ -225,8 +225,6 @@ music:
 mods:
   experimentalWarning: この機能は実験的であり、不安定な場合があります
   wip: 読み込み中...
-  loaderNotInstalled: ChuModLoader は未インストールです
-  loaderInstalled: ChuModLoader はインストール済みです
   noMods: Mod が検出されません
   search: 機能を検索...
   on: オン
@@ -235,10 +233,21 @@ mods:
   notInstalled: 未インストール
   install: インストール
   installing: インストール中...
-  installAll: すべてインストール
-  installAllHint: ChuModLoader と AppleChu を現在のゲームディレクトリへコピーします
-  installHint: Loader と AppleChu をインストールすると、ここで Mod 設定を編集できます。
+  installHint: AppleChu をインストールすると、ここで Mod 設定を編集できます。
   installSuccess: インストール完了
+  reinstall: 再インストール
+  releaseChannel: Release 安定版
+  ciChannel: GitHub CI ビルド
+  channelUnavailable: 利用できません
+  needInstall: インストールが必要です
+  installedVersion: インストール済みバージョン
+  latestVersion: 最新バージョン
+  versionUnknown: バージョン不明
+  amdaemonProxy: AM Daemon プロキシ
+  other: その他
+  addListItem: 項目を追加
+  removeListItem: 項目を削除
+  saving: 保存中
   configMissingTitle: 設定ファイルがまだ生成されていません
   configMissingHint: 一度ゲームを起動して設定ファイルを生成してから、このページに戻って編集してください。
   saveSuccess: 設定を保存しました
