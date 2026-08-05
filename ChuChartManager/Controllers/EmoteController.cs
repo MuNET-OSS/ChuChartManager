@@ -1,15 +1,19 @@
 using System.Diagnostics;
+using System.Xml;
+using System.Xml.Linq;
+using ChuChartManager.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChuChartManager.Controllers;
 
 [ApiController]
 [Route("api/[controller]/[action]")]
-public class EmoteController : ControllerBase
+public class EmoteController(EmoteWebGlService emoteWebGl) : ControllerBase
 {
     public class EmoteDataItem
     {
         public int Id { get; set; }
+        public string Name { get; set; } = "";
         public string DataName { get; set; } = "";
         public string AssetDir { get; set; } = "";
         public string FileName { get; set; } = "";
@@ -29,6 +33,7 @@ public class EmoteController : ControllerBase
         if (string.IsNullOrEmpty(StaticSettings.GamePath))
             return Ok(new List<EmoteDataItem>());
 
+        var namesBySource = LoadEmoteNames(source);
         var result = new List<EmoteDataItem>();
         foreach (var (dir, assetDir) in EnumerateDirs("emotedata", source))
         {
@@ -42,6 +47,7 @@ public class EmoteController : ControllerBase
                 result.Add(new EmoteDataItem
                 {
                     Id = id,
+                    Name = FindEmoteName(namesBySource, assetDir, id),
                     DataName = dirName,
                     AssetDir = assetDir,
                     FileName = fi.Name,
@@ -52,6 +58,61 @@ public class EmoteController : ControllerBase
         }
 
         return Ok(result.OrderBy(e => e.Id).ToList());
+    }
+
+    private static Dictionary<string, Dictionary<int, string>> LoadEmoteNames(string? source)
+    {
+        var namesBySource = new Dictionary<string, Dictionary<int, string>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (directory, assetDir) in EnumerateDirs("emoteChara", source))
+        {
+            var xmlPath = Path.Combine(directory, "EmoteChara.xml");
+            if (!System.IO.File.Exists(xmlPath))
+                continue;
+
+            try
+            {
+                using var reader = XmlReader.Create(xmlPath, new XmlReaderSettings
+                {
+                    DtdProcessing = DtdProcessing.Prohibit,
+                    XmlResolver = null,
+                });
+                var root = XDocument.Load(reader).Root;
+                if (root == null || !int.TryParse(root.Element("emoteDataId")?.Value, out var id))
+                    continue;
+
+                var name = root.Element("dialogName")?.Value?.Trim();
+                if (string.IsNullOrEmpty(name))
+                    name = root.Element("name")?.Element("str")?.Value?.Trim();
+                if (string.IsNullOrEmpty(name))
+                    continue;
+
+                if (!namesBySource.TryGetValue(assetDir, out var names))
+                    namesBySource[assetDir] = names = new Dictionary<int, string>();
+                names.TryAdd(id, name);
+            }
+            catch (XmlException)
+            {
+            }
+            catch (IOException)
+            {
+            }
+        }
+
+        return namesBySource;
+    }
+
+    private static string FindEmoteName(
+        Dictionary<string, Dictionary<int, string>> namesBySource,
+        string assetDir,
+        int id)
+    {
+        if (namesBySource.TryGetValue(assetDir, out var names) && names.TryGetValue(id, out var name))
+            return name;
+        if (!string.Equals(assetDir, "A000", StringComparison.OrdinalIgnoreCase)
+            && namesBySource.TryGetValue("A000", out var baseNames)
+            && baseNames.TryGetValue(id, out name))
+            return name;
+        return "";
     }
 
     [HttpPost]
@@ -90,92 +151,20 @@ public class EmoteController : ControllerBase
         public string FilePath { get; set; } = "";
     }
 
-    private static readonly Lock WebGLConvertLock = new();
-    private static readonly Dictionary<string, byte[]> WebGLCache = new();
-
     /// <summary>
     /// emtbytes → PsbDecompile → PsBuild -p ems → pure.psb (WebGL 可用格式)
     /// </summary>
     [HttpGet]
     public ActionResult GetEmoteWebGLData([FromQuery] string filePath)
     {
-        if (SafeGameFilePath(filePath) == null)
+        var safePath = SafeGameFilePath(filePath);
+        if (safePath == null)
             return NotFound();
 
-        if (WebGLCache.TryGetValue(filePath, out var cached))
-            return File(cached, "application/octet-stream", Path.GetFileNameWithoutExtension(filePath) + ".pure.psb");
+        if (!emoteWebGl.TryConvert(safePath, out var data, out var error))
+            return BadRequest(error);
 
-        var decompilePath = Path.Combine(StaticSettings.ExeDir, "tools", "PsbDecompile.exe");
-        var buildPath = Path.Combine(StaticSettings.ExeDir, "tools", "PsBuild.exe");
-        if (!System.IO.File.Exists(decompilePath))
-            return BadRequest("PsbDecompile.exe 未找到");
-        if (!System.IO.File.Exists(buildPath))
-            return BadRequest("PsBuild.exe 未找到");
-
-        lock (WebGLConvertLock)
-        {
-            if (WebGLCache.TryGetValue(filePath, out cached))
-                return File(cached, "application/octet-stream", Path.GetFileNameWithoutExtension(filePath) + ".pure.psb");
-
-            var baseName = Path.GetFileNameWithoutExtension(filePath);
-            var tempDir = Path.Combine(Path.GetTempPath(), "CCM_EmoteWebGL", baseName + "_" + Guid.NewGuid().ToString("N")[..8]);
-            Directory.CreateDirectory(tempDir);
-
-            try
-            {
-                var tempEmtbytes = Path.Combine(tempDir, baseName + ".emtbytes");
-                System.IO.File.Copy(filePath, tempEmtbytes);
-
-                var decompileProc = Process.Start(new ProcessStartInfo
-                {
-                    FileName = decompilePath,
-                    UseShellExecute = false,
-                    WorkingDirectory = tempDir,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    ArgumentList = { tempEmtbytes },
-                });
-                decompileProc?.WaitForExit(30000);
-                if (decompileProc == null || decompileProc.ExitCode != 0)
-                    return BadRequest($"PsbDecompile 失败，退出码: {decompileProc?.ExitCode ?? -1}");
-
-                var jsonPath = Path.Combine(tempDir, baseName + ".json");
-                if (!System.IO.File.Exists(jsonPath))
-                    return BadRequest("PsbDecompile 失败：未生成 JSON 文件");
-
-                var jsonContent = System.IO.File.ReadAllText(jsonPath);
-                jsonContent = jsonContent.Replace("\"type\": \"DXT5\"", "\"type\": \"RGBA8\"");
-                jsonContent = jsonContent.Replace("\"type\": \"DXT1\"", "\"type\": \"RGBA8\"");
-                System.IO.File.WriteAllText(jsonPath, jsonContent);
-
-                var outputPath = Path.Combine(tempDir, baseName + ".pure.psb");
-                var buildProc = Process.Start(new ProcessStartInfo
-                {
-                    FileName = buildPath,
-                    UseShellExecute = false,
-                    WorkingDirectory = tempDir,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                    ArgumentList = { "-p", "ems", "-o", outputPath, jsonPath },
-                });
-                buildProc?.WaitForExit(30000);
-                if (buildProc == null || buildProc.ExitCode != 0)
-                    return BadRequest($"PsBuild 失败，退出码: {buildProc?.ExitCode ?? -1}");
-
-                if (!System.IO.File.Exists(outputPath))
-                    return BadRequest("PsBuild 失败：未生成 pure.psb 文件");
-
-                var psbData = System.IO.File.ReadAllBytes(outputPath);
-                WebGLCache[filePath] = psbData;
-                return File(psbData, "application/octet-stream", baseName + ".pure.psb");
-            }
-            finally
-            {
-                try { Directory.Delete(tempDir, true); } catch { }
-            }
-        }
+        return File(data, "application/octet-stream", Path.GetFileNameWithoutExtension(safePath) + ".pure.psb");
     }
 
     private static IEnumerable<(string dir, string assetDir)> EnumerateDirs(string type, string? source)

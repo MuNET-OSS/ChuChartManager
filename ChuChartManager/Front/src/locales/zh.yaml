@@ -540,6 +540,7 @@ emote:
   noData: 暂无模型数据
   preview: 预览动画
   id: ID
+  name: 名称
   fileName: 文件名
   fileSize: 文件大小
   assetDir: 所属目录

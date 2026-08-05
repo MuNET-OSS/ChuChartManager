@@ -2,6 +2,7 @@ import { apiClient, getBaseUrl } from './index'
 
 export interface EmoteDataItem {
   id: number
+  name: string
   dataName: string
   assetDir: string
   fileName: string

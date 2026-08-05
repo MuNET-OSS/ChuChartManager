@@ -73,7 +73,7 @@ export default defineComponent({
                 ]}
                 onClick={() => { selectedData.value = d }}
               >
-                <div class="text-sm font-medium truncate">{d.fileName}</div>
+                <div class="text-sm font-medium truncate">{d.name || d.fileName}</div>
                 <div class="text-xs op-40 mt-0.5 flex items-center gap-2 flex-wrap">
                   <span>ID: {d.id}</span>
                   <span>·</span>
@@ -92,7 +92,7 @@ export default defineComponent({
             return (
               <>
                 <div class="flex items-center gap-3 p-4 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
-                  <h2 class="text-lg font-bold m-0 flex-1 truncate">{d.fileName}</h2>
+                  <h2 class="text-lg font-bold m-0 flex-1 truncate">{d.name || d.fileName}</h2>
                   <Button onClick={() => handlePreview(d)}>
                     <span class="i-mdi-play text-3.5 mr-1" />
                     {t('emote.preview')}
@@ -102,10 +102,11 @@ export default defineComponent({
                   <EmotePlayerCanvas
                     dataUrl={getEmoteWebGLDataUrl(d.filePath)}
                     width={640}
-                    height={480}
+                    height={640}
                   />
                   <div class="grid grid-cols-2 gap-4 mb-4 mt-4">
                     {renderField(t('emote.id'), d.id)}
+                    {renderField(t('emote.name'), d.name || d.fileName)}
                     {renderField(t('emote.fileName'), d.fileName)}
                     {renderField(t('emote.fileSize'), formatFileSize(d.fileSize))}
                   </div>

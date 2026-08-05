@@ -540,6 +540,7 @@ emote:
   noData: No model data
   preview: Preview Animation
   id: ID
+  name: Name
   fileName: File Name
   fileSize: File Size
   assetDir: Directory

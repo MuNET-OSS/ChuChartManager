@@ -540,6 +540,7 @@ emote:
   noData: モデルデータなし
   preview: アニメーションプレビュー
   id: ID
+  name: 名前
   fileName: ファイル名
   fileSize: ファイルサイズ
   assetDir: ディレクトリ

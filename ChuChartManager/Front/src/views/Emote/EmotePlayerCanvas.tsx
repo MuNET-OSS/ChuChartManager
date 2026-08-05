@@ -1,5 +1,6 @@
 import { defineComponent, ref, onMounted, onBeforeUnmount, watch, type PropType } from 'vue'
 import { Button } from '@munet/ui'
+import { useI18n } from 'vue-i18n'
 
 declare global {
   class EmotePlayer {
@@ -11,18 +12,15 @@ declare global {
     constructor(canvas: HTMLCanvasElement | null)
     promiseLoadDataFromURL(...urls: string[]): Promise<void>
     unloadData(): void
-    set coord(val: [number, number])
-    get coord(): [number, number]
-    set scale(val: number)
-    get scale(): number
-    set mainTimelineLabel(val: string)
-    get mainTimelineLabel(): string
+    coord: [number, number]
+    scale: number
+    mainTimelineLabel: string
     get mainTimelineLabels(): string[]
     get diffTimelineLabels(): string[]
-    set diffTimelineSlot1(val: string)
-    set diffTimelineSlot2(val: string)
-    set diffTimelineSlot3(val: string)
-    set diffTimelineSlot4(val: string)
+    diffTimelineSlot1: string
+    diffTimelineSlot2: string
+    diffTimelineSlot3: string
+    diffTimelineSlot4: string
     charaBounds: { left: number; top: number; right: number; bottom: number }
     isCharaProfileAvailable: boolean
     initialized: boolean
@@ -99,6 +97,7 @@ export default defineComponent({
     height: { type: Number, default: 480 },
   },
   setup(props) {
+    const { t } = useI18n()
     const canvasRef = ref<HTMLCanvasElement | null>(null)
     const state = ref<LoadState>('idle')
     const errorMsg = ref('')
@@ -140,14 +139,15 @@ export default defineComponent({
           }).then(buf => new Uint8Array(buf)),
         ])
 
-        if (targetUrl !== props.dataUrl) return
+        const canvas = canvasRef.value
+        if (!canvas || targetUrl !== props.dataUrl) return
 
         if (!EmotePlayer.renderCanvas) {
           EmotePlayer.createRenderCanvas(props.width, props.height)
           await new Promise(r => requestAnimationFrame(r))
         }
 
-        player = new EmotePlayer(canvasRef.value)
+        player = new EmotePlayer(canvas)
         player.loadData(dataBuffer)
 
         player.windSpeed = 0.5
@@ -255,7 +255,7 @@ export default defineComponent({
     )
 
     return () => (
-      <div>
+      <div class="w-full min-w-0">
         <div class="flex items-center gap-1.5 mb-3">
           {state.value === 'ready' && (
             <>
@@ -272,17 +272,21 @@ export default defineComponent({
           )}
         </div>
 
-        <div class="flex gap-3">
-          <div class="flex-shrink-0">
+        <div
+          class="grid gap-3 items-start"
+          style={{ gridTemplateColumns: state.value === 'ready' && motionPanelOpen.value ? 'minmax(0, 1fr) minmax(9rem, 12rem)' : 'minmax(0, 1fr)' }}
+        >
+          <div class="min-w-0">
             <canvas
               ref={canvasRef}
+              id="ccm-emote-player-canvas"
               width={props.width}
               height={props.height}
-              class="block rounded-lg"
-              style={{ width: `${props.width}px`, height: `${props.height}px`, background: 'oklch(0.97 0.005 var(--hue))' }}
+              class="block rounded-lg w-full h-auto"
+              style={{ maxWidth: `${props.width}px`, aspectRatio: `${props.width} / ${props.height}`, background: 'oklch(0.97 0.005 var(--hue))' }}
             />
             {state.value === 'loading' && (
-              <div class="text-center op-40 py-6">Loading E-mote...</div>
+              <div class="text-center op-40 py-6">{t('common.loading')}</div>
             )}
             {state.value === 'error' && (
               <div class="text-center text-red-500 text-xs py-6 px-4">{errorMsg.value}</div>
@@ -290,7 +294,7 @@ export default defineComponent({
           </div>
 
           {state.value === 'ready' && motionPanelOpen.value && (
-            <div class="w-48 flex-shrink-0 of-y-auto rounded-lg border border-solid border-[oklch(0.9_0.02_var(--hue))]" style={{ maxHeight: `${props.height}px` }}>
+            <div class="min-w-0 of-y-auto rounded-lg border border-solid border-[oklch(0.9_0.02_var(--hue))]" style={{ maxHeight: `${props.height}px` }}>
               {mainTimelines.value.length > 0 && (
                 <div class="p-2">
                   <div class="text-[10px] font-bold op-40 mb-1 uppercase tracking-wide">Main</div>
