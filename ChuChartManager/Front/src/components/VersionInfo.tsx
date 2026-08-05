@@ -27,6 +27,22 @@ export default defineComponent({
         >
           <div class="flex flex-col gap-3" style={{ containerType: 'inline-size' }}>
             <img src="/logo-wide.png" class="w-[58cqw] mx-auto mt-2 mb-6" />
+            <div class="flex justify-center gap-2 text-9 c-gray-4">
+              <a
+                class="i-mdi-github hover:c-[var(--text-color)] transition-300"
+                href="https://github.com/MuNET-OSS/ChuChartManager"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="GitHub"
+              />
+              <a
+                class="i-ri-qq-fill hover:c-[var(--text-color)] transition-300"
+                href="https://qm.qq.com/q/JQGnQZVF6w"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="QQ group"
+              />
+            </div>
             <div>
               <div class="text-sm op-60">{t('about.version')}</div>
               <div>v{appVersion.value.version}</div>
