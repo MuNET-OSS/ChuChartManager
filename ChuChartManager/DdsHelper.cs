@@ -4,6 +4,8 @@ using BCnEncoder.Shared;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 namespace ChuChartManager;
 
@@ -42,6 +44,43 @@ public static class DdsHelper
         using var ms = new MemoryStream();
         encoder.EncodeToStream(image, ms);
         return ms.ToArray();
+    }
+
+    public static byte[]? ConvertDdsToPng(string ddsPath)
+    {
+        try
+        {
+            using var image = Pfim.Pfimage.FromFile(ddsPath);
+            if (image.Compressed) image.Decompress();
+
+            var pixelFormat = image.Format switch
+            {
+                Pfim.ImageFormat.Rgba32 => System.Drawing.Imaging.PixelFormat.Format32bppArgb,
+                _ => System.Drawing.Imaging.PixelFormat.Format24bppRgb,
+            };
+            using var bitmap = new Bitmap(image.Width, image.Height, pixelFormat);
+            var bitmapData = bitmap.LockBits(
+                new System.Drawing.Rectangle(0, 0, image.Width, image.Height),
+                ImageLockMode.WriteOnly,
+                pixelFormat);
+            try
+            {
+                var copyLength = Math.Min(image.Data.Length, Math.Abs(bitmapData.Stride) * image.Height);
+                Marshal.Copy(image.Data, 0, bitmapData.Scan0, copyLength);
+            }
+            finally
+            {
+                bitmap.UnlockBits(bitmapData);
+            }
+
+            using var output = new MemoryStream();
+            bitmap.Save(output, ImageFormat.Png);
+            return output.ToArray();
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static BcEncoder CreateEncoder()

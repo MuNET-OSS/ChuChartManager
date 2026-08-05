@@ -14,6 +14,7 @@ import ModManager from '@/views/ModManager.vue'
 import LoginBonus from '@/views/LoginBonus/index'
 import EventManager from '@/views/Event/index'
 import EmoteManager from '@/views/Emote/index'
+import MateManager from '@/views/Mate/index'
 import BatchAction from '@/views/BatchAction/index'
 import Tools from '@/views/Tools/index'
 import Settings from '@/views/Settings.vue'
@@ -62,6 +63,7 @@ const handleRefresh = () => {
           <ModManager v-if="sidebarActive === 'mods'" />
           <EventManager v-if="sidebarActive === 'event'" />
           <EmoteManager v-if="sidebarActive === 'emote'" />
+          <MateManager v-if="sidebarActive === 'mate'" />
           <LoginBonus v-if="sidebarActive === 'loginBonus'" />
           <BatchAction v-if="sidebarActive === 'batch'" />
           <Tools v-if="sidebarActive === 'tools'" />

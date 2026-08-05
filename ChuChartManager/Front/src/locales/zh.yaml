@@ -8,6 +8,7 @@ sidebar:
   loginBonus: 登录奖励
   event: 活动
   emote: Emote
+  mate: 伙伴
   batch: 批量
   tools: 工具
   settings: 设置
@@ -547,4 +548,15 @@ emote:
   viewerNotFound: FreeMoteViewer.exe 未找到
   viewerLaunched: 已启动 Emote Viewer
   launchFailed: 启动失败
+mate:
+  title: 伙伴
+  noData: 暂无伙伴数据
+  allSources: 全部资源目录
+  count: "共 {count} 个伙伴"
+  actionCount: "{count} 个动作"
+  actions: 动作数据
+  lipsyncCount: "{count} 组口型数据"
+  unnamedAction: 未命名动作
+  lipsync: 口型同步
+  voice: 语音
 

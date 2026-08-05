@@ -82,6 +82,8 @@ public static class ServerManager
         builder.Services
             .AddSingleton(new MusicScannerService())
             .AddSingleton<Services.EmoteWebGlService>()
+            .AddSingleton<Services.MateCatalogService>()
+            .AddSingleton<Services.MateThumbnailService>()
             .AddSingleton<Services.AppleChuMetadataService>()
             .AddSingleton<Services.AppleChuConfigService>()
             .AddSingleton<Services.AppleChuDownloadService>()

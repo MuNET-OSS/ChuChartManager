@@ -8,9 +8,13 @@ public static class PathGuard
     /// </summary>
     public static string? EnsureWithin(string allowedBaseDir, string userPath)
     {
-        var fullBase = Path.GetFullPath(allowedBaseDir);
+        var fullBase = Path.TrimEndingDirectorySeparator(Path.GetFullPath(allowedBaseDir));
         var fullTarget = Path.GetFullPath(userPath);
-        return fullTarget.StartsWith(fullBase, StringComparison.OrdinalIgnoreCase) ? fullTarget : null;
+        if (string.Equals(fullTarget, fullBase, StringComparison.OrdinalIgnoreCase))
+            return fullTarget;
+
+        var basePrefix = fullBase + Path.DirectorySeparatorChar;
+        return fullTarget.StartsWith(basePrefix, StringComparison.OrdinalIgnoreCase) ? fullTarget : null;
     }
 
     /// <summary>

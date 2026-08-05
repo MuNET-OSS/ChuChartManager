@@ -8,6 +8,7 @@ sidebar:
   loginBonus: Login Bonus
   event: Events
   emote: Emote
+  mate: Mate
   batch: Batch
   tools: Tools
   settings: Settings
@@ -547,4 +548,15 @@ emote:
   viewerNotFound: FreeMoteViewer.exe not found
   viewerLaunched: Emote Viewer launched
   launchFailed: Launch failed
+mate:
+  title: Mate
+  noData: No mate data
+  allSources: All resource directories
+  count: "{count} mates"
+  actionCount: "{count} actions"
+  actions: Actions
+  lipsyncCount: "{count} lip-sync tracks"
+  unnamedAction: Unnamed action
+  lipsync: Lip sync
+  voice: Voice
 

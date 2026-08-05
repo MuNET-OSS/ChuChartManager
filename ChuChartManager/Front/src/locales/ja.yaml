@@ -8,6 +8,7 @@ sidebar:
   loginBonus: ログインボーナス
   event: イベント
   emote: Emote
+  mate: メイト
   batch: 一括
   tools: ツール
   settings: 設定
@@ -547,4 +548,15 @@ emote:
   viewerNotFound: FreeMoteViewer.exe が見つかりません
   viewerLaunched: Emote Viewer を起動しました
   launchFailed: 起動に失敗しました
+mate:
+  title: メイト
+  noData: メイトデータがありません
+  allSources: すべてのリソースディレクトリ
+  count: "全 {count} メイト"
+  actionCount: "{count} アクション"
+  actions: アクション
+  lipsyncCount: "口パクデータ {count} 件"
+  unnamedAction: 名前なしアクション
+  lipsync: 口パク同期
+  voice: ボイス
 
