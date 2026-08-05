@@ -1,6 +1,6 @@
 # ChuChartManager
 
-CHUNITHM 谱面与资源管理工具
+某个触摸抬手游戏谱面/Mod管理器
 
 ## 功能
 
