@@ -62,7 +62,7 @@ function removeArrayItem(index: number) {
 </script>
 
 <template>
-  <div class="grid grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] gap-2 items-start pl-2">
+  <div class="grid grid-cols-[8rem_minmax(0,1fr)] md:grid-cols-[minmax(8rem,12rem)_minmax(0,1fr)] gap-2 items-start pl-2">
     <div class="min-w-0 text-sm break-words">{{ label }}</div>
     <div class="flex flex-col gap-2 min-w-0">
       <div class="flex gap-2 min-h-28px items-center">

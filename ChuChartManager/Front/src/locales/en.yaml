@@ -246,6 +246,7 @@ mods:
   versionUnknown: Version unavailable
   amdaemonProxy: AM Daemon proxy
   other: Other
+  advancedOptions: Advanced options
   addListItem: Add item
   removeListItem: Remove item
   saving: Saving
@@ -559,4 +560,3 @@ mate:
   unnamedAction: Unnamed action
   lipsync: Lip sync
   voice: Voice
-

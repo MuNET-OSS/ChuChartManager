@@ -246,6 +246,7 @@ mods:
   versionUnknown: 版本未知
   amdaemonProxy: AM Daemon 代理
   other: 其他
+  advancedOptions: 高级选项
   addListItem: 添加一项
   removeListItem: 删除此项
   saving: 保存中
@@ -559,4 +560,3 @@ mate:
   unnamedAction: 未命名动作
   lipsync: 口型同步
   voice: 语音
-

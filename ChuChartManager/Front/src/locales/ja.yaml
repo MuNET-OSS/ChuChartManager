@@ -246,6 +246,7 @@ mods:
   versionUnknown: バージョン不明
   amdaemonProxy: AM Daemon プロキシ
   other: その他
+  advancedOptions: 詳細設定
   addListItem: 項目を追加
   removeListItem: 項目を削除
   saving: 保存中
@@ -559,4 +560,3 @@ mate:
   unnamedAction: 名前なしアクション
   lipsync: 口パク同期
   voice: ボイス
-

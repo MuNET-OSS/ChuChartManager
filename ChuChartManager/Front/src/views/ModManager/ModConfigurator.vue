@@ -48,13 +48,8 @@ const visibleSections = computed(() => {
 function ensureState(section: ManifestSection) {
   if (!props.config[section.id]) {
     props.config[section.id] = {
-      enabled: section.default_enabled,
-      entries: Object.fromEntries((section.entries ?? []).map(entry => [entry.key, entry.default])),
+      entries: {},
     }
-  }
-  for (const entry of section.entries ?? []) {
-    if (!(entry.key in props.config[section.id].entries))
-      props.config[section.id].entries[entry.key] = entry.default
   }
   return props.config[section.id]
 }
@@ -84,6 +79,7 @@ function ensureState(section: ManifestSection) {
             :key="section.id"
             :section="section"
             :state="ensureState(section)"
+            :reveal-advanced="!!search.trim()"
           />
         </div>
       </div>

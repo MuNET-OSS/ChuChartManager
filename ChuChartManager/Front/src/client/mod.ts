@@ -17,7 +17,7 @@ export interface ManifestSection {
   id: string
   label: LocalizedText
   description?: LocalizedText
-  default_enabled: boolean
+  default_enabled?: boolean
   always_enabled?: boolean
   hidden?: boolean
   entries?: ManifestEntry[]
@@ -29,6 +29,7 @@ export interface ManifestEntry {
   default: unknown
   min?: number
   max?: number
+  advanced?: boolean
   hidden?: boolean
   options?: ManifestOption[]
   label: LocalizedText
@@ -47,7 +48,6 @@ export interface Manifest {
 }
 
 export interface ModConfigSection {
-  enabled: boolean
   entries: Record<string, unknown>
 }
 
