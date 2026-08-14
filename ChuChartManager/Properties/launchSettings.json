@@ -2,7 +2,11 @@
   "profiles": {
     "ChuChartManager": {
       "commandName": "Project",
-      "launchBrowser": false
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
   }
 }

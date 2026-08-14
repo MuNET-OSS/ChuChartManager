@@ -64,7 +64,8 @@ public static class ServerManager
         builder.WebHost.ConfigureKestrel(serverOptions =>
         {
             serverOptions.Limits.MaxRequestBodySize = null;
-            serverOptions.Listen(IPAddress.Loopback, 0);
+            if (!builder.Environment.IsDevelopment())
+                serverOptions.Listen(IPAddress.Loopback, 0);
 #if !DEBUG
             if (export)
             {
