@@ -21,7 +21,7 @@ Front/
 │   │   ├── option.ts       # Option 目录管理（A000/A001/...）
 │   │   └── stage.ts        # 舞台管理
 │   ├── client/
-│   │   └── mod.ts          # Mod 相关 API（AppleChu / ChuModLoader）
+│   │   └── mod.ts          # AppleChu Mod 配置 API
 │   ├── components/     # 可复用组件：Sidebar.vue, StatusBar.vue, PlayerBar.vue, BottomOverlay.vue, FileTypeIcon.vue, DirSelect.tsx
 │   ├── locales/        # i18n YAML：zh.yaml / en.yaml / ja.yaml + index.ts
 │   ├── store/          # 全局状态：refs.ts（侧栏、option 目录）、player.ts（音频播放器）、status.ts（状态栏文本）
