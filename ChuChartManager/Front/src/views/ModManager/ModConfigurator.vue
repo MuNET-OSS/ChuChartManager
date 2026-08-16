@@ -48,8 +48,12 @@ const visibleSections = computed(() => {
 function ensureState(section: ManifestSection) {
   if (!props.config[section.id]) {
     props.config[section.id] = {
+      enabled: !!section.always_enabled || !!section.default_enabled,
       entries: {},
     }
+  }
+  else if (typeof props.config[section.id].enabled !== 'boolean') {
+    props.config[section.id].enabled = !!section.always_enabled || !!section.default_enabled
   }
   return props.config[section.id]
 }

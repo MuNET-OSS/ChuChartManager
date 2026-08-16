@@ -224,7 +224,7 @@ music:
   openExplorer: Open in Explorer
   openXml: Edit Music.xml
 mods:
-  experimentalWarning: This feature is experimental and may be unstable
+  appleChuBetaWarning: AppleChu is currently in closed beta. Features and configuration formats may change between versions
   wip: Loading...
   noMods: No Mods detected
   search: Search features...

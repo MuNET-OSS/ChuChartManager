@@ -6,7 +6,7 @@ namespace ChuChartManager.Services;
 
 public sealed class AppleChuConfigService
 {
-    public sealed record SectionState(Dictionary<string, object?> Entries);
+    public sealed record SectionState(bool Enabled, Dictionary<string, object?> Entries);
 
     private readonly object writeLock = new();
 
@@ -28,9 +28,12 @@ public sealed class AppleChuConfigService
         foreach (var section in schema)
         {
             var table = GetTable(document, section.Id);
+            var enabled = ReadEnabled(section, table);
             var entries = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
             foreach (var entry in section.Entries)
             {
+                if (AppleChuConfigSchema.IsEnableEntry(entry))
+                    continue;
                 if (AppleChuConfigSchema.TryGetValue(table, entry.Key, out var configured)
                     && AppleChuConfigSchema.TryNormalize(entry, configured, out var normalized))
                 {
@@ -38,7 +41,7 @@ public sealed class AppleChuConfigService
                 }
             }
 
-            result[section.Id] = new SectionState(entries);
+            result[section.Id] = new SectionState(enabled, entries);
         }
 
         return result;
@@ -81,6 +84,7 @@ public sealed class AppleChuConfigService
         foreach (var section in schema)
         {
             requestedSections.TryGetValue(section.Id, out var requested);
+            var enabled = section.AlwaysEnabled || (requested?.Enabled ?? section.DefaultEnabled);
             var entries = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
             foreach (var (key, supplied) in requested?.Entries ?? [])
             {
@@ -88,12 +92,14 @@ public sealed class AppleChuConfigService
                     AppleChuConfigSchema.KeysEqual(item.Key, key));
                 if (entry == null)
                     throw new ArgumentException($"未知的 AppleChu 配置项: {section.Id}.{key}");
+                if (AppleChuConfigSchema.IsEnableEntry(entry))
+                    throw new ArgumentException($"{section.Id}.Enable 必须通过栏目开关设置");
                 if (!AppleChuConfigSchema.TryNormalize(entry, supplied, out var normalized))
                     throw new ArgumentException($"{section.Id}.{entry.Key} 的值不符合 {entry.Type} 类型、范围或候选值");
                 entries[entry.Key] = normalized;
             }
 
-            result[section.Id] = new SectionState(entries);
+            result[section.Id] = new SectionState(enabled, entries);
         }
 
         return result;
@@ -115,6 +121,33 @@ public sealed class AppleChuConfigService
     private static TomlTable? GetTable(TomlTable document, string key)
     {
         return AppleChuConfigSchema.TryGetValue(document, key, out var value) ? value as TomlTable : null;
+    }
+
+    private static bool ReadEnabled(AppleChuConfigSectionSchema section, TomlTable? table)
+    {
+        if (section.AlwaysEnabled)
+            return true;
+
+        var enableEntry = section.Entries.FirstOrDefault(AppleChuConfigSchema.IsEnableEntry);
+        if (enableEntry != null)
+        {
+            if (AppleChuConfigSchema.TryGetValue(table, enableEntry.Key, out var configured)
+                && AppleChuConfigSchema.TryNormalize(enableEntry, configured, out var normalized)
+                && normalized is bool enabled)
+            {
+                return enabled;
+            }
+
+            return section.DefaultEnabled;
+        }
+
+        if (AppleChuConfigSchema.TryGetValue(table, "Disabled", out var disabledValue)
+            && disabledValue is bool disabled)
+        {
+            return !disabled;
+        }
+
+        return table != null || section.DefaultEnabled;
     }
 
     private static string GetConfigPath(string gamePath) => Path.Combine(gamePath, "bin", "AppleChu.toml");

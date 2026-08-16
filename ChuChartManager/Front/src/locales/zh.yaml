@@ -224,7 +224,7 @@ music:
   openExplorer: 在资源管理器中打开
   openXml: 编辑 Music.xml
 mods:
-  experimentalWarning: 此功能为实验性，可能存在不稳定的情况
+  appleChuBetaWarning: AppleChu 目前处于内测阶段，功能和配置格式可能随版本调整
   wip: 正在加载...
   noMods: 未检测到 Mod
   search: 搜索功能...

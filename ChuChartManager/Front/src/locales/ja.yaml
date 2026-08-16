@@ -224,7 +224,7 @@ music:
   openExplorer: エクスプローラーで開く
   openXml: Music.xml を編集
 mods:
-  experimentalWarning: この機能は実験的であり、不安定な場合があります
+  appleChuBetaWarning: AppleChu は現在クローズドベータ版です。機能や設定形式はバージョンによって変更される場合があります
   wip: 読み込み中...
   noMods: Mod が検出されません
   search: 機能を検索...

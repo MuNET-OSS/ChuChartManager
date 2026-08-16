@@ -48,6 +48,7 @@ export interface Manifest {
 }
 
 export interface ModConfigSection {
+  enabled: boolean
   entries: Record<string, unknown>
 }
 

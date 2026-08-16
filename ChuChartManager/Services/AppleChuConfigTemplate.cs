@@ -25,8 +25,27 @@ internal static class AppleChuConfigTemplate
                 currentSection = section;
                 seenSections.Add(section.Id);
                 seenEntries[section.Id] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var state = values[section.Id];
+                var commentEntries = ShouldCommentSection(section, state);
+                if (commentEntries)
+                    output.Append('#');
                 output.Append('[').Append(section.Id).AppendLine("]");
-                TryAppendConfiguredExtras(output, section, values, seenEntries, completedSections);
+                if (UsesDisabledFlag(section) && !state.Enabled)
+                    output.AppendLine("Disabled = true");
+                TryAppendConfiguredExtras(
+                    output,
+                    section,
+                    state,
+                    seenEntries,
+                    completedSections,
+                    commentEntries);
+                continue;
+            }
+
+            if (currentSection != null
+                && UsesDisabledFlag(currentSection)
+                && IsDisabledEntry(trimmed))
+            {
                 continue;
             }
 
@@ -34,11 +53,21 @@ internal static class AppleChuConfigTemplate
             if (currentSection != null && entry != null)
             {
                 seenEntries[currentSection.Id].Add(entry.Key);
-                if (TryGetConfiguredValue(values[currentSection.Id], entry.Key, out var value))
-                    output.Append(entry.Key).Append(" = ").AppendLine(FormatTomlValue(value));
+                var state = values[currentSection.Id];
+                var commentEntries = ShouldCommentSection(currentSection, state);
+                if (AppleChuConfigSchema.IsEnableEntry(entry))
+                    output.Append(entry.Key).Append(" = ").AppendLine(state.Enabled ? "true" : "false");
+                else if (TryGetConfiguredValue(state, entry.Key, out var value))
+                    AppendEntryLine(output, $"{entry.Key} = {FormatTomlValue(value)}", commentEntries);
                 else
-                    output.AppendLine(rawLine);
-                TryAppendConfiguredExtras(output, currentSection, values, seenEntries, completedSections);
+                    AppendEntryLine(output, rawLine, commentEntries);
+                TryAppendConfiguredExtras(
+                    output,
+                    currentSection,
+                    state,
+                    seenEntries,
+                    completedSections,
+                    commentEntries);
                 continue;
             }
 
@@ -99,9 +128,10 @@ internal static class AppleChuConfigTemplate
     private static void TryAppendConfiguredExtras(
         StringBuilder output,
         AppleChuConfigSectionSchema section,
-        IReadOnlyDictionary<string, AppleChuConfigService.SectionState> values,
+        AppleChuConfigService.SectionState state,
         IReadOnlyDictionary<string, HashSet<string>> seenEntries,
-        HashSet<string> completedSections)
+        HashSet<string> completedSections,
+        bool commentEntries)
     {
         if (completedSections.Contains(section.Id))
             return;
@@ -112,11 +142,12 @@ internal static class AppleChuConfigTemplate
         foreach (var entry in section.Entries)
         {
             if (seen.Contains(entry.Key)
-                || !TryGetConfiguredValue(values[section.Id], entry.Key, out var value))
+                || AppleChuConfigSchema.IsEnableEntry(entry)
+                || !TryGetConfiguredValue(state, entry.Key, out var value))
                 continue;
             if (entry.EmitComment && !string.IsNullOrWhiteSpace(entry.Comment))
                 output.Append("## ").AppendLine(entry.Comment.Trim());
-            output.Append(entry.Key).Append(" = ").AppendLine(FormatTomlValue(value));
+            AppendEntryLine(output, $"{entry.Key} = {FormatTomlValue(value)}", commentEntries);
             seen.Add(entry.Key);
         }
         completedSections.Add(section.Id);
@@ -138,6 +169,40 @@ internal static class AppleChuConfigTemplate
 
         value = null;
         return false;
+    }
+
+    private static bool ShouldCommentSection(
+        AppleChuConfigSectionSchema section,
+        AppleChuConfigService.SectionState state) =>
+        !section.AlwaysEnabled
+        && !HasEnableEntry(section)
+        && !section.DefaultEnabled
+        && !state.Enabled;
+
+    private static bool UsesDisabledFlag(AppleChuConfigSectionSchema section) =>
+        !section.AlwaysEnabled && !HasEnableEntry(section) && section.DefaultEnabled;
+
+    private static bool HasEnableEntry(AppleChuConfigSectionSchema section) =>
+        section.Entries.Any(AppleChuConfigSchema.IsEnableEntry);
+
+    private static bool IsDisabledEntry(string trimmed)
+    {
+        var line = trimmed.StartsWith('#') ? trimmed[1..].TrimStart() : trimmed;
+        var equals = line.IndexOf('=');
+        return equals > 0 && AppleChuConfigSchema.KeysEqual(line[..equals].Trim(), "Disabled");
+    }
+
+    private static void AppendEntryLine(StringBuilder output, string line, bool commentOut)
+    {
+        if (!commentOut || line.TrimStart().StartsWith('#'))
+        {
+            output.AppendLine(line);
+            return;
+        }
+
+        var trimmed = line.TrimStart();
+        output.Append(line.AsSpan(0, line.Length - trimmed.Length));
+        output.Append('#').AppendLine(trimmed);
     }
 
     private static string FormatTomlValue(object? value) => value switch

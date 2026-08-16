@@ -17,6 +17,8 @@ internal sealed record AppleChuConfigEntrySchema(
 
 internal sealed record AppleChuConfigSectionSchema(
     string Id,
+    bool DefaultEnabled,
+    bool AlwaysEnabled,
     IReadOnlyList<AppleChuConfigEntrySchema> Entries);
 
 internal static class AppleChuConfigSchema
@@ -38,7 +40,15 @@ internal static class AppleChuConfigSchema
                 foreach (var rawEntry in rawEntries)
                     entries.Add(ParseEntry(rawEntry, id));
             }
-            result.Add(new AppleChuConfigSectionSchema(id, entries));
+            var alwaysEnabled = ReadBooleanAlias(rawSection, id, false, "always_enabled", "alwaysEnabled");
+            var defaultEnabled = ReadBooleanAlias(
+                rawSection,
+                id,
+                alwaysEnabled,
+                "default_enabled",
+                "default_on",
+                "defaultOn");
+            result.Add(new AppleChuConfigSectionSchema(id, defaultEnabled, alwaysEnabled, entries));
         }
 
         return result;
@@ -77,6 +87,29 @@ internal static class AppleChuConfigSchema
         left.Replace("_", "", StringComparison.Ordinal),
         right.Replace("_", "", StringComparison.Ordinal),
         StringComparison.OrdinalIgnoreCase);
+
+    internal static bool IsEnableEntry(AppleChuConfigEntrySchema entry) => KeysEqual(entry.Key, "enable");
+
+    private static bool ReadBooleanAlias(
+        TomlTable table,
+        string sectionId,
+        bool fallback,
+        params string[] keys)
+    {
+        bool? result = null;
+        foreach (var key in keys)
+        {
+            if (!table.TryGetValue(key, out var value))
+                continue;
+            if (value is not bool boolean)
+                throw new InvalidDataException($"manifest 中 {sectionId}.{key} 必须是布尔值");
+            if (result.HasValue && result.Value != boolean)
+                throw new InvalidDataException($"manifest 中 {sectionId} 的启用状态元数据存在冲突");
+            result = boolean;
+        }
+
+        return result ?? fallback;
+    }
 
     private static AppleChuConfigEntrySchema ParseEntry(TomlTable rawEntry, string sectionId)
     {

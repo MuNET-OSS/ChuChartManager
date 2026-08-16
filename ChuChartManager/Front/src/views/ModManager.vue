@@ -123,7 +123,7 @@ watch(config, () => {
 
 <template>
   <div class="p-xy h-100dvh flex flex-col of-hidden">
-    <div class="text-sm op-60 mb-3 px-2 py-1.5 bg-orange/10 c-orange rd">{{ t('mods.experimentalWarning') }}</div>
+    <div class="text-sm op-60 mb-3 px-2 py-1.5 bg-orange/10 c-orange rd">{{ t('mods.appleChuBetaWarning') }}</div>
     <div v-if="!loading" class="flex items-center gap-x-6 gap-y-2 flex-wrap shrink-0 px-2 pb-3 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
       <div class="flex items-center gap-2 min-w-0">
         <span :class="modOk ? 'i-mdi-check-circle c-green-6' : 'i-mdi-alert-circle c-red-6'" class="text-5 shrink-0" />
