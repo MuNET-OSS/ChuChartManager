@@ -837,12 +837,8 @@ public class EventController : ControllerBase
                     yield return (d, "A000");
         }
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot)) yield break;
-
-        foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
+        foreach (var (dirName, optDir) in OptionPathResolver.EnumerateOptionDirectories(StaticSettings.GamePath))
         {
-            var dirName = Path.GetFileName(optDir);
             if (source != null && source != "A000" && source != dirName) continue;
 
             var resDir = Path.Combine(optDir, type);
@@ -863,7 +859,11 @@ public class EventController : ControllerBase
             if (assetDir == "A000")
                 resRoot = Path.Combine(StaticSettings.GamePath, "data", "A000", type);
             else
-                resRoot = Path.Combine(StaticSettings.GamePath, "bin", "option", assetDir, type);
+            {
+                var optionPath = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, assetDir);
+                if (optionPath == null) return null;
+                resRoot = Path.Combine(optionPath, type);
+            }
 
             if (Directory.Exists(resRoot))
             {
@@ -908,7 +908,7 @@ public class EventController : ControllerBase
     {
         if (string.IsNullOrEmpty(StaticSettings.GamePath)) return null;
         if (dirName == "A000") return Path.Combine(StaticSettings.GamePath, "data", "A000");
-        return Path.Combine(StaticSettings.GamePath, "bin", "option", dirName);
+        return OptionPathResolver.ResolveWritePath(StaticSettings.GamePath, dirName);
     }
 
     private static void SetNodeText(XmlNode parent, string xpath, string value)

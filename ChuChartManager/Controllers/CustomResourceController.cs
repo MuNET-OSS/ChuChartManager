@@ -132,7 +132,11 @@ public class CustomResourceController : ControllerBase
         if (assetDir == "A000")
             musicRoot = Path.Combine(StaticSettings.GamePath, "data", "A000", "music");
         else
-            musicRoot = Path.Combine(StaticSettings.GamePath, "bin", "option", assetDir, "music");
+        {
+            var optionPath = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, assetDir);
+            if (optionPath == null) return NotFound();
+            musicRoot = Path.Combine(optionPath, "music");
+        }
 
         if (!Directory.Exists(musicRoot)) return NotFound();
 
@@ -238,12 +242,8 @@ public class CustomResourceController : ControllerBase
                     yield return (d, "A000");
         }
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot)) yield break;
-
-        foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
+        foreach (var (dirName, optDir) in OptionPathResolver.EnumerateOptionDirectories(StaticSettings.GamePath))
         {
-            var dirName = Path.GetFileName(optDir);
             if (source != null && source != dirName) continue;
 
             var resDir = Path.Combine(optDir, type);
@@ -262,7 +262,11 @@ public class CustomResourceController : ControllerBase
         if (assetDir == "A000")
             resRoot = Path.Combine(StaticSettings.GamePath, "data", "A000", typeDef.type);
         else
-            resRoot = Path.Combine(StaticSettings.GamePath, "bin", "option", assetDir, typeDef.type);
+        {
+            var optionPath = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, assetDir);
+            if (optionPath == null) return null;
+            resRoot = Path.Combine(optionPath, typeDef.type);
+        }
 
         if (!Directory.Exists(resRoot)) return null;
 
@@ -1080,12 +1084,7 @@ public class CustomResourceController : ControllerBase
         if (Directory.Exists(dataPath))
             return dataPath;
 
-        // bin/option 目录下的 opt（如 A001）
-        var optionPath = Path.Combine(StaticSettings.GamePath, "bin", "option", dirName);
-        if (Directory.Exists(optionPath))
-            return optionPath;
-
-        // 如果都不存在，在 bin/option 下创建
+        var optionPath = OptionPathResolver.ResolveWritePath(StaticSettings.GamePath, dirName);
         Directory.CreateDirectory(optionPath);
         return optionPath;
     }

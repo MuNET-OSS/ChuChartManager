@@ -42,8 +42,8 @@ public class ReleaseTagController : ControllerBase
         if (string.IsNullOrWhiteSpace(req.AssetDir)) return BadRequest("Opt 不能为空");
         if (req.AssetDir == "A000") return BadRequest("不能在 A000 创建自定义版本标签");
 
-        var optionDir = Path.Combine(gamePath, "bin", "option", req.AssetDir);
-        if (!Directory.Exists(optionDir)) return BadRequest("Opt 不存在");
+        var optionDir = OptionPathResolver.ResolveExisting(gamePath, req.AssetDir);
+        if (optionDir == null) return BadRequest("Opt 不存在");
 
         var existing = ReleaseTagXml.ScanAll(gamePath);
         if (existing.Any(x => x.Id == req.Id)) return BadRequest($"ID {req.Id} 已存在");

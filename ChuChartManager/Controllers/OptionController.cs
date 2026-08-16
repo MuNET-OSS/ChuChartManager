@@ -23,7 +23,10 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
             var isCustom = false;
             if (source != "A000")
             {
-                var markPath = Path.Combine(StaticSettings.GamePath, "bin", "option", source, "CustomChartsMark.txt");
+                var optionPath = scanner.OptionPaths.TryGetValue(source, out var discoveredPath)
+                    ? discoveredPath
+                    : OptionPathResolver.ResolveExisting(StaticSettings.GamePath, source);
+                var markPath = optionPath == null ? "" : Path.Combine(optionPath, "CustomChartsMark.txt");
                 isCustom = System.IO.File.Exists(markPath);
             }
             var version = ReadOptVersion(source);
@@ -41,8 +44,8 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
         if (dirName == "A000")
             return BadRequest("不能修改基础包标记");
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        var markPath = Path.Combine(optionRoot, dirName, "CustomChartsMark.txt");
+        var optionPath = OptionPathResolver.ResolveWritePath(StaticSettings.GamePath, dirName);
+        var markPath = Path.Combine(optionPath, "CustomChartsMark.txt");
 
         if (System.IO.File.Exists(markPath))
             System.IO.File.Delete(markPath);
@@ -93,12 +96,10 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
         if (string.IsNullOrWhiteSpace(dirName))
             return BadRequest("目录名不能为空");
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        var target = Path.Combine(optionRoot, dirName);
-
-        if (Directory.Exists(target))
+        if (OptionPathResolver.ResolveExisting(StaticSettings.GamePath, dirName) != null)
             return BadRequest("目录已存在");
 
+        var target = Path.Combine(StaticSettings.GamePath, "bin", "option", dirName);
         Directory.CreateDirectory(target);
         Directory.CreateDirectory(Path.Combine(target, "music"));
 
@@ -119,10 +120,9 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
         if (dirName == "A000")
             return BadRequest("不能删除基础包");
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        var target = Path.Combine(optionRoot, dirName);
+        var target = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, dirName);
 
-        if (!Directory.Exists(target))
+        if (target == null || !Directory.Exists(target))
             return NotFound("目录不存在");
 
         Directory.Delete(target, true);
@@ -162,7 +162,7 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
         var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
         var dest = Path.Combine(optionRoot, dirName);
 
-        if (Directory.Exists(dest))
+        if (OptionPathResolver.ResolveExisting(StaticSettings.GamePath, dirName) != null)
         {
             dirName = $"{dirName}_{DateTime.Now:yyyyMMddHHmmss}";
             dest = Path.Combine(optionRoot, dirName);
@@ -196,8 +196,8 @@ public class OptionController(MusicScannerService scannerService) : ControllerBa
             return null;
         var dataPath = Path.Combine(StaticSettings.GamePath, "data", dirName);
         if (Directory.Exists(dataPath)) return dataPath;
-        var optionPath = Path.Combine(StaticSettings.GamePath, "bin", "option", dirName);
-        if (Directory.Exists(optionPath)) return optionPath;
+        var optionPath = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, dirName);
+        if (optionPath != null) return optionPath;
         return null;
     }
 

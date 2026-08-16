@@ -312,12 +312,8 @@ public class CourseController : ControllerBase
             }
         }
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot)) yield break;
-
-        foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
+        foreach (var (dirName, optDir) in OptionPathResolver.EnumerateOptionDirectories(StaticSettings.GamePath))
         {
-            var dirName = Path.GetFileName(optDir);
             if (source != null && source != dirName) continue;
 
             var courseDir = Path.Combine(optDir, "course");
@@ -337,7 +333,11 @@ public class CourseController : ControllerBase
         if (assetDir == "A000")
             courseRoot = Path.Combine(StaticSettings.GamePath, "data", "A000", "course");
         else
-            courseRoot = Path.Combine(StaticSettings.GamePath, "bin", "option", assetDir, "course");
+        {
+            var optionPath = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, assetDir);
+            if (optionPath == null) return null;
+            courseRoot = Path.Combine(optionPath, "course");
+        }
 
         if (!Directory.Exists(courseRoot))
             return null;
@@ -439,10 +439,7 @@ public class CourseController : ControllerBase
         if (Directory.Exists(dataPath))
             return dataPath;
 
-        var optionPath = Path.Combine(StaticSettings.GamePath, "bin", "option", dirName);
-        if (Directory.Exists(optionPath))
-            return optionPath;
-
+        var optionPath = OptionPathResolver.ResolveWritePath(StaticSettings.GamePath, dirName);
         Directory.CreateDirectory(optionPath);
         return optionPath;
     }

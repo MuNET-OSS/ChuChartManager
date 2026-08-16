@@ -8,7 +8,7 @@ public class GenreSortXml
 
     public string GamePath { get; }
     public string AssetDir { get; }
-    public string FilePath => Path.Combine(GamePath, "bin", "option", AssetDir, "music", "GenreSort.xml");
+    public string FilePath => Path.Combine(OptionPathResolver.ResolveWritePath(GamePath, AssetDir), "music", "GenreSort.xml");
 
     private GenreSortXml(string gamePath, string assetDir, XmlDocument xmlDoc)
     {
@@ -19,7 +19,7 @@ public class GenreSortXml
 
     public static GenreSortXml LoadOrCreate(string gamePath, string assetDir)
     {
-        var path = Path.Combine(gamePath, "bin", "option", assetDir, "music", "GenreSort.xml");
+        var path = Path.Combine(OptionPathResolver.ResolveWritePath(gamePath, assetDir), "music", "GenreSort.xml");
         var doc = new XmlDocument();
         if (File.Exists(path))
         {
@@ -80,18 +80,16 @@ public class GenreSortXml
     private static IEnumerable<string> GetBaseCandidates(string gamePath)
     {
         yield return Path.Combine(gamePath, "data", "A000", "music", "GenreSort.xml");
-        yield return Path.Combine(gamePath, "bin", "option", "A001", "music", "GenreSort.xml");
+        var optionPath = OptionPathResolver.ResolveExisting(gamePath, "A001");
+        if (optionPath != null)
+            yield return Path.Combine(optionPath, "music", "GenreSort.xml");
     }
 
     public static List<GenreSortXml> ScanAll(string gamePath)
     {
-        var optionRoot = Path.Combine(gamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot)) return [];
-
         var result = new List<GenreSortXml>();
-        foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
+        foreach (var (assetDir, optDir) in OptionPathResolver.EnumerateOptionDirectories(gamePath))
         {
-            var assetDir = Path.GetFileName(optDir);
             var path = Path.Combine(optDir, "music", "GenreSort.xml");
             if (!File.Exists(path)) continue;
             try

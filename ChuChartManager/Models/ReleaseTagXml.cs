@@ -26,7 +26,8 @@ public class ReleaseTagXml
 
     public static ReleaseTagXml CreateNew(string gamePath, string assetDir, int id, string versionStr, string titleName)
     {
-        var dir = Path.Combine(gamePath, "bin", "option", assetDir, "releaseTag", $"releaseTag{id:D6}");
+        var optionPath = OptionPathResolver.ResolveWritePath(gamePath, assetDir);
+        var dir = Path.Combine(optionPath, "releaseTag", $"releaseTag{id:D6}");
         Directory.CreateDirectory(dir);
 
         var doc = CreateDocument(id, versionStr, titleName);
@@ -43,15 +44,10 @@ public class ReleaseTagXml
         foreach (var item in ScanDirectory(gamePath, "A000", Path.Combine(gamePath, "data", "A000", "releaseTag")))
             map[item.Id] = item;
 
-        var optionRoot = Path.Combine(gamePath, "bin", "option");
-        if (Directory.Exists(optionRoot))
+        foreach (var (assetDir, optDir) in OptionPathResolver.EnumerateOptionDirectories(gamePath))
         {
-            foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
-            {
-                var assetDir = Path.GetFileName(optDir);
-                foreach (var item in ScanDirectory(gamePath, assetDir, Path.Combine(optDir, "releaseTag")))
-                    map[item.Id] = item;
-            }
+            foreach (var item in ScanDirectory(gamePath, assetDir, Path.Combine(optDir, "releaseTag")))
+                map[item.Id] = item;
         }
 
         return map.Values.OrderBy(x => x.Id).ToList();

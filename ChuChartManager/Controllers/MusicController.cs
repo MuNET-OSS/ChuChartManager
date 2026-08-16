@@ -1087,8 +1087,8 @@ public class MusicController(MusicScannerService scannerService) : ControllerBas
         var dataPath = Path.Combine(StaticSettings.GamePath, "data", dirName);
         if (Directory.Exists(dataPath)) return dataPath;
 
-        var optionPath = Path.Combine(StaticSettings.GamePath, "bin", "option", dirName);
-        if (Directory.Exists(optionPath)) return optionPath;
+        var optionPath = OptionPathResolver.ResolveExisting(StaticSettings.GamePath, dirName);
+        if (optionPath != null) return optionPath;
 
         return null;
     }

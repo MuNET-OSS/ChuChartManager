@@ -11,6 +11,7 @@ public partial class MusicScanner
     private readonly string _gamePath;
 
     public Dictionary<string, List<MusicXml>> MusicBySource { get; } = [];
+    public Dictionary<string, string> OptionPaths { get; } = new(StringComparer.OrdinalIgnoreCase);
     public List<string> AvailableSources { get; } = [];
     public List<string> Errors { get; } = [];
 
@@ -22,6 +23,7 @@ public partial class MusicScanner
     public void ScanAll()
     {
         MusicBySource.Clear();
+        OptionPaths.Clear();
         AvailableSources.Clear();
         Errors.Clear();
 
@@ -34,18 +36,20 @@ public partial class MusicScanner
             AvailableSources.Add("A000");
         }
 
-        var optionRoot = Path.Combine(_gamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot))
+        var optionDirectories = OptionPathResolver.EnumerateOptionDirectories(_gamePath).ToList();
+        if (optionDirectories.Count == 0)
         {
-            Log.Warn($"option 目录不存在: {optionRoot}");
-            Errors.Add($"option 目录不存在: {optionRoot}");
+            var expected = Path.Combine(_gamePath, "option");
+            var fallback = Path.Combine(_gamePath, "bin", "option");
+            Log.Warn($"option 目录不存在: {expected} 或 {fallback}");
+            Errors.Add($"option 目录不存在: {expected} 或 {fallback}");
             return;
         }
 
-        foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
+        foreach (var (dirName, optDir) in optionDirectories)
         {
-            var dirName = Path.GetFileName(optDir);
             if (!OptionDirRegex().IsMatch(dirName)) continue;
+            OptionPaths[dirName] = optDir;
 
             var musicDir = Path.Combine(optDir, "music");
             if (Directory.Exists(musicDir))             // 当 music 目录 存在 时

@@ -179,12 +179,8 @@ public class EmoteController(EmoteWebGlService emoteWebGl) : ControllerBase
                     yield return (d, "A000");
         }
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot)) yield break;
-
-        foreach (var optDir in Directory.EnumerateDirectories(optionRoot).OrderBy(d => d))
+        foreach (var (dirName, optDir) in OptionPathResolver.EnumerateOptionDirectories(StaticSettings.GamePath))
         {
-            var dirName = Path.GetFileName(optDir);
             if (source != null && source != "A000" && source != dirName) continue;
 
             var resDir = Path.Combine(optDir, type);

@@ -59,13 +59,8 @@ public sealed class MateCatalogService
                 yield return (baseRoot, "A000");
         }
 
-        var optionRoot = Path.Combine(StaticSettings.GamePath, "bin", "option");
-        if (!Directory.Exists(optionRoot))
-            yield break;
-
-        foreach (var optionDirectory in Directory.EnumerateDirectories(optionRoot).OrderBy(path => path, PathComparer))
+        foreach (var (assetDir, optionDirectory) in OptionPathResolver.EnumerateOptionDirectories(StaticSettings.GamePath))
         {
-            var assetDir = Path.GetFileName(optionDirectory);
             if (source != null && !string.Equals(source, assetDir, StringComparison.OrdinalIgnoreCase))
                 continue;
 
