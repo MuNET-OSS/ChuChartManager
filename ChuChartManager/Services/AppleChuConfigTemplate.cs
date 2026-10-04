@@ -13,10 +13,23 @@ internal static class AppleChuConfigTemplate
         var seenSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var seenEntries = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
         var completedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var templateEntries = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        AppleChuConfigSectionSchema? templateSection = null;
+        var lines = template.Replace("\r\n", "\n").TrimEnd('\n').Split('\n');
+        foreach (var line in lines)
+        {
+            if (FindSection(line.Trim(), schema) is { } section)
+            {
+                templateSection = section;
+                templateEntries[section.Id] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            }
+            else if (templateSection != null && FindEntry(line.Trim(), templateSection) is { } entry)
+                templateEntries[templateSection.Id].Add(entry.Key);
+        }
         var output = new StringBuilder();
         AppleChuConfigSectionSchema? currentSection = null;
 
-        foreach (var rawLine in template.Replace("\r\n", "\n").Split('\n'))
+        foreach (var rawLine in lines)
         {
             var trimmed = rawLine.Trim();
             var section = FindSection(trimmed, schema);
@@ -37,6 +50,7 @@ internal static class AppleChuConfigTemplate
                     section,
                     state,
                     seenEntries,
+                    templateEntries[section.Id],
                     completedSections,
                     commentEntries);
                 continue;
@@ -58,7 +72,7 @@ internal static class AppleChuConfigTemplate
                 if (AppleChuConfigSchema.IsEnableEntry(entry))
                     output.Append(entry.Key).Append(" = ").AppendLine(state.Enabled ? "true" : "false");
                 else if (TryGetConfiguredValue(state, entry.Key, out var value))
-                    AppendEntryLine(output, $"{entry.Key} = {FormatTomlValue(value)}", commentEntries);
+                    AppendEntryLine(output, $"{entry.Key} = {FormatTomlValue(entry, value)}", commentEntries);
                 else
                     AppendEntryLine(output, rawLine, commentEntries);
                 TryAppendConfiguredExtras(
@@ -66,6 +80,7 @@ internal static class AppleChuConfigTemplate
                     currentSection,
                     state,
                     seenEntries,
+                    templateEntries[currentSection.Id],
                     completedSections,
                     commentEntries);
                 continue;
@@ -76,6 +91,23 @@ internal static class AppleChuConfigTemplate
 
         foreach (var section in schema)
         {
+            if (section.Hidden && !seenSections.Contains(section.Id))
+            {
+                var state = values[section.Id];
+                if (state.Enabled != section.DefaultEnabled || state.Entries.Count > 0)
+                {
+                    output.AppendLine().Append('[').Append(section.Id).AppendLine("]");
+                    if (!section.AlwaysEnabled)
+                        output.Append("Enable = ").AppendLine(state.Enabled ? "true" : "false");
+                    foreach (var entry in section.Entries)
+                    {
+                        if (!AppleChuConfigSchema.IsEnableEntry(entry)
+                            && TryGetConfiguredValue(state, entry.Key, out var value))
+                            output.Append(entry.Key).Append(" = ").AppendLine(FormatTomlValue(entry, value));
+                    }
+                }
+                continue;
+            }
             if (!seenSections.Contains(section.Id))
                 throw new InvalidDataException($"默认配置模板缺少 [{section.Id}] section");
             var required = section.Entries.Where(entry => !entry.Advanced);
@@ -130,6 +162,7 @@ internal static class AppleChuConfigTemplate
         AppleChuConfigSectionSchema section,
         AppleChuConfigService.SectionState state,
         IReadOnlyDictionary<string, HashSet<string>> seenEntries,
+        HashSet<string> templateEntries,
         HashSet<string> completedSections,
         bool commentEntries)
     {
@@ -142,12 +175,16 @@ internal static class AppleChuConfigTemplate
         foreach (var entry in section.Entries)
         {
             if (seen.Contains(entry.Key)
+                || templateEntries.Contains(entry.Key)
                 || AppleChuConfigSchema.IsEnableEntry(entry)
                 || !TryGetConfiguredValue(state, entry.Key, out var value))
                 continue;
             if (entry.EmitComment && !string.IsNullOrWhiteSpace(entry.Comment))
-                output.Append("## ").AppendLine(entry.Comment.Trim());
-            AppendEntryLine(output, $"{entry.Key} = {FormatTomlValue(value)}", commentEntries);
+            {
+                foreach (var line in entry.Comment.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+                    output.Append("## ").AppendLine(line.Trim());
+            }
+            AppendEntryLine(output, $"{entry.Key} = {FormatTomlValue(entry, value)}", commentEntries);
             seen.Add(entry.Key);
         }
         completedSections.Add(section.Id);
@@ -205,21 +242,53 @@ internal static class AppleChuConfigTemplate
         output.Append('#').AppendLine(trimmed);
     }
 
-    private static string FormatTomlValue(object? value) => value switch
+    private static string FormatTomlValue(AppleChuConfigEntrySchema entry, object? value) => value switch
     {
         bool boolean => boolean ? "true" : "false",
         string text => $"\"{EscapeTomlString(text)}\"",
+        byte or sbyte or short or ushort or int or uint or long or ulong when entry.Format == "virtual_key" =>
+            $"0x{Convert.ToUInt64(value, CultureInfo.InvariantCulture):X2}",
         byte or sbyte or short or ushort or int or uint or long or ulong =>
             Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0",
-        float or double or decimal => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0",
-        IEnumerable<object?> items => $"[{string.Join(", ", items.Select(FormatTomlValue))}]",
+        float or double or decimal => FormatFloat(value),
+        IEnumerable<object?> items => $"[{string.Join(", ", items.Select(item => FormatTomlValue(entry, item)))}]",
         _ => throw new ArgumentException("无法写入不受支持的 TOML 值"),
     };
 
-    private static string EscapeTomlString(string value) => value
-        .Replace("\\", "\\\\")
-        .Replace("\"", "\\\"")
-        .Replace("\r", "\\r")
-        .Replace("\n", "\\n")
-        .Replace("\t", "\\t");
+    private static string FormatFloat(object value)
+    {
+        var text = Convert.ToString(value, CultureInfo.InvariantCulture)!;
+        return text.IndexOfAny(['.', 'e', 'E']) >= 0 ? text : text + ".0";
+    }
+
+    private static string EscapeTomlString(string value)
+    {
+        var output = new StringBuilder();
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            switch (character)
+            {
+                case '\\': output.Append("\\\\"); break;
+                case '"': output.Append("\\\""); break;
+                case '\r': output.Append("\\r"); break;
+                case '\n': output.Append("\\n"); break;
+                case '\t': output.Append("\\t"); break;
+                default:
+                    if (character < ' ' || character == '\u007f')
+                        output.Append("\\u").Append(((int)character).ToString("X4", CultureInfo.InvariantCulture));
+                    else if (char.IsSurrogate(character))
+                    {
+                        if (!char.IsHighSurrogate(character) || index + 1 >= value.Length
+                            || !char.IsLowSurrogate(value[index + 1]))
+                            throw new ArgumentException("配置字符串包含无效的 Unicode 字符");
+                        output.Append(character).Append(value[++index]);
+                    }
+                    else
+                        output.Append(character);
+                    break;
+            }
+        }
+        return output.ToString();
+    }
 }

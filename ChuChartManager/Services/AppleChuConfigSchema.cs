@@ -13,12 +13,14 @@ internal sealed record AppleChuConfigEntrySchema(
     bool Advanced,
     bool EmitComment,
     string? Comment,
+    string? Format,
     IReadOnlyList<object?>? Options);
 
 internal sealed record AppleChuConfigSectionSchema(
     string Id,
     bool DefaultEnabled,
     bool AlwaysEnabled,
+    bool Hidden,
     IReadOnlyList<AppleChuConfigEntrySchema> Entries);
 
 internal static class AppleChuConfigSchema
@@ -48,7 +50,8 @@ internal static class AppleChuConfigSchema
                 "default_enabled",
                 "default_on",
                 "defaultOn");
-            result.Add(new AppleChuConfigSectionSchema(id, defaultEnabled, alwaysEnabled, entries));
+            var hidden = ReadBooleanAlias(rawSection, id, false, "hidden");
+            result.Add(new AppleChuConfigSectionSchema(id, defaultEnabled, alwaysEnabled, hidden, entries));
         }
 
         return result;
@@ -129,6 +132,7 @@ internal static class AppleChuConfigSchema
             ReadBoolean(rawEntry, "advanced"),
             !rawEntry.TryGetValue("emit_comment", out var emitComment) || emitComment is not false,
             ReadComment(rawEntry),
+            rawEntry.TryGetValue("format", out var formatValue) ? formatValue as string : null,
             null);
         if (!TryNormalize(entry, entry.Default, out _))
             throw new InvalidDataException($"manifest 中 {sectionId}.{key} 的默认值无效");

@@ -1,6 +1,7 @@
 using System.Text;
 using Tomlyn;
 using Tomlyn.Model;
+using Tomlyn.Parsing;
 
 namespace ChuChartManager.Services;
 
@@ -65,6 +66,7 @@ public sealed class AppleChuConfigService
         var schema = AppleChuConfigSchema.Parse(metadata);
         var values = NormalizeRequest(schema, requestedSections);
         var output = AppleChuConfigTemplate.Apply(metadata.DefaultConfigToml, schema, values);
+        _ = ParseDocument(output, "生成的 AppleChu.toml", validate: true);
         lock (writeLock)
             WriteAtomically(GetConfigPath(gamePath), output);
     }
@@ -105,10 +107,12 @@ public sealed class AppleChuConfigService
         return result;
     }
 
-    private static TomlTable ParseDocument(string source, string name)
+    private static TomlTable ParseDocument(string source, string name, bool validate = false)
     {
         try
         {
+            if (validate)
+                _ = SyntaxParser.ParseStrict(source, name, validate: true);
             return TomlSerializer.Deserialize<TomlTable>(source)
                 ?? throw new InvalidDataException($"{name} 为空");
         }
@@ -127,6 +131,10 @@ public sealed class AppleChuConfigService
     {
         if (section.AlwaysEnabled)
             return true;
+
+        if (section.Hidden)
+            return AppleChuConfigSchema.TryGetValue(table, "Enable", out var hiddenEnabled)
+                && hiddenEnabled is bool enabled ? enabled : section.DefaultEnabled;
 
         var enableEntry = section.Entries.FirstOrDefault(AppleChuConfigSchema.IsEnableEntry);
         if (enableEntry != null)
