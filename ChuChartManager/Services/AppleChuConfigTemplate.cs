@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Globalization;
 using System.Text;
 
@@ -41,6 +42,11 @@ internal static class AppleChuConfigTemplate
                     commentEntries);
                 continue;
             }
+
+            // Do not let entries under an unrecognized table header get
+            // interpreted as part of the previous known section.
+            if (IsTableHeader(trimmed))
+                currentSection = null;
 
             if (currentSection != null
                 && UsesDisabledFlag(currentSection)
@@ -93,7 +99,7 @@ internal static class AppleChuConfigTemplate
         string trimmed,
         IReadOnlyList<AppleChuConfigSectionSchema> schema)
     {
-        var header = trimmed.StartsWith("#[", StringComparison.Ordinal) ? trimmed[1..] : trimmed;
+        var header = NormalizeHeader(trimmed);
         if (header.StartsWith('[') && header.EndsWith(']')
                                    && !header.StartsWith("[[", StringComparison.Ordinal))
         {
@@ -104,6 +110,21 @@ internal static class AppleChuConfigTemplate
         }
 
         return null;
+    }
+
+    private static bool IsTableHeader(string trimmed) =>
+        NormalizeHeader(trimmed).StartsWith("[", StringComparison.Ordinal);
+
+    private static string NormalizeHeader(string trimmed)
+    {
+        var header = trimmed.StartsWith("#[", StringComparison.Ordinal) ? trimmed[1..] : trimmed;
+        if (!header.StartsWith("[", StringComparison.Ordinal))
+            return header;
+
+        // A table header may have a trailing comment. Section identifiers in
+        // the generated schema cannot contain '#', so this is unambiguous.
+        var comment = header.IndexOf('#');
+        return comment >= 0 ? header[..comment].TrimEnd() : header;
     }
 
     private static AppleChuConfigEntrySchema? FindEntry(
@@ -212,14 +233,31 @@ internal static class AppleChuConfigTemplate
         byte or sbyte or short or ushort or int or uint or long or ulong =>
             Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0",
         float or double or decimal => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "0",
-        IEnumerable<object?> items => $"[{string.Join(", ", items.Select(FormatTomlValue))}]",
+        IEnumerable items when value is not string =>
+            $"[{string.Join(", ", items.Cast<object?>().Select(FormatTomlValue))}]",
         _ => throw new ArgumentException("无法写入不受支持的 TOML 值"),
     };
 
-    private static string EscapeTomlString(string value) => value
-        .Replace("\\", "\\\\")
-        .Replace("\"", "\\\"")
-        .Replace("\r", "\\r")
-        .Replace("\n", "\\n")
-        .Replace("\t", "\\t");
+    private static string EscapeTomlString(string value)
+    {
+        var escaped = new StringBuilder(value.Length);
+        foreach (var character in value)
+        {
+            switch (character)
+            {
+                case '\\': escaped.Append("\\\\"); break;
+                case '"': escaped.Append("\\\""); break;
+                case '\b': escaped.Append("\\b"); break;
+                case '\t': escaped.Append("\\t"); break;
+                case '\n': escaped.Append("\\n"); break;
+                case '\f': escaped.Append("\\f"); break;
+                case '\r': escaped.Append("\\r"); break;
+                case < '\u0020': escaped.Append($"\\u{(int)character:X4}"); break;
+                case '\u007f': escaped.Append("\\u007F"); break;
+                default: escaped.Append(character); break;
+            }
+        }
+
+        return escaped.ToString();
+    }
 }

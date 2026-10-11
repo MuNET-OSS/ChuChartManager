@@ -65,6 +65,9 @@ public sealed class AppleChuConfigService
         var schema = AppleChuConfigSchema.Parse(metadata);
         var values = NormalizeRequest(schema, requestedSections);
         var output = AppleChuConfigTemplate.Apply(metadata.DefaultConfigToml, schema, values);
+        // Match MCM's serializer contract: never replace a valid config with
+        // output that the TOML parser cannot read back.
+        _ = ParseDocument(output, "生成的 AppleChu.toml");
         lock (writeLock)
             WriteAtomically(GetConfigPath(gamePath), output);
     }
