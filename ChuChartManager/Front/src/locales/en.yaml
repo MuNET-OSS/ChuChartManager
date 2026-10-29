@@ -1,12 +1,9 @@
 sidebar:
   charts: Charts
-  course: Course
   resources: Resources
   genre: Genre
   releaseTag: Release Tags
   mods: Mods
-  loginBonus: Login Bonus
-  event: Events
   emote: Emote
   mate: Mate
   batch: Batch
@@ -329,22 +326,6 @@ tools:
   convertSameFormat: Source and target format cannot be the same
   convertAlerts: Conversion Warnings
   downloadResult: Download Result
-course:
-  title: Course
-  createCourse: Create Course
-  noCourses: No courses found
-  selectCourse: Select a course to view details
-  name: Name
-  difficulty: Difficulty
-  assetDir: Directory
-  musicList: Music List
-  tracks: tracks
-  addMusic: Add Music
-  clickToSelect: Click to select music
-  selectMusic: Select Music
-  searchMusic: Search by name or ID...
-  noResults: No results
-  needMusic: At least one music is required
 resource:
   title: Resource Manager
   trophy: Trophy
@@ -360,29 +341,6 @@ resource:
   noItems: No resources found
   deleteConfirm: Confirm Delete
   deleteMessage: "Delete \"{name}\" (ID: {id})? This cannot be undone."
-loginBonus:
-  title: Login Bonus
-  presets: Bonus Presets
-  noPresets: No presets found
-  bonusCount: "{count} bonuses"
-  disabled: Disabled
-  editPreset: Edit Preset
-  addBonus: Add Bonus
-  bonusId: Bonus ID
-  bonusName: Bonus Name
-  presentId: Present ID
-  presentName: Present Name
-  itemNum: Quantity
-  needLoginDays: Required Login Days
-  categoryType: Category
-  categoryRegular: Regular
-  categoryCumulative: Cumulative
-  categoryLimited: Limited Period
-  createPreset: Create Preset
-  presetId: Preset ID
-  presetName: Preset Name
-  deletePreset: Delete Preset
-  deletePresetMessage: "Delete preset \"{name}\" (ID: {id})?"
 batch:
   title: Batch Actions
   selectMusic: Select Music
@@ -428,87 +386,6 @@ batch:
   colCharts: Charts
   colJump: Jump
   totalMusic: songs
-event:
-  title: Event Manager
-  events: Events
-  maps: Maps
-  noEvents: No events found
-  noMaps: No maps found
-  editEvent: Edit Event
-  editMap: Edit Map
-  eventName: Event Name
-  eventText: Event Text
-  eventId: Event ID
-  substanceType: Substance Type
-  periodDispType: Period Display Type
-  priority: Priority
-  flagValue: Flag Value
-  infoImage: Info Image
-  importInfoImage: Import Info Image
-  replaceInfoImage: Replace Info Image
-  infoImageImported: Info image imported
-  alwaysOpen: Always Open
-  teamOnly: Team Only
-  isKop: KOP
-  readOnly: A000 Read-only
-  dataName: Data Name
-  assetDir: Directory
-  createEvent: Create Event
-  deleteEvent: Delete Event
-  deleteEventMessage: "Delete event \"{name}\" (ID: {id})?"
-  mapTitle: Map Manager
-  mapName: Map Name
-  mapId: Map ID
-  mapType: Map Type
-  hiddenType: Hidden Type
-  unlockText: Unlock Condition
-  netDispPeriod: Show Online Period
-  mapFilter: Filter Category
-  category: Category
-  areaCount: "{count} areas"
-  addArea: Add Area
-  mapAreaId: Area ID
-  mapAreaName: Area Name
-  ddsMapId: Map Texture ID
-  ddsMapName: Map Texture Name
-  importDdsMap: Import Map Background
-  replaceDdsMap: Replace Map Background
-  ddsMapImported: Map background generated
-  rewardId: Reward ID
-  rewardName: Reward Name
-  pageIndex: Page Index
-  indexInPage: Index in Page
-  requiredAchievement: Required Achievements
-  gaugeId: Gauge ID
-  isHard: Hard Mode
-  createMap: Create Map
-  deleteMap: Delete Map
-  deleteMapMessage: "Delete map \"{name}\" (ID: {id})?"
-  refMap: Linked Map
-  refDailyBonus: Linked Daily Bonus
-  refLinkedVerse: Linked Verse
-  refCmission: Linked Mission
-  refPlayRewardSet: Linked Play Reward
-  refUnlockChallenge: Linked Unlock Challenge
-  substType:
-    information: Information
-    map: Map
-    music: Music
-    advertiseMovie: Advertisement
-    recommendMusic: Recommended Music
-    release: Release
-    course: Course
-    quest: Quest
-    duel: Duel
-    cmission: C-Mission
-    changeSurfBoardUI: UI Change
-    avatarAccessoryGacha: Accessory Gacha
-    rightsInfo: Rights Info
-    dailyBonusPreset: Daily Bonus
-    matchingBonus: Matching Bonus
-    unlockChallenge: Unlock Challenge
-    playRewardSet: Play Reward
-    linkedVerse: LinkedVerse
 ddsExtractor:
   title: DDS Extractor
   desc: Extract DDS textures from AFB/SVO files

@@ -12,21 +12,18 @@ Front/
 │   ├── api/            # axios API 客户端（手写，按域分文件）
 │   │   ├── index.ts        # apiClient 实例 + Music 相关 API + WebView2 baseUrl 适配
 │   │   ├── convert.ts      # 谱面格式转换（c2s/ugc/sus）
-│   │   ├── course.ts       # 课题模式
 │   │   ├── customResource.ts  # 自制资源（删除曲目等）
 │   │   ├── ddsExtractor.ts # DDS 纹理提取
 │   │   ├── emote.ts        # FreeMote E-mote
-│   │   ├── event.ts        # 活动管理
-│   │   ├── loginBonus.ts   # 登录奖励
 │   │   ├── option.ts       # Option 目录管理（A000/A001/...）
-│   │   └── stage.ts        # 舞台管理
+│   │   └── stage.ts        # 舞台背景资源
 │   ├── client/
 │   │   └── mod.ts          # AppleChu Mod 配置 API
 │   ├── components/     # 可复用组件：Sidebar.vue, StatusBar.vue, PlayerBar.vue, BottomOverlay.vue, FileTypeIcon.vue, DirSelect.tsx
 │   ├── locales/        # i18n YAML：zh.yaml / en.yaml / ja.yaml + index.ts
 │   ├── store/          # 全局状态：refs.ts（侧栏、option 目录）、player.ts（音频播放器）、status.ts（状态栏文本）
 │   ├── utils/          # 工具：getSubDirFile.ts（File System Access）、sanitizeFsName.ts
-│   ├── views/          # 页面（按域子目录）：BatchAction/, Charts (MusicList.vue), Course/, Emote/, Event/, LoginBonus/, ModManager/, MusicList/OptionDirsManager/, ResourceManager/, Tools/, Oobe/, ImportMusicModal.vue, Settings.vue
+│   ├── views/          # 页面（按域子目录）：BatchAction/, Charts (MusicList.vue), Emote/, ModManager/, MusicList/OptionDirsManager/, ResourceManager/, Tools/, Oobe/, ImportMusicModal.vue, Settings.vue
 │   ├── App.vue         # 根组件，按 sidebarActive 切换视图
 │   ├── main.ts         # 入口：初始化主题 + i18n + WebView2 message 监听
 │   ├── fs-access.d.ts  # File System Access API 类型补丁

@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { rescanOptions } from '@/api/option'
 import VersionInfo from '@/components/VersionInfo'
 
-export type SidebarKey = 'charts' | 'course' | 'resources' | 'genre' | 'event' | 'emote' | 'mate' | 'mods' | 'loginBonus' | 'batch' | 'tools' | 'settings'
+export type SidebarKey = 'charts' | 'resources' | 'genre' | 'emote' | 'mate' | 'mods' | 'batch' | 'tools' | 'settings'
 
 const { t } = useI18n()
 
@@ -17,11 +17,8 @@ const items = computed(() => [
   { key: 'genre' as const, icon: 'i-mdi-tag-multiple', label: t('sidebar.genre') },
   { key: 'batch' as const, icon: 'i-mdi-playlist-edit', label: t('sidebar.batch') },
   { key: 'mods' as const, icon: 'i-mdi-puzzle', label: t('sidebar.mods') },
-  { key: 'course' as const, icon: 'i-mdi-trophy-variant', label: t('sidebar.course') },
-  { key: 'event' as const, icon: 'i-mdi-calendar-star', label: t('sidebar.event') },
   { key: 'emote' as const, icon: 'i-mdi-emoticon-outline', label: t('sidebar.emote') },
   { key: 'mate' as const, icon: 'i-mdi-account-heart-outline', label: t('sidebar.mate') },
-  { key: 'loginBonus' as const, icon: 'i-mdi-gift', label: t('sidebar.loginBonus') },
   { key: 'tools' as const, icon: 'i-ri:tools-fill', label: t('sidebar.tools') },
 ])
 

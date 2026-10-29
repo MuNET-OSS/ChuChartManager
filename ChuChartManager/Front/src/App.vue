@@ -7,12 +7,9 @@ import StartupErrorDialog from '@/components/StartupErrorDialog'
 import ChangelogModal from '@/components/ChangelogModal'
 import ErrorDialog from '@/components/ErrorDialog'
 import MusicList from '@/views/MusicList.vue'
-import Course from '@/views/Course/index'
 import ResourceManager from '@/views/ResourceManager/index'
 import GenreManager from '@/views/GenreManager/index'
 import ModManager from '@/views/ModManager.vue'
-import LoginBonus from '@/views/LoginBonus/index'
-import EventManager from '@/views/Event/index'
 import EmoteManager from '@/views/Emote/index'
 import MateManager from '@/views/Mate/index'
 import BatchAction from '@/views/BatchAction/index'
@@ -57,14 +54,11 @@ const handleRefresh = () => {
         <Sidebar v-model:active="sidebarActive" @refresh="handleRefresh" />
         <div class="main-content">
           <MusicList v-show="sidebarActive === 'charts'" ref="musicListRef" />
-          <Course v-if="sidebarActive === 'course'" />
           <ResourceManager v-if="sidebarActive === 'resources'" />
           <GenreManager v-if="sidebarActive === 'genre'" />
           <ModManager v-if="sidebarActive === 'mods'" />
-          <EventManager v-if="sidebarActive === 'event'" />
           <EmoteManager v-if="sidebarActive === 'emote'" />
           <MateManager v-if="sidebarActive === 'mate'" />
-          <LoginBonus v-if="sidebarActive === 'loginBonus'" />
           <BatchAction v-if="sidebarActive === 'batch'" />
           <Tools v-if="sidebarActive === 'tools'" />
           <Settings v-if="sidebarActive === 'settings'" />

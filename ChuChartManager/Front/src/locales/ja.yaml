@@ -1,12 +1,9 @@
 sidebar:
   charts: 譜面
-  course: 段位
   resources: リソース
   genre: ジャンル
   releaseTag: バージョンタグ
   mods: Mod
-  loginBonus: ログインボーナス
-  event: イベント
   emote: Emote
   mate: メイト
   batch: 一括
@@ -329,22 +326,6 @@ tools:
   convertSameFormat: 変換元と変換先が同じです
   convertAlerts: 変換警告
   downloadResult: 結果をダウンロード
-course:
-  title: 段位認定
-  createCourse: 段位作成
-  noCourses: 段位データなし
-  selectCourse: 段位を選択して詳細を表示
-  name: 名前
-  difficulty: 難易度
-  assetDir: ディレクトリ
-  musicList: 楽曲リスト
-  tracks: 曲
-  addMusic: 楽曲を追加
-  clickToSelect: クリックして楽曲を選択
-  selectMusic: 楽曲を選択
-  searchMusic: 曲名/IDで検索…
-  noResults: 結果なし
-  needMusic: 少なくとも1曲必要です
 resource:
   title: リソース管理
   trophy: 称号
@@ -360,29 +341,6 @@ resource:
   noItems: リソースが見つかりません
   deleteConfirm: 削除確認
   deleteMessage: "「{name}」(ID: {id}) を削除しますか？この操作は取り消せません。"
-loginBonus:
-  title: ログインボーナス
-  presets: ボーナスプリセット
-  noPresets: プリセットがありません
-  bonusCount: "{count} 件の報酬"
-  disabled: 無効
-  editPreset: プリセット編集
-  addBonus: 報酬追加
-  bonusId: 報酬ID
-  bonusName: 報酬名
-  presentId: プレゼントID
-  presentName: プレゼント名
-  itemNum: 数量
-  needLoginDays: 必要ログイン日数
-  categoryType: カテゴリ
-  categoryRegular: 通常
-  categoryCumulative: 累計
-  categoryLimited: 期間限定
-  createPreset: プリセット作成
-  presetId: プリセットID
-  presetName: プリセット名
-  deletePreset: プリセット削除
-  deletePresetMessage: "プリセット「{name}」(ID: {id}) を削除しますか？"
 batch:
   title: 一括操作
   selectMusic: 楽曲選択
@@ -428,87 +386,6 @@ batch:
   colCharts: 譜面
   colJump: 移動
   totalMusic: 曲
-event:
-  title: イベント管理
-  events: イベント
-  maps: マップ
-  noEvents: イベントデータなし
-  noMaps: マップデータなし
-  editEvent: イベント編集
-  editMap: マップ編集
-  eventName: イベント名
-  eventText: イベント説明
-  eventId: イベントID
-  substanceType: コンテンツタイプ
-  periodDispType: 期間表示タイプ
-  priority: 優先度
-  flagValue: フラグ値
-  infoImage: 告知画像
-  importInfoImage: 告知画像をインポート
-  replaceInfoImage: 告知画像を差し替え
-  infoImageImported: 告知画像をインポートしました
-  alwaysOpen: 常時開放
-  teamOnly: チーム限定
-  isKop: KOP
-  readOnly: A000 読み取り専用
-  dataName: データ名
-  assetDir: ディレクトリ
-  createEvent: イベント作成
-  deleteEvent: イベント削除
-  deleteEventMessage: "イベント「{name}」(ID: {id}) を削除しますか？"
-  mapTitle: マップ管理
-  mapName: マップ名
-  mapId: マップID
-  mapType: マップタイプ
-  hiddenType: 非表示タイプ
-  unlockText: 解放条件
-  netDispPeriod: オンライン期間表示
-  mapFilter: フィルタ分類
-  category: カテゴリ
-  areaCount: "{count} エリア"
-  addArea: エリア追加
-  mapAreaId: エリアID
-  mapAreaName: エリア名
-  ddsMapId: マップテクスチャID
-  ddsMapName: マップテクスチャ名
-  importDdsMap: マップ背景をインポート
-  replaceDdsMap: マップ背景を差し替え
-  ddsMapImported: マップ背景を生成しました
-  rewardId: 報酬ID
-  rewardName: 報酬名
-  pageIndex: ページ番号
-  indexInPage: ページ内順番
-  requiredAchievement: 必要達成数
-  gaugeId: ゲージID
-  isHard: ハードモード
-  createMap: マップ作成
-  deleteMap: マップ削除
-  deleteMapMessage: "マップ「{name}」(ID: {id}) を削除しますか？"
-  refMap: 関連マップ
-  refDailyBonus: 関連日替わりボーナス
-  refLinkedVerse: 関連LinkedVerse
-  refCmission: 関連ミッション
-  refPlayRewardSet: 関連プレイ報酬
-  refUnlockChallenge: 関連解放チャレンジ
-  substType:
-    information: お知らせ
-    map: マップ
-    music: 楽曲
-    advertiseMovie: 広告映像
-    recommendMusic: おすすめ楽曲
-    release: 解放
-    course: 段位
-    quest: クエスト
-    duel: デュエル
-    cmission: Cミッション
-    changeSurfBoardUI: UI変更
-    avatarAccessoryGacha: アクセサリーガチャ
-    rightsInfo: 権利情報
-    dailyBonusPreset: 日替わりボーナス
-    matchingBonus: マッチングボーナス
-    unlockChallenge: 解放チャレンジ
-    playRewardSet: プレイ報酬
-    linkedVerse: LinkedVerse
 ddsExtractor:
   title: DDS エクストラクター
   desc: AFB/SVO ファイルから DDS テクスチャを抽出

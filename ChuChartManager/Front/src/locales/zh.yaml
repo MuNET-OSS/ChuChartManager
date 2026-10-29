@@ -1,12 +1,9 @@
 sidebar:
   charts: 谱面
-  course: 段位
   resources: 资源
   genre: 流派
   releaseTag: 版本标签
   mods: Mod
-  loginBonus: 登录奖励
-  event: 活动
   emote: Emote
   mate: 伙伴
   batch: 批量
@@ -329,22 +326,6 @@ tools:
   convertSameFormat: 源格式和目标格式不能相同
   convertAlerts: 转换警告
   downloadResult: 下载结果
-course:
-  title: 段位认定
-  createCourse: 创建段位
-  noCourses: 暂无段位数据
-  selectCourse: 选择一个段位查看详情
-  name: 名称
-  difficulty: 难度
-  assetDir: 所属目录
-  musicList: 曲目列表
-  tracks: 首
-  addMusic: 添加曲目
-  clickToSelect: 点击选择曲目
-  selectMusic: 选择曲目
-  searchMusic: 搜索曲目名称/ID…
-  noResults: 没有匹配结果
-  needMusic: 至少需要一首曲目
 resource:
   title: 资源管理
   trophy: 称号
@@ -360,29 +341,6 @@ resource:
   noItems: 没有找到资源
   deleteConfirm: 确认删除
   deleteMessage: "确定删除「{name}」(ID: {id}) 吗？此操作不可撤销。"
-loginBonus:
-  title: 登录奖励
-  presets: 奖励方案
-  noPresets: 暂无奖励方案
-  bonusCount: "{count} 条奖励"
-  disabled: 已禁用
-  editPreset: 编辑方案
-  addBonus: 添加奖励
-  bonusId: 奖励 ID
-  bonusName: 奖励名称
-  presentId: 赠品 ID
-  presentName: 赠品名称
-  itemNum: 数量
-  needLoginDays: 需登录天数
-  categoryType: 类别
-  categoryRegular: 通常
-  categoryCumulative: 累計
-  categoryLimited: 期間限定
-  createPreset: 创建方案
-  presetId: 方案 ID
-  presetName: 方案名称
-  deletePreset: 删除方案
-  deletePresetMessage: "确定删除方案「{name}」(ID: {id}) 吗？"
 batch:
   title: 批量操作
   selectMusic: 选择曲目
@@ -428,87 +386,6 @@ batch:
   colCharts: 谱面
   colJump: 跳转
   totalMusic: 首曲目
-event:
-  title: 活动管理
-  events: 活动
-  maps: 地图
-  noEvents: 暂无活动数据
-  noMaps: 暂无地图数据
-  editEvent: 编辑活动
-  editMap: 编辑地图
-  eventName: 活动名称
-  eventText: 活动说明
-  eventId: 活动 ID
-  substanceType: 内容类型
-  periodDispType: 显示周期类型
-  priority: 优先级
-  flagValue: 标志值
-  infoImage: 广告图
-  importInfoImage: 导入广告图
-  replaceInfoImage: 替换广告图
-  infoImageImported: 广告图已导入
-  alwaysOpen: 常时开放
-  teamOnly: 仅团队
-  isKop: KOP
-  readOnly: A000 只读
-  dataName: 数据名
-  assetDir: 所属目录
-  createEvent: 创建活动
-  deleteEvent: 删除活动
-  deleteEventMessage: "确定删除活动「{name}」(ID: {id}) 吗？"
-  mapTitle: 地图管理
-  mapName: 地图名称
-  mapId: 地图 ID
-  mapType: 地图类型
-  hiddenType: 隐藏类型
-  unlockText: 解锁条件
-  netDispPeriod: 显示在线期间
-  mapFilter: 过滤分类
-  category: 所属分类
-  areaCount: "{count} 个区域"
-  addArea: 添加区域
-  mapAreaId: 区域 ID
-  mapAreaName: 区域名称
-  ddsMapId: 地图贴图 ID
-  ddsMapName: 地图贴图名称
-  importDdsMap: 导入地图背景
-  replaceDdsMap: 替换地图背景
-  ddsMapImported: 地图背景已生成
-  rewardId: 奖励 ID
-  rewardName: 奖励名称
-  pageIndex: 页码
-  indexInPage: 页内序号
-  requiredAchievement: 所需达成数
-  gaugeId: 进度条 ID
-  isHard: 困难模式
-  createMap: 创建地图
-  deleteMap: 删除地图
-  deleteMapMessage: "确定删除地图「{name}」(ID: {id}) 吗？"
-  refMap: 关联地图
-  refDailyBonus: 关联日替奖励
-  refLinkedVerse: 关联 LinkedVerse
-  refCmission: 关联任务
-  refPlayRewardSet: 关联游玩奖励
-  refUnlockChallenge: 关联解锁挑战
-  substType:
-    information: 信息公告
-    map: 地图
-    music: 曲目
-    advertiseMovie: 广告影片
-    recommendMusic: 推荐曲目
-    release: 解放
-    course: 段位
-    quest: 任务
-    duel: 对战
-    cmission: C任务
-    changeSurfBoardUI: 界面变更
-    avatarAccessoryGacha: 头像挂件扭蛋
-    rightsInfo: 版权信息
-    dailyBonusPreset: 日替奖励
-    matchingBonus: 匹配加成
-    unlockChallenge: 解锁挑战
-    playRewardSet: 游玩奖励
-    linkedVerse: LinkedVerse
 ddsExtractor:
   title: DDS 提取器
   desc: 从 AFB/SVO 文件中提取 DDS 纹理
