@@ -9,6 +9,7 @@ import HoverPlugin from 'wavesurfer.js/dist/plugins/hover.esm.js'
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'
 import { getAudioPreview, setAudioPreview, getAudioUrl } from '@/api'
 import { globalCapture } from '@/utils/globalCapture'
+import { isDark } from '@/theme'
 
 export default defineComponent({
   props: {
@@ -91,7 +92,8 @@ export default defineComponent({
         plugins: [
           regions,
           ZoomPlugin.create({ scale: 0.05 }),
-          HoverPlugin.create({ lineColor: 'rgba(89,89,89,0.8)' }),
+          // 深色下用浅色游标线，否则看不见
+          HoverPlugin.create({ lineColor: isDark.value ? 'rgba(200,200,200,0.8)' : 'rgba(89,89,89,0.8)' }),
           TimelinePlugin.create(),
         ],
       })

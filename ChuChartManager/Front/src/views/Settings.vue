@@ -19,11 +19,23 @@ const error = ref('')
 const themeOptions = computed<SelectOption[]>(() => [
   { label: t('settings.themeAuto'), value: UIThemes.Auto },
   { label: t('settings.themeLight'), value: UIThemes.DynamicLight },
+  { label: t('settings.themeDark'), value: UIThemes.Dark },
 ])
 
 const localeOptions = computed(() =>
   availableLocales.map(l => ({ label: localeLabels[l], value: l }))
 )
+
+// useStorage 返回的是 RemovableRef，直接 v-model 绑给 Select / range 类型对不上，转一手
+const themeName = computed<number>({
+  get: () => selectedThemeName.value ?? UIThemes.Auto,
+  set: v => { selectedThemeName.value = v as UIThemes },
+})
+
+const themeHue = computed<number>({
+  get: () => selectedThemeHue.value ?? 353,
+  set: v => { selectedThemeHue.value = Number(v) },
+})
 
 onMounted(async () => {
   try {
@@ -91,13 +103,12 @@ async function deleteHistory(path: string) {
       <div class="section-card">
         <div class="flex items-center gap-3">
           <span class="shrink-0 op-60">{{ t('settings.theme') }}</span>
-          <Select :options="themeOptions" v-model:value="selectedThemeName" />
+          <Select :options="themeOptions" v-model:value="themeName" />
         </div>
         <div class="flex items-center gap-2">
           <input
             type="range" min="0" max="360" step="1"
-            :value="selectedThemeHue"
-            @input="(e: Event) => selectedThemeHue = Number((e.target as HTMLInputElement).value)"
+            v-model.number="themeHue"
             class="hue-slider flex-1"
           />
           <Button @click="resetHue" class="shrink-0">{{ t('settings.reset') }}</Button>
@@ -125,8 +136,8 @@ async function deleteHistory(path: string) {
           <div class="text-sm op-50 mb-1">{{ t('settings.historyPath') }}</div>
           <div
             v-for="path in historyPaths" :key="path"
-            class="flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-black/5 transition-colors"
-            :class="{ 'bg-black/8': path === gamePath }"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-ccm-hover transition-colors"
+            :class="{ 'bg-ccm-active': path === gamePath }"
             @click="switchToHistory(path)"
           >
             <span class="i-material-symbols:folder-outline-rounded text-lg op-70 shrink-0" />
@@ -143,16 +154,16 @@ async function deleteHistory(path: string) {
 
 <style lang="sass" scoped>
 .section-title
-  color: oklch(0.55 0.15 var(--hue))
+  color: var(--ccm-accent)
 
 .section-card
   border-radius: 12px
-  background: rgba(255, 255, 255, 0.6)
+  background: var(--ccm-glass)
   padding: 16px
   display: flex
   flex-direction: column
   gap: 16px
-  border: 1px solid #e5e7eb
+  border: 1px solid var(--ccm-line)
 
 .hue-slider
   outline: none

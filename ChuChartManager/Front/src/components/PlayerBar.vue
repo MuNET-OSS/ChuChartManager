@@ -154,12 +154,12 @@ onBeforeUnmount(() => { stopSeekDrag?.(); stopVolumeDrag?.() })
   width: 100%
 
 .player
-  --text-primary: oklch(0.3 0.02 var(--hue))
-  --text-dim: oklch(0.5 0.02 var(--hue))
-  --bg-glass: oklch(0.92 0.02 var(--hue) / 80%)
-  --border-glass: oklch(0.8 0.03 var(--hue) / 20%)
-  --accent: oklch(0.8 0.12 var(--hue))
-  --accent-glow: oklch(0.7 0.15 var(--hue) / 40%)
+  --text-primary: var(--ccm-text)
+  --text-dim: var(--ccm-text-dim)
+  --bg-glass: var(--ccm-glass-muted)
+  --border-glass: var(--ccm-glass-line)
+  --accent: var(--ccm-accent-bright)
+  --accent-glow: var(--ccm-accent-glow)
 
   display: flex
   align-items: center
@@ -169,7 +169,7 @@ onBeforeUnmount(() => { stopSeekDrag?.(); stopVolumeDrag?.() })
   border-radius: 50px
   background: var(--bg-glass)
   border: 1px solid var(--border-glass)
-  box-shadow: 0 2px 12px oklch(0.5 0.05 var(--hue) / 8%)
+  box-shadow: 0 2px 12px var(--ccm-shadow)
   backdrop-filter: blur(20px) saturate(150%)
   color: var(--text-primary)
 
@@ -201,7 +201,7 @@ onBeforeUnmount(() => { stopSeekDrag?.(); stopVolumeDrag?.() })
 
   &:hover
     opacity: 1
-    background: oklch(0.5 0.05 var(--hue) / 10%)
+    background: var(--ccm-hover)
     transform: scale(1.08)
 
   &:active
@@ -220,7 +220,7 @@ onBeforeUnmount(() => { stopSeekDrag?.(); stopVolumeDrag?.() })
     height: 20px
 
   &:hover
-    background: oklch(0.85 0.14 var(--hue))
+    background: var(--ccm-accent-hover)
     box-shadow: 0 6px 16px var(--accent-glow)
     transform: scale(1.05)
 
@@ -264,12 +264,12 @@ onBeforeUnmount(() => { stopSeekDrag?.(); stopVolumeDrag?.() })
     right: 0
     height: 4px
     border-radius: 4px
-    background: oklch(0.7 0.03 var(--hue) / 20%)
+    background: var(--ccm-track)
     transition: height 0.2s
 
   &.active::before
     height: 6px
-    background: oklch(0.6 0.04 var(--hue) / 30%)
+    background: var(--ccm-track-active)
 
 .seek
   flex: 1

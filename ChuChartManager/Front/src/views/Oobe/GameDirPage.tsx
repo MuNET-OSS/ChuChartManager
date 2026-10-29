@@ -54,7 +54,7 @@ export default defineComponent({
           leaveToClass="opacity-0"
         >
           {props.initializing && (
-            <div class="absolute inset-0 flex items-center justify-center bg-[oklch(0.97_0.01_var(--hue)/0.9)] backdrop-blur-sm">
+            <div class="absolute inset-0 flex items-center justify-center bg-ccm-glass backdrop-blur-sm">
               <div class="text-sm op-60 animate-pulse">{t('oobe.initializingData')}</div>
             </div>
           )}

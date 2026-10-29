@@ -43,7 +43,15 @@ public sealed class OobeBrowser : Form
     {
         if (!e.IsSuccess) return;
         WebViewHelper.SetupCoreWebView2(_webView.CoreWebView2, _loopbackUrl);
+        WebViewHelper.HookWindowTheme(_webView.CoreWebView2, this);
         _webView.CoreWebView2.PermissionRequested += WebViewHelper.OnPermissionRequested;
+    }
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        // 建窗时先按上次记下的主题上色，前端加载完再校正
+        TitleBarTheme.ApplySaved(this);
     }
 
     public async void InjectBackendUrl(string url)

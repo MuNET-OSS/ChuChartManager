@@ -62,7 +62,7 @@ export default defineComponent({
 
     return () => (
       <div class="h-full flex flex-col of-hidden">
-        <header class="flex items-center gap-3 px-4 py-3 border-b border-solid border-[oklch(0.9_0.02_var(--hue))] shrink-0">
+        <header class="flex items-center gap-3 px-4 py-3 border-b border-solid border-ccm-line shrink-0">
           <div class="min-w-0 flex-1">
             <h2 class="text-lg font-bold m-0">{t('mate.title')}</h2>
             <div class="text-xs op-45 mt-0.5">{t('mate.count', { count: visibleMates.value.length })}</div>
@@ -83,7 +83,7 @@ export default defineComponent({
           </div>
         ) : (
           <div class="grid grid-cols-[minmax(18rem,20rem)_minmax(0,1fr)] flex-1 min-h-0">
-            <aside class="of-y-auto p-3 border-r border-solid border-[oklch(0.9_0.02_var(--hue))]">
+            <aside class="of-y-auto p-3 border-r border-solid border-ccm-line">
               <div class="grid grid-cols-[repeat(auto-fill,minmax(8rem,1fr))] gap-2">
                 {visibleMates.value.map(mate => {
                   const key = mateKey(mate)
@@ -96,12 +96,12 @@ export default defineComponent({
                       class={[
                         'block w-full h-auto! text-left p-0 of-hidden cursor-pointer rd border border-solid bg-transparent color-inherit font-inherit transition-colors',
                         active
-                          ? 'border-[oklch(0.68_0.17_var(--hue))] bg-[oklch(0.68_0.05_var(--hue)/0.1)]'
-                          : 'border-[oklch(0.9_0.02_var(--hue))] hover:border-[oklch(0.68_0.17_var(--hue)/0.55)]',
+                          ? 'border-ccm-accent bg-ccm-accent-soft'
+                          : 'border-ccm-line hover:border-ccm-accent',
                       ]}
                       onClick={() => { selectedMate.value = mate }}
                     >
-                      <div class="aspect-[25/16] bg-[oklch(0.96_0.01_var(--hue))] flex items-center justify-center of-hidden">
+                      <div class="aspect-[25/16] bg-ccm-surface-2 flex items-center justify-center of-hidden">
                         {showThumbnail ? (
                           <img
                             src={getMateThumbnailUrl(mate)}
@@ -146,14 +146,14 @@ export default defineComponent({
                     height={640}
                   />
 
-                  <section class="mt-4 border-t border-solid border-[oklch(0.9_0.02_var(--hue))] pt-3">
+                  <section class="mt-4 border-t border-solid border-ccm-line pt-3">
                     <div class="flex items-center gap-4 text-sm mb-2">
                       <span class="font-medium">{t('mate.actions')}</span>
                       <span class="text-xs op-45">{t('mate.lipsyncCount', { count: lipsyncCount.value })}</span>
                     </div>
                     <div class="grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] gap-x-4 gap-y-1">
                       {selectedMate.value.actions.map(action => (
-                        <div key={action.id} class="flex items-center gap-2 min-w-0 py-1 text-xs border-b border-solid border-[oklch(0.94_0.01_var(--hue))]">
+                        <div key={action.id} class="flex items-center gap-2 min-w-0 py-1 text-xs border-b border-solid border-ccm-line-subtle">
                           <span class="op-35 tabular-nums shrink-0">{action.type}</span>
                           <span class="truncate flex-1">{action.emote || t('mate.unnamedAction')}</span>
                           {action.hasLipSync && <span class="i-mdi-waveform text-4 op-50 shrink-0" title={t('mate.lipsync')} />}

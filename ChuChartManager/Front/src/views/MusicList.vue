@@ -548,11 +548,11 @@ const copyExportOptions = computed(() => {
   <div ref="rootRef" class="h-full flex relative">
     <div
       v-if="isOverDropZone"
-      class="absolute inset-0 z-100 bg-white/50 backdrop-blur-sm flex items-center justify-center text-xl pointer-events-none"
+      class="absolute inset-0 z-100 bg-ccm-glass backdrop-blur-sm flex items-center justify-center text-xl pointer-events-none"
     >
       {{ t('music.dropHint') }}
     </div>
-    <div class="w-40em max-w-[40vw] border-r border-white/10 flex flex-col relative">
+    <div class="w-40em max-w-[40vw] border-r border-ccm-line border-r-solid flex flex-col relative">
       <Transition
         enter-active-class="panel-transition"
         leave-active-class="panel-transition absolute inset-0"
@@ -560,7 +560,7 @@ const copyExportOptions = computed(() => {
         :leave-to-class="leftPanel === 'optionDirs' ? 'opacity-0 scale-96' : 'opacity-0 scale-104'"
       >
       <div v-if="leftPanel === 'musicList'" key="musicList" class="flex flex-col h-full">
-        <div class="p-2 border-b border-white/10 flex flex-col gap-1.5 z-10 relative">
+        <div class="p-2 border-b border-ccm-line border-b-solid flex flex-col gap-1.5 z-10 relative">
           <div class="flex items-center gap-2 min-w-0">
             <div
               :class="['grow w-0 flex items-center gap-1 px-3 py-1.5 rounded-12px transition-colors text-left truncate cursor-pointer border-none h-48px', theme.listItem, theme.listItemHover]"
@@ -584,7 +584,7 @@ const copyExportOptions = computed(() => {
               @click="selectMusic(music)"
             >
               <img v-if="music.hasJacket" :src="getJacketUrl(music.id, music.assetDir)" class="h-16 w-16 object-fill shrink-0" loading="lazy" />
-              <div v-else class="h-16 w-16 shrink-0 bg-white/10 flex items-center justify-center text-xs op-40 rd">?</div>
+              <div v-else class="h-16 w-16 shrink-0 bg-ccm-surface-2 flex items-center justify-center text-xs op-40 rd">?</div>
               <div class="flex flex-col grow-1 w-0">
                 <div class="text-xs op-50">{{ String(music.id).padStart(4, '0') }}</div>
                 <div class="text-ellipsis of-hidden ws-nowrap flex items-center gap-1">
@@ -608,7 +608,7 @@ const copyExportOptions = computed(() => {
 
     <!-- 右侧 -->
     <div class="flex-1 flex flex-col of-hidden">
-      <div class="flex items-center gap-2 shrink-0 p-3 border-b border-white/10">
+      <div class="flex items-center gap-2 shrink-0 p-3 border-b border-ccm-line border-b-solid">
         <div class="grow-1" />
         <template v-if="selectedMusic">
           <DropMenu :options="copyExportOptions" :button-text="t('music.copyAndExport')" />
@@ -616,7 +616,7 @@ const copyExportOptions = computed(() => {
             <span class="text-sm op-50">{{ t('music.a000Hint') }}</span>
           </template>
           <template v-else>
-            <Button :class="deleteConfirm && 'bg-red-300!'" :ing="deleteLoading" @click="handleDelete" @mouseleave="deleteConfirm = false">{{ deleteConfirm ? t('music.deleteConfirm') : t('common.delete') }}</Button>
+            <Button :class="deleteConfirm && 'bg-red-400! text-white!'" :ing="deleteLoading" @click="handleDelete" @mouseleave="deleteConfirm = false">{{ deleteConfirm ? t('music.deleteConfirm') : t('common.delete') }}</Button>
             <Button @click="onSave">{{ t('common.save') }}</Button>
           </template>
         </template>
@@ -629,7 +629,7 @@ const copyExportOptions = computed(() => {
       <div v-if="selectedMusic" class="of-y-auto cst flex-1 min-h-0 p-6">
         <div class="flex gap-6 mb-6">
           <img v-if="selectedMusic.hasJacket" :src="getJacketUrl(selectedMusic.id, selectedMusic.assetDir)" class="w-48 h-48 rounded-lg object-cover shrink-0 cursor-pointer hover:op-80 transition-opacity" :title="t('music.clickToReplaceJacket')" @click="!isA000 && handleSetJacket()" />
-          <div v-else class="w-48 h-48 rounded-lg bg-white/10 flex items-center justify-center op-30 text-2xl shrink-0 cursor-pointer hover:op-50 transition-opacity" @click="!isA000 && handleSetJacket()">?</div>
+          <div v-else class="w-48 h-48 rounded-lg bg-ccm-surface-2 flex items-center justify-center op-30 text-2xl shrink-0 cursor-pointer hover:op-50 transition-opacity" @click="!isA000 && handleSetJacket()">?</div>
           <div class="flex-1 min-w-0">
             <h2 class="text-xl font-bold mb-1 flex items-center gap-2">
               {{ selectedMusic.name }}

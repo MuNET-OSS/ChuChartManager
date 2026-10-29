@@ -4,13 +4,16 @@ import '@fontsource/noto-sans-sc/index.css'
 import '@fontsource/quicksand/index.css'
 import { createApp } from 'vue'
 import App from './App.vue'
+import './theme/tokens.sass'
 import './global.sass'
-import { initThemeDefaults, selectedThemeName, UIThemes } from '@munet/ui'
+import { initThemeDefaults, UIThemes } from '@munet/ui'
+import { initThemeSync } from './theme'
 import i18n from '@/locales'
 import { globalCapture } from '@/utils/globalCapture'
 
-initThemeDefaults({ hue: 353 })
-selectedThemeName.value = UIThemes.DynamicLight
+// 默认跟随系统明暗；用户在选择后会写入 localStorage，不再被覆盖
+initThemeDefaults({ hue: 353, theme: UIThemes.Auto })
+initThemeSync()
 
 window.addEventListener('unhandledrejection', e => globalCapture(e.reason, 'Unhandled rejection'))
 

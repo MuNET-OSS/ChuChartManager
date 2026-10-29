@@ -125,7 +125,7 @@ export default defineComponent({
       return (
         <div class="flex flex-col items-center gap-2">
           <div
-            class="rounded-lg border-2 border-dashed border-[oklch(0.8_0.05_var(--hue))] flex items-center justify-center cursor-pointer hover:border-[oklch(0.6_0.1_var(--hue))] transition-all of-hidden bg-[oklch(0.97_0.005_var(--hue))]"
+            class="rounded-lg border-2 border-dashed border-ccm-line-strong flex items-center justify-center cursor-pointer hover:border-ccm-accent transition-all of-hidden bg-ccm-surface-2"
             style={{ width: `${size}px`, height: `${size}px` }}
             onClick={() => selectForCurrent(selectKey)}
           >
@@ -145,14 +145,14 @@ export default defineComponent({
         ...variants.value.map((v, i) => ({ key: i + 1, label: `${t('tools.variantSlot')} ${v.slot}` })),
       ]
       return (
-        <div class="flex items-center gap-1 border-b border-solid border-[oklch(0.85_0.02_var(--hue))]">
+        <div class="flex items-center gap-1 border-b border-solid border-ccm-line-strong">
           {tabs.map(tab => (
             <div
               key={tab.key}
               class={[
                 'px-4 py-2 text-sm cursor-pointer transition-all border-b-2 border-solid',
                 activeTab.value === tab.key
-                  ? 'border-[oklch(0.55_0.15_var(--hue))] text-[oklch(0.4_0.1_var(--hue))] font-medium'
+                  ? 'border-ccm-accent text-ccm-accent font-medium'
                   : 'border-transparent op-50 hover:op-80',
               ]}
               onClick={() => { activeTab.value = tab.key }}

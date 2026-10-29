@@ -17,7 +17,7 @@ export default defineComponent({
       >
         v{displayVersion.value}
         {hasUpdate.value && (
-          <div class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-#f64861 border-2 border-white" />
+          <div class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-#f64861 border-2 border-ccm-surface" />
         )}
 
         <Modal

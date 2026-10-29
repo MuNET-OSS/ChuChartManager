@@ -5,7 +5,7 @@ defineProps<{ type: string }>()
 <template>
   <div class="file-icon">
     <svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M3 2h12l6 6v20H3V2z" fill="rgba(255,255,255,0.06)" />
+      <path d="M3 2h12l6 6v20H3V2z" fill="currentColor" fill-opacity="0.06" />
       <path d="M15 2v6h6" />
     </svg>
     <span class="file-ext">{{ type }}</span>
@@ -31,7 +31,7 @@ defineProps<{ type: string }>()
   font-weight: 700
   line-height: 1
   padding: 0.15em 0.3em
-  background: rgba(255, 255, 255, 0.12)
+  background: color-mix(in srgb, currentColor 12%, transparent)
   border-radius: 3px
   color: currentColor
 </style>

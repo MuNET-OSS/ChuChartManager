@@ -1,0 +1,8 @@
+// 深色主题的业务层补充
+// MuNET-UI 的 aquadx（深色）有意不定义 listItem（它只在有背景图的地方用 listItemDark），
+// 但 CCM 里 listItem 同时承担「A000 来源按钮」和「选中行」的填充，
+// 缺了它这两处暗色下就只剩文字，看不出是按钮 / 选中态。
+// 通过 registerAppTheme 只给深色补一个底色，浅色仍由 dynamicLight 的 listItem 负责，
+// 组件里的 class 与浅色完全一致。悬停态仍走 aquadx 的 .listItemHover:hover，不受影响。
+.listItem
+  background-color: var(--ccm-surface-2)

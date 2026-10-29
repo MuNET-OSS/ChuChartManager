@@ -21,9 +21,9 @@ export default defineComponent({
           <div class="text-sm op-70 break-all min-h-5">
             {currentProcessItem.value && `${t('batch.currentProcessing')}: ${currentProcessItem.value}`}
           </div>
-          <div class="w-full h-2 rounded-full bg-[oklch(0.93_0.01_var(--hue))] overflow-hidden">
+          <div class="w-full h-2 rounded-full bg-ccm-line-subtle overflow-hidden">
             <div
-              class="h-full rounded-full bg-[oklch(0.6_0.15_var(--hue))] transition-all duration-300"
+              class="h-full rounded-full bg-ccm-accent transition-all duration-300"
               style={{ width: `${pct}%` }}
             />
           </div>

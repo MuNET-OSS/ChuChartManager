@@ -14,6 +14,8 @@ public static class Program
         try
         {
             ApplicationConfiguration.Initialize();
+            // 原生控件（LauncherForm、对话框）跟随系统明暗
+            Application.SetColorMode(SystemColorMode.System);
 
             Directory.CreateDirectory(StaticSettings.AppDataDir);
             StaticSettings.Config = Config.Load();

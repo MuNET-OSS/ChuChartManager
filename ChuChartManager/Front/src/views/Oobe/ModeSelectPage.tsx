@@ -30,7 +30,7 @@ export default defineComponent({
         <div class="flex gap-4 w-full max-w-md mt-6 mb-3">
           <div
             class={['flex-1 p-5 rounded-xl cursor-pointer transition-all border-2 flex flex-col items-center gap-3',
-              !isRemote.value ? 'border-[oklch(0.7_0.1_var(--hue))] bg-[oklch(0.95_0.03_var(--hue))]' : 'border-transparent bg-[oklch(0.96_0.01_var(--hue))] hover:bg-[oklch(0.94_0.02_var(--hue))]']}
+              !isRemote.value ? 'border-ccm-accent bg-ccm-active' : 'border-transparent bg-ccm-surface-2 hover:bg-ccm-hover']}
             onClick={() => isRemote.value = false}
           >
             <div class="i-mdi-monitor text-3xl op-60" />
@@ -39,7 +39,7 @@ export default defineComponent({
           </div>
           <div
             class={['flex-1 p-5 rounded-xl cursor-pointer transition-all border-2 flex flex-col items-center gap-3',
-              isRemote.value ? 'border-[oklch(0.7_0.1_var(--hue))] bg-[oklch(0.95_0.03_var(--hue))]' : 'border-transparent bg-[oklch(0.96_0.01_var(--hue))] hover:bg-[oklch(0.94_0.02_var(--hue))]']}
+              isRemote.value ? 'border-ccm-accent bg-ccm-active' : 'border-transparent bg-ccm-surface-2 hover:bg-ccm-hover']}
             onClick={() => isRemote.value = true}
           >
             <div class="i-mdi-lan text-3xl op-60" />
@@ -52,7 +52,7 @@ export default defineComponent({
             <div class="flex flex-col gap-3 w-full max-w-sm my-3">
               <div class="flex items-center gap-2 cursor-pointer" onClick={() => { useAuth.value = !useAuth.value }}>
                 <div class={['w-5 h-5 rounded-full border-2 transition-colors shrink-0',
-                  useAuth.value ? 'bg-[oklch(0.7_0.15_var(--hue))] border-[oklch(0.7_0.15_var(--hue))]' : 'border-gray-300']} />
+                  useAuth.value ? 'bg-ccm-accent border-ccm-accent' : 'border-ccm-line-strong']} />
                 <span>{t('oobe.enableAuth')}</span>
               </div>
               <TransitionVertical>

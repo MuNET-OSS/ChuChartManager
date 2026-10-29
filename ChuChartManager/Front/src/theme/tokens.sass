@@ -1,0 +1,78 @@
+// CCM 语义色令牌 —— 明暗两套值挂在同一批变量上
+// 浅色值保持与既有实现一致（零视觉回归），深色按深色玻璃主题派生
+// 注意：--hue 由 MuNET-UI 写在 body 上，所以令牌也必须挂在 body，不能挂 :root
+// 用法：SASS 里 var(--ccm-*)，原子类里 bg-ccm-* / border-ccm-* / text-ccm-*
+
+body
+  // 页面与面板
+  --ccm-bg: oklch(0.99 0.005 var(--hue))
+  --ccm-surface: oklch(0.98 0.01 var(--hue))
+  --ccm-surface-2: oklch(0.96 0.01 var(--hue))
+
+  // 交互态
+  --ccm-hover: oklch(0.95 0.02 var(--hue))
+  --ccm-active: oklch(0.92 0.04 var(--hue))
+
+  // 边框分割线
+  --ccm-line: oklch(0.9 0.02 var(--hue))
+  --ccm-line-subtle: oklch(0.93 0.01 var(--hue))
+  --ccm-line-strong: oklch(0.85 0.02 var(--hue))
+
+  // 文字
+  --ccm-text: var(--text-color)
+  --ccm-text-dim: oklch(0.5 0.02 var(--hue))
+  --ccm-text-faint: oklch(0.68 0.015 var(--hue))
+
+  // 强调色
+  --ccm-accent: oklch(0.55 0.15 var(--hue))
+  --ccm-accent-hover: oklch(0.62 0.15 var(--hue))
+  --ccm-accent-fg: #fff
+  --ccm-accent-soft: oklch(0.9 0.05 var(--hue))
+
+  // 玻璃层与杂项
+  --ccm-glass: rgba(255, 255, 255, 0.6)
+  --ccm-glass-strong: rgba(255, 255, 255, 0.8)
+  --ccm-glass-muted: oklch(0.92 0.02 var(--hue) / 80%)
+  --ccm-glass-line: oklch(0.8 0.03 var(--hue) / 20%)
+  --ccm-accent-bright: oklch(0.8 0.12 var(--hue))
+  --ccm-accent-glow: oklch(0.7 0.15 var(--hue) / 40%)
+  --ccm-track: oklch(0.7 0.03 var(--hue) / 20%)
+  --ccm-track-active: oklch(0.6 0.04 var(--hue) / 30%)
+  --ccm-code-bg: rgba(0, 0, 0, 0.06)
+  --ccm-shadow: oklch(0.5 0.05 var(--hue) / 8%)
+
+[data-ccm-theme=dark] body
+  --ccm-bg: oklch(0.21 0.012 var(--hue))
+  --ccm-surface: oklch(0.25 0.015 var(--hue))
+  --ccm-surface-2: oklch(0.29 0.02 var(--hue))
+
+  --ccm-hover: oklch(0.33 0.025 var(--hue))
+  --ccm-active: oklch(0.4 0.05 var(--hue))
+
+  --ccm-line: oklch(0.34 0.02 var(--hue))
+  --ccm-line-subtle: oklch(0.3 0.015 var(--hue))
+  --ccm-line-strong: oklch(0.46 0.03 var(--hue))
+
+  --ccm-text-dim: oklch(0.75 0.015 var(--hue))
+  --ccm-text-faint: oklch(0.6 0.02 var(--hue))
+
+  --ccm-accent: oklch(0.75 0.12 var(--hue))
+  --ccm-accent-hover: oklch(0.82 0.1 var(--hue))
+  --ccm-accent-fg: #101010
+  --ccm-accent-soft: oklch(0.36 0.06 var(--hue))
+
+  --ccm-glass: oklch(0.26 0.02 var(--hue) / 70%)
+  --ccm-glass-strong: oklch(0.3 0.02 var(--hue) / 85%)
+  --ccm-glass-muted: oklch(0.28 0.02 var(--hue) / 80%)
+  --ccm-glass-line: oklch(0.45 0.03 var(--hue) / 40%)
+  --ccm-accent-bright: oklch(0.8 0.11 var(--hue))
+  --ccm-accent-glow: oklch(0.75 0.14 var(--hue) / 45%)
+  --ccm-track: oklch(0.5 0.03 var(--hue) / 40%)
+  --ccm-track-active: oklch(0.6 0.04 var(--hue) / 55%)
+  --ccm-code-bg: rgba(255, 255, 255, 0.1)
+  --ccm-shadow: rgb(0 0 0 / 45%)
+
+// 页面底色跟随令牌
+// html:root body（0,1,2）压过 MuNET-UI 主题层的 body:has(.root)（0,1,1）
+html:root body
+  background: var(--ccm-bg)

@@ -106,7 +106,7 @@ export default defineComponent({
     );
 
     return () => (
-      <div class="fixed inset-0 bg-[oklch(0.97_0.01_var(--hue))] flex flex-col">
+      <div class="fixed inset-0 bg-ccm-bg flex flex-col">
         <div class="flex-1 overflow-hidden relative">
           <Transition name={transitionName.value}>
             {step.value === Step.Welcome && <WelcomePage key="welcome" />}
@@ -139,7 +139,7 @@ export default defineComponent({
         <div class="relative h-16 shrink-0">
           {step.value > 0 && (
             <button
-              class="fixed bottom-6 left-6 w-14 h-14 rounded-full bg-[oklch(0.6_0.15_var(--hue))]! hover:bg-[oklch(0.6_0.15_var(--hue)/0.8)]! text-white cursor-pointer border-none flex items-center justify-center"
+              class="fixed bottom-6 left-6 w-14 h-14 rounded-full bg-ccm-accent! hover:bg-ccm-accent-hover! text-ccm-accent-fg cursor-pointer border-none flex items-center justify-center"
               onClick={goPrev}
               disabled={completing.value}
             >
@@ -149,7 +149,7 @@ export default defineComponent({
           {step.value < Step.ModeSelect && (
             <button
               class={['fixed bottom-6 right-6 w-14 h-14 rounded-full border-none flex items-center justify-center',
-                canGoNext.value ? 'bg-[oklch(0.6_0.15_var(--hue))]! hover:bg-[oklch(0.6_0.15_var(--hue)/0.8)]! cursor-pointer text-white' : 'bg-gray-200! cursor-not-allowed text-gray-400']}
+                canGoNext.value ? 'bg-ccm-accent! hover:bg-ccm-accent-hover! cursor-pointer text-white' : 'bg-ccm-surface-2! cursor-not-allowed text-ccm-faint']}
               onClick={() => canGoNext.value && goNext()}
               disabled={!canGoNext.value}
             >

@@ -37,6 +37,7 @@ settings:
   theme: テーマ
   themeAuto: 自動
   themeLight: ライト
+  themeDark: ダーク
   themeHue: テーマ色相
   reset: リセット
   gameDirectory: ゲームディレクトリ

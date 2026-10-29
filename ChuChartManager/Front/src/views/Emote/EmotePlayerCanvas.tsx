@@ -283,7 +283,7 @@ export default defineComponent({
               width={props.width}
               height={props.height}
               class="block rounded-lg w-full h-auto"
-              style={{ maxWidth: `${props.width}px`, aspectRatio: `${props.width} / ${props.height}`, background: 'oklch(0.97 0.005 var(--hue))' }}
+              style={{ maxWidth: `${props.width}px`, aspectRatio: `${props.width} / ${props.height}`, background: 'var(--ccm-surface-2)' }}
             />
             {state.value === 'loading' && (
               <div class="text-center op-40 py-6">{t('common.loading')}</div>
@@ -294,7 +294,7 @@ export default defineComponent({
           </div>
 
           {state.value === 'ready' && motionPanelOpen.value && (
-            <div class="min-w-0 of-y-auto rounded-lg border border-solid border-[oklch(0.9_0.02_var(--hue))]" style={{ maxHeight: `${props.height}px` }}>
+            <div class="min-w-0 of-y-auto rounded-lg border border-solid border-ccm-line" style={{ maxHeight: `${props.height}px` }}>
               {mainTimelines.value.length > 0 && (
                 <div class="p-2">
                   <div class="text-[10px] font-bold op-40 mb-1 uppercase tracking-wide">Main</div>
@@ -304,8 +304,8 @@ export default defineComponent({
                       class={[
                         'text-xs px-2 py-1.5 mb-0.5 rounded-md cursor-pointer truncate transition-colors',
                         activeMain.value === label
-                          ? 'bg-[oklch(0.55_0.15_var(--hue))] text-white font-medium'
-                          : 'hover:bg-[oklch(0.95_0.02_var(--hue))]',
+                          ? 'bg-ccm-accent text-ccm-accent-fg font-medium'
+                          : 'hover:bg-ccm-hover',
                       ]}
                       onClick={() => playMain(label)}
                     >{label}</div>
@@ -313,7 +313,7 @@ export default defineComponent({
                 </div>
               )}
               {diffTimelines.value.length > 0 && (
-                <div class="p-2 border-t border-solid border-[oklch(0.9_0.02_var(--hue))]">
+                <div class="p-2 border-t border-solid border-ccm-line">
                   <div class="text-[10px] font-bold op-40 mb-1 uppercase tracking-wide">Diff</div>
                   {diffTimelines.value.map(label => (
                     <div
@@ -321,8 +321,8 @@ export default defineComponent({
                       class={[
                         'text-xs px-2 py-1.5 mb-0.5 rounded-md cursor-pointer truncate transition-colors',
                         activeDiffs.value.includes(label)
-                          ? 'bg-[oklch(0.55_0.15_var(--hue))] text-white font-medium'
-                          : 'hover:bg-[oklch(0.95_0.02_var(--hue))]',
+                          ? 'bg-ccm-accent text-ccm-accent-fg font-medium'
+                          : 'hover:bg-ccm-hover',
                       ]}
                       onClick={() => playDiff(label)}
                     >{label}</div>

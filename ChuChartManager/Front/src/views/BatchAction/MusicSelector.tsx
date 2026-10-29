@@ -1,9 +1,10 @@
 import { computed, defineComponent, PropType, reactive, ref, watch } from 'vue'
-import { DataTableBaseColumn, DataTableColumns, NDataTable } from 'naive-ui'
+import { DataTableBaseColumn, DataTableColumns, NConfigProvider, NDataTable, darkTheme } from 'naive-ui'
 import { Button, TextInput } from '@munet/ui'
 import { useI18n } from 'vue-i18n'
 import { getJacketUrl, type MusicListItem } from '@/api'
 import { sidebarActive, selectedSource, selectMusicId } from '@/store/refs'
+import { isDark } from '@/theme'
 import * as _ from 'lodash-es'
 
 const LEVEL_COLORS = ['#22c55e', '#f59e0b', '#ef4444', '#a855f7', '#1e1e1e', '#6366f1']
@@ -123,15 +124,17 @@ export default defineComponent({
     return () => (
       <div class="flex flex-col gap-3 h-full">
         <TextInput placeholder={t('batch.searchPlaceholder')} v-model:value={filter.value} />
-        <NDataTable
-          columns={columns.value}
-          data={props.musicList}
-          virtualScroll
-          maxHeight="calc(100dvh - 12rem)"
-          minRowHeight={80}
-          rowKey={(row: MusicListItem) => `${row.assetDir}:${row.id}`}
-          v-model:checkedRowKeys={checkedKeys.value}
-        />
+        <NConfigProvider theme={isDark.value ? darkTheme : null}>
+          <NDataTable
+            columns={columns.value}
+            data={props.musicList}
+            virtualScroll
+            maxHeight="calc(100dvh - 12rem)"
+            minRowHeight={80}
+            rowKey={(row: MusicListItem) => `${row.assetDir}:${row.id}`}
+            v-model:checkedRowKeys={checkedKeys.value}
+          />
+        </NConfigProvider>
         <div class="flex items-center justify-between">
           <span class="text-xs op-40">{props.musicList.length} {t('batch.totalMusic')}</span>
           <Button onClick={() => props.continue()} disabled={!checkedKeys.value.length}>{t('batch.next')}</Button>

@@ -22,6 +22,7 @@ Front/
 │   ├── components/     # 可复用组件：Sidebar.vue, StatusBar.vue, PlayerBar.vue, BottomOverlay.vue, FileTypeIcon.vue, DirSelect.tsx
 │   ├── locales/        # i18n YAML：zh.yaml / en.yaml / ja.yaml + index.ts
 │   ├── store/          # 全局状态：refs.ts（侧栏、option 目录）、player.ts（音频播放器）、status.ts（状态栏文本）
+│   ├── theme/          # 明暗主题：tokens.sass（--ccm-* 设计令牌，浅/深两套）、index.ts（同步 isLightTheme → html[data-ccm-theme]）
 │   ├── utils/          # 工具：getSubDirFile.ts（File System Access）、sanitizeFsName.ts
 │   ├── views/          # 页面（按域子目录）：BatchAction/, Charts (MusicList.vue), Emote/, ModManager/, MusicList/OptionDirsManager/, ResourceManager/, Tools/, Oobe/, ImportMusicModal.vue, Settings.vue
 │   ├── App.vue         # 根组件，按 sidebarActive 切换视图
@@ -68,7 +69,14 @@ WebView2 集成：
 - UI 组件库：**@munet/ui**（workspace:* 引用 MuNET-UI 子模块），核心组件 Button/Radio/Select/Popover/CheckBox/Modal/Progress/addToast
 - Naive UI 仅用于 `BatchAction/MusicSelector.tsx` 的 `NDataTable`（虚拟滚动+过滤）
 - 样式方案：**UnoCSS** 原子化 + **SASS 缩进语法**（不是 SCSS）
-- 主题：`@munet/ui` 的 `selectedThemeName = UIThemes.DynamicLight`，hue 默认 353
+- 主题：`@munet/ui` 的 `selectedThemeName`，`initThemeDefaults({ hue: 353, theme: UIThemes.Auto })` 默认跟随系统，设置页可选 自动 / 浅色 / 深色，hue 默认 353
+- 明暗双主题：界面颜色一律走 `--ccm-*` 设计令牌（`src/theme/tokens.sass`）或对应的 `ccm-*` 原子类，禁止硬编码浅色（`#fff`、`oklch(0.97 …)`、`bg-black/5` 等）
+  - SASS 里用 `var(--ccm-surface)` / `var(--ccm-line)` / `var(--ccm-accent)` 等
+  - 原子类里用 `bg-ccm-surface-2` / `border-ccm-line` / `hover:bg-ccm-hover` / `text-ccm-accent`
+  - 令牌声明在 `body` 上（`--hue` 由 MuNET-UI 写在 `body`，`:root` 上取 `var(--hue)` 无效），深色值由 `<html data-ccm-theme="dark">` 切换
+  - 游戏数据色（谱面难度配色、奖杯文字、hue 滑块）不参与令牌化
+- 原生窗口也要跟着明暗：`src/theme/index.ts` 会把 `{ type: 'setTheme', dark, bg, fg, line }` postMessage 给 WinForms（`chrome.webview.postMessage`），宿主侧 `TitleBarTheme.cs` 用 DWM 染标题栏/边框并把配色存进 `%LOCALAPPDATA%/ChuChartManager/window-theme.json`，下次启动先按它上色避免闪白
+  - 颜色令牌是 oklch，宿主只认 `#RRGGBB`，前端用 1×1 canvas 做 sRGB 换算后再发
 - 路径别名：`@` → `./src`
 - TypeScript strict，JSX 用 `defineComponent(...)`（兼容 Vue + JSX，`jsxImportSource: vue`）
 - 视图混用 `.vue`（template）和 `.tsx`（JSX setup），优先 `.tsx`（参考 MCM Front 写法）
@@ -84,7 +92,7 @@ WebView2 集成：
 - 不要在视图组件里直接 fetch，统一走 `src/api/*.ts`
 - 不要在 `Models/` 风格的地方写业务逻辑（前端无强 Model 层，但 store 只放纯 ref）
 - 不要破坏三语 i18n 同步
-- 不要为深色主题写适配（当前仅支持浅色，相关选项已在设置页移除）
+- 不要写只适配单一主题的颜色（新增颜色请走 `--ccm-*` 令牌，见 CONVENTIONS）
 
 ## BUILD
 

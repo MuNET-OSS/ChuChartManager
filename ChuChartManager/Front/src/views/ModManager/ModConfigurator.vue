@@ -65,7 +65,7 @@ function ensureState(section: ManifestSection) {
       <div
         v-for="group in groups"
         :key="group.id"
-        :class="['px-3 py-1.5 rd cursor-pointer text-sm transition-colors whitespace-nowrap', selectedGroup?.id === group.id ? 'bg-[oklch(0.68_0.17_var(--hue)/0.22)] c-[oklch(0.58_0.17_var(--hue))]' : 'hover:bg-black/5']"
+        :class="['px-3 py-1.5 rd cursor-pointer text-sm transition-colors whitespace-nowrap', selectedGroup?.id === group.id ? 'bg-[oklch(0.68_0.17_var(--hue)/0.22)] c-ccm-accent' : 'hover:bg-ccm-hover']"
         @click="selectedGroupId = group.id"
       >
         {{ group.label?.[language] || group.id }}

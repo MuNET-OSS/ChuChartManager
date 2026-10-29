@@ -19,10 +19,10 @@ body
   display: none !important
 
 .n-button
-  color: #303133 !important
+  color: var(--ccm-text) !important
 
 .n-base-select-menu, .n-input, .n-base-selection
-  --n-color: rgba(255, 255, 255, 0.8) !important
+  --n-color: var(--ccm-glass-strong) !important
   backdrop-filter: blur(10px)
 
   .n-base-select-option--pending::before
@@ -99,10 +99,10 @@ body
     margin: 0.2em 0
 
   a
-    color: oklch(0.6 0.15 var(--hue))
+    color: var(--ccm-accent)
 
   code
-    background: rgba(0, 0, 0, 0.06)
+    background: var(--ccm-code-bg)
     padding: 0.1em 0.35em
     border-radius: 0.3em
     font-size: 0.9em

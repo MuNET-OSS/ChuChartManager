@@ -37,6 +37,7 @@ settings:
   theme: Theme
   themeAuto: Auto
   themeLight: Light
+  themeDark: Dark
   themeHue: Theme Hue
   reset: Reset
   gameDirectory: Game Directory

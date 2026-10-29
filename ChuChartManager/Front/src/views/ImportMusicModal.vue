@@ -226,7 +226,7 @@ defineExpose({ startImport, startImportWithHandle })
           <img :src="coverUrl" class="w-32 h-32 rounded-lg object-cover" />
         </div>
 
-        <div class="flex flex-col gap-1 text-sm op-70 bg-white/5 rd p-3">
+        <div class="flex flex-col gap-1 text-sm op-70 bg-ccm-surface-2 rd p-3">
           <div>{{ t('music.importFoundFiles') }}:</div>
           <div class="flex gap-3 flex-wrap">
             <span v-for="f in chartFiles" :key="f.name">{{ f.name }}</span>
@@ -235,10 +235,10 @@ defineExpose({ startImport, startImportWithHandle })
           </div>
         </div>
 
-        <div v-if="checkResult?.difficulties?.length" class="text-sm bg-white/5 rd p-3">
+        <div v-if="checkResult?.difficulties?.length" class="text-sm bg-ccm-surface-2 rd p-3">
           <div class="op-70 mb-2">{{ t('music.importDifficulties') }}:</div>
           <div class="flex gap-2 flex-wrap">
-            <span v-for="d in checkResult.difficulties" :key="d.difficulty" class="px-2 py-0.5 rd bg-white/10">
+            <span v-for="d in checkResult.difficulties" :key="d.difficulty" class="px-2 py-0.5 rd bg-ccm-hover">
               {{ diffNames[d.difficulty] || `DIFF ${d.difficulty}` }} {{ (d.level + d.levelDecimal / 100).toFixed(1) }}
             </span>
           </div>

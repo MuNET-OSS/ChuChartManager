@@ -171,7 +171,7 @@ export default defineComponent({
       return (
         <div
           key={`${item.type}-${item.id}-${item.assetDir}`}
-          class="flex items-center gap-4 px-4 border-b border-solid border-[oklch(0.93_0.01_var(--hue))] hover:bg-[oklch(0.97_0.02_var(--hue))] transition-colors"
+          class="flex items-center gap-4 px-4 border-b border-solid border-ccm-line-subtle hover:bg-ccm-hover transition-colors"
           style={{ position: 'absolute', top: `${item._index * ROW_HEIGHT}px`, left: 0, right: 0, height: `${ROW_HEIGHT}px` }}
         >
           {item.hasImage ? (
@@ -214,7 +214,7 @@ export default defineComponent({
               </span>
             </div>
           ) : (
-            <div class="w-16 h-16 rounded-lg flex-shrink-0 bg-[oklch(0.95_0.01_var(--hue))] flex items-center justify-center">
+            <div class="w-16 h-16 rounded-lg flex-shrink-0 bg-ccm-surface-2 flex items-center justify-center">
               <span class={[icon, 'text-6 op-30']} />
             </div>
           )}
@@ -235,8 +235,8 @@ export default defineComponent({
                         class={[
                           'w-6 h-6 rounded-full flex items-center justify-center text-xs border border-solid cursor-pointer transition-all',
                           isActive && playingVoice.value?.cueIndex === i
-                            ? 'bg-[oklch(0.85_0.1_var(--hue))] border-[oklch(0.6_0.15_var(--hue))] text-[oklch(0.35_0.15_var(--hue))]'
-                            : 'bg-transparent border-[oklch(0.88_0.02_var(--hue))] op-50 hover:op-80',
+                            ? 'bg-ccm-accent-soft border-ccm-accent text-ccm-accent'
+                            : 'bg-transparent border-ccm-line-strong op-50 hover:op-80',
                         ]}
                         onClick={(e: Event) => { e.stopPropagation(); playVoiceCue(item.id, item.assetDir, i) }}
                       >
@@ -263,7 +263,7 @@ export default defineComponent({
 
     return () => (
       <div class="flex flex-col h-full">
-        <div class="flex items-center gap-4 p-4 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
+        <div class="flex items-center gap-4 p-4 border-b border-solid border-ccm-line">
           <h2 class="text-xl font-bold m-0 flex-shrink-0">{t('resource.title')}</h2>
           <div class="flex gap-1 flex-wrap">
             {RESOURCE_TYPES.map(rt => (
@@ -272,8 +272,8 @@ export default defineComponent({
                 class={[
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border border-solid transition-all cursor-pointer',
                   activeType.value === rt.key
-                    ? 'bg-[oklch(0.92_0.05_var(--hue))] border-[oklch(0.7_0.1_var(--hue))] text-[oklch(0.4_0.15_var(--hue))]'
-                    : 'bg-transparent border-[oklch(0.88_0.02_var(--hue))] text-[oklch(0.5_0.02_var(--hue))] hover:bg-[oklch(0.96_0.02_var(--hue))]',
+                    ? 'bg-ccm-active border-ccm-accent text-ccm-accent'
+                    : 'bg-transparent border-ccm-line-strong text-ccm-dim hover:bg-ccm-hover',
                 ]}
                 onClick={() => { activeType.value = rt.key }}
               >
@@ -284,7 +284,7 @@ export default defineComponent({
           </div>
         </div>
 
-        <div class="flex items-center gap-3 px-4 py-3 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-solid border-ccm-line">
           <TextInput v-model:value={search.value} placeholder={t('resource.search')} />
           <span class="text-xs op-40 flex-shrink-0">{filteredItems.value.length} {t('resource.items')}</span>
         </div>

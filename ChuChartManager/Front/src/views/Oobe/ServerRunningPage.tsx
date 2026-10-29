@@ -17,7 +17,7 @@ export default defineComponent({
         <div class="text-sm op-60">{t('oobe.lanAddresses')}</div>
         <div class="flex flex-col gap-2 items-center">
           {props.lanAddresses.map(addr => (
-            <div class="px-4 py-2 rounded-lg bg-[oklch(0.92_0.02_var(--hue))] text-sm font-mono">http://{addr}:5001</div>
+            <div class="px-4 py-2 rounded-lg bg-ccm-surface-2 text-sm font-mono">http://{addr}:5001</div>
           ))}
         </div>
         <Button onClick={() => apiClient.post('/api/Config/OpenMainUI')}>

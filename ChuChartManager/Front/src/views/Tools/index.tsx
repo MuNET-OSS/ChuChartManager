@@ -287,7 +287,7 @@ export default defineComponent({
           {path.value && (
             <img
               src={getLocalImagePreviewUrl(path.value)}
-              class="mt-2 max-h-32 rounded border border-solid border-[oklch(0.85_0.02_var(--hue))] object-contain"
+              class="mt-2 max-h-32 rounded border border-solid border-ccm-line-strong object-contain"
               onError={(e: any) => { e.target.style.display = 'none' }}
             />
           )}
@@ -308,10 +308,10 @@ export default defineComponent({
             {tools.value.filter(item => !item.experimental).map(tool => (
               <div
                 key={tool.labelKey}
-                class="flex flex-col items-center justify-center gap-3 p-6 rounded-xl cursor-pointer transition-all duration-200 border border-solid border-[oklch(0.85_0.02_var(--hue))] bg-[oklch(0.98_0.005_var(--hue))] hover:bg-[oklch(0.95_0.02_var(--hue))] hover:border-[oklch(0.7_0.1_var(--hue))]"
+                class="flex flex-col items-center justify-center gap-3 p-6 rounded-xl cursor-pointer transition-all duration-200 border border-solid border-ccm-line-strong bg-ccm-surface hover:bg-ccm-hover hover:border-ccm-accent"
                 onClick={tool.action}
               >
-                <span class={[tool.icon, 'text-8 text-[oklch(0.55_0.15_var(--hue))]']} />
+                <span class={[tool.icon, 'text-8 text-ccm-accent']} />
                 <span class="text-sm text-center font-medium">{t(tool.labelKey)}</span>
               </div>
             ))}
@@ -325,10 +325,10 @@ export default defineComponent({
             {tools.value.filter(item => item.experimental).map(tool => (
               <div
                 key={tool.labelKey}
-                class="flex flex-col items-center justify-center gap-3 p-6 rounded-xl cursor-pointer transition-all duration-200 border border-solid border-[oklch(0.85_0.02_var(--hue))] bg-[oklch(0.98_0.005_var(--hue))] hover:bg-[oklch(0.95_0.02_var(--hue))] hover:border-[oklch(0.7_0.1_var(--hue))]"
+                class="flex flex-col items-center justify-center gap-3 p-6 rounded-xl cursor-pointer transition-all duration-200 border border-solid border-ccm-line-strong bg-ccm-surface hover:bg-ccm-hover hover:border-ccm-accent"
                 onClick={tool.action}
               >
-                <span class={[tool.icon, 'text-8 text-[oklch(0.55_0.15_var(--hue))]']} />
+                <span class={[tool.icon, 'text-8 text-ccm-accent']} />
                 <span class="text-sm text-center font-medium">{t(tool.labelKey)}</span>
               </div>
             ))}
@@ -351,7 +351,7 @@ export default defineComponent({
                   {ddsPath.value || t('ddsExtractor.noPathHint')}
                 </span>
                 {ddsResults.value.length > 0 && (
-                  <div class="p-3 rounded bg-[oklch(0.96_0.005_var(--hue))] text-sm max-h-40 of-y-auto">
+                  <div class="p-3 rounded bg-ccm-surface-2 text-sm max-h-40 of-y-auto">
                     {ddsResults.value.map((r, i) => (
                       <div key={i} class="mb-1">
                         <span class="font-medium">{r.sourceFile.split(/[\\/]/).pop()}</span>

@@ -78,8 +78,8 @@ const handleRefresh = async () => {
   padding: 8px 0
   gap: 4px
   flex-shrink: 0
-  border-right: 1px solid oklch(0.9 0.02 var(--hue))
-  background: oklch(0.98 0.01 var(--hue))
+  border-right: 1px solid var(--ccm-line)
+  background: var(--ccm-surface)
   z-index: 20
   overflow: visible
 
@@ -94,16 +94,16 @@ const handleRefresh = async () => {
   flex-shrink: 0
   transition: all 0.2s
   position: relative
-  color: #999
+  color: var(--ccm-text-faint)
   background: transparent
 
   &:hover
-    color: #666
-    background: oklch(0.6 0.1 var(--hue) / 15%)
+    color: var(--ccm-text-dim)
+    background: var(--ccm-hover)
 
   &.active
-    background: oklch(0.9 0.05 var(--hue))
-    color: oklch(0.55 0.15 var(--hue))
+    background: var(--ccm-accent-soft)
+    color: var(--ccm-accent)
 
   .indicator
     position: absolute
@@ -112,7 +112,7 @@ const handleRefresh = async () => {
     bottom: 6px
     width: 3px
     border-radius: 0 3px 3px 0
-    background: oklch(0.55 0.15 var(--hue))
+    background: var(--ccm-accent)
 
   .tooltip
     position: absolute
@@ -120,8 +120,8 @@ const handleRefresh = async () => {
     margin-left: 8px
     padding: 4px 12px
     border-radius: 8px
-    background: oklch(0.7 0.13 var(--hue))
-    color: white
+    background: var(--ccm-accent)
+    color: var(--ccm-accent-fg)
     font-size: 0.85rem
     white-space: nowrap
     opacity: 0

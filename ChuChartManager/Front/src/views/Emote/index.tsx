@@ -52,8 +52,8 @@ export default defineComponent({
 
     return () => (
       <div class="flex h-full">
-        <div class="w-72 flex-shrink-0 border-r border-solid border-[oklch(0.9_0.02_var(--hue))] flex flex-col">
-          <div class="flex items-center justify-between p-3 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
+        <div class="w-72 flex-shrink-0 border-r border-solid border-ccm-line flex flex-col">
+          <div class="flex items-center justify-between p-3 border-b border-solid border-ccm-line">
             <h3 class="text-base font-bold m-0">{t('emote.data')}</h3>
           </div>
 
@@ -66,10 +66,10 @@ export default defineComponent({
               <div
                 key={`${d.id}-${d.assetDir}`}
                 class={[
-                  'px-3 py-2.5 cursor-pointer border-b border-solid border-[oklch(0.93_0.01_var(--hue))] transition-colors',
+                  'px-3 py-2.5 cursor-pointer border-b border-solid border-ccm-line-subtle transition-colors',
                   selectedData.value?.id === d.id && selectedData.value?.assetDir === d.assetDir
-                    ? 'bg-[oklch(0.92_0.05_var(--hue))]'
-                    : 'hover:bg-[oklch(0.97_0.02_var(--hue))]',
+                    ? 'bg-ccm-active'
+                    : 'hover:bg-ccm-hover',
                 ]}
                 onClick={() => { selectedData.value = d }}
               >
@@ -91,7 +91,7 @@ export default defineComponent({
             const d = selectedData.value!
             return (
               <>
-                <div class="flex items-center gap-3 p-4 border-b border-solid border-[oklch(0.9_0.02_var(--hue))]">
+                <div class="flex items-center gap-3 p-4 border-b border-solid border-ccm-line">
                   <h2 class="text-lg font-bold m-0 flex-1 truncate">{d.name || d.fileName}</h2>
                   <Button onClick={() => handlePreview(d)}>
                     <span class="i-mdi-play text-3.5 mr-1" />

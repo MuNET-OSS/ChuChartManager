@@ -58,6 +58,7 @@ ChuChartManager/              # CCM 主仓库（monorepo）
 - SASS **缩进语法**（不是 SCSS）
 - 组件库：`@munet/ui`（MuNET-UI 子模块）
 - 深色玻璃主题：`backdrop-filter: blur`、`rgba` 半透明、`var(--text-color)` 派生颜色
+- 明暗双主题：颜色一律走 `--ccm-*` 令牌 / `ccm-*` 原子类（`src/theme/tokens.sass`），禁止硬编码浅色
 - 不引入新 npm 依赖除非必要
 
 ### 已知阻塞
