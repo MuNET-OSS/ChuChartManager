@@ -254,65 +254,6 @@ mods:
   saveFailed: Save failed
 tools:
   title: Tools
-  experimentalWarning: The following features are experimental and may have issues
-  createTrophy: Create Trophy
-  createNamePlate: Create Name Plate
-  createMapIcon: Create Map Icon
-  createChara: Create Character
-  createFrame: Create Frame
-  createAvatarAccessory: Create Costume
-  accessoryCategory: Accessory Slot
-  categoryHead: Head
-  categoryFace: Face
-  categoryBody: Body
-  categoryBack: Back
-  iconImage: Icon Image
-  textureImage: Texture Image
-  targetDir: Target Option Directory
-  resourceId: Resource ID
-  resourceName: Name
-  explainText: Description
-  rareType: Type
-  rareNormal: Normal
-  rareBronze: Bronze
-  rareSilver: Silver
-  rareGold: Gold
-  rareGoldPlus: Gold+
-  rarePlatinum: Platinum
-  rarePlatinumPlus: Platinum+
-  rareRainbow: Rainbow
-  rareRainbowPlus: Rainbow+
-  rareStaff: Staff
-  rareOngeki: Ongeki
-  rareMaimai: Maimai
-  rareIrodoriSilver: Irodori Silver
-  rareIrodoriGold: Irodori Gold
-  rareIrodoriRainbow: Irodori Rainbow
-  rareImage: Image Trophy
-  trophyImage: Trophy Image (608×148)
-  namePlateImage: Name Plate Image (auto-resized to 576×228)
-  selectImage: Select Image
-  noImageSelected: No image selected
-  works: Works
-  illustrator: Illustrator
-  createSuccess: Created successfully
-  createFailed: Creation failed
-  checkConflict: Check Conflict
-  idConflictWarning: This ID is already in use. Creating will overwrite the existing resource.
-  charaFullImage: Full Body (1080×1080)
-  charaMidImage: Half Body (512×512)
-  charaSmallImage: Avatar (128×128)
-  createCharaVariant: Add Character Variant
-  variantBaseId: Base Character ID
-  variantSlot: Variant Slot
-  variantRank: Unlock Rank
-  variants: Variants (optional)
-  addVariant: Add Variant
-  noVariants: No variants. Click the button above to add one.
-  charaImagesRequired: Please select all three character images
-  charaBase: Base Form
-  charaBaseHint: Click the cards on the right to select the base character images
-  removeVariant: Remove Variant
   convertChart: Chart Format Converter
   sourceFormat: Source Format
   targetFormat: Target Format

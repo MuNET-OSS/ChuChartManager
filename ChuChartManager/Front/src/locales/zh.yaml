@@ -254,65 +254,6 @@ mods:
   saveFailed: 保存失败
 tools:
   title: 工具
-  experimentalWarning: 以下功能为实验性，可能存在问题
-  createTrophy: 创建称号
-  createNamePlate: 创建名牌
-  createMapIcon: 创建地图图标
-  createChara: 创建角色
-  createFrame: 创建底框
-  createAvatarAccessory: 创建衣装
-  accessoryCategory: 部位
-  categoryHead: 头部
-  categoryFace: 面部
-  categoryBody: 身体
-  categoryBack: 背部
-  iconImage: 图标图片
-  textureImage: 贴图图片
-  targetDir: 目标 Option 目录
-  resourceId: 资源 ID
-  resourceName: 名称
-  explainText: 说明文字
-  rareType: 类型
-  rareNormal: 普通
-  rareBronze: 铜
-  rareSilver: 银
-  rareGold: 金
-  rareGoldPlus: 金+
-  rarePlatinum: 白金
-  rarePlatinumPlus: 白金+
-  rareRainbow: 彩虹
-  rareRainbowPlus: 彩虹+
-  rareStaff: Staff
-  rareOngeki: Ongeki
-  rareMaimai: Maimai
-  rareIrodoriSilver: 彩银
-  rareIrodoriGold: 彩金
-  rareIrodoriRainbow: 彩虹(彩)
-  rareImage: 图片称号
-  trophyImage: 称号图片 (608×148)
-  namePlateImage: 名牌图片（自动缩放至 576×228）
-  selectImage: 选择图片
-  noImageSelected: 未选择图片
-  works: 作品
-  illustrator: 插画师
-  createSuccess: 创建成功
-  createFailed: 创建失败
-  checkConflict: 检查冲突
-  idConflictWarning: 此 ID 已被使用，继续创建将覆盖已有资源
-  charaFullImage: 全身图 (1080×1080)
-  charaMidImage: 半身图 (512×512)
-  charaSmallImage: 头像图 (128×128)
-  createCharaVariant: 添加角色升格
-  variantBaseId: 主角色 Base ID
-  variantSlot: 升格槽位
-  variantRank: 解锁好感度
-  variants: 升格形态（可选）
-  addVariant: 添加升格
-  noVariants: 无升格形态，点击上方按钮添加
-  charaImagesRequired: 请选择三张角色图片
-  charaBase: 主形态
-  charaBaseHint: 点击右侧卡片选择主角色的三张图片
-  removeVariant: 删除此升格
   convertChart: 谱面格式转换
   sourceFormat: 源格式
   targetFormat: 目标格式

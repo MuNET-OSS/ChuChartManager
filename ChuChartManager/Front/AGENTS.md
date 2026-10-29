@@ -19,7 +19,7 @@ Front/
 │   │   └── stage.ts        # 舞台背景资源
 │   ├── client/
 │   │   └── mod.ts          # AppleChu Mod 配置 API
-│   ├── components/     # 可复用组件：Sidebar.vue, StatusBar.vue, PlayerBar.vue, BottomOverlay.vue, FileTypeIcon.vue, DirSelect.tsx
+│   ├── components/     # 可复用组件：Sidebar.vue, StatusBar.vue, PlayerBar.vue, BottomOverlay.vue, FileTypeIcon.vue
 │   ├── locales/        # i18n YAML：zh.yaml / en.yaml / ja.yaml + index.ts
 │   ├── store/          # 全局状态：refs.ts（侧栏、option 目录）、player.ts（音频播放器）、status.ts（状态栏文本）
 │   ├── theme/          # 明暗主题：tokens.sass（--ccm-* 设计令牌，浅/深两套）、index.ts（同步 isLightTheme → html[data-ccm-theme]）
