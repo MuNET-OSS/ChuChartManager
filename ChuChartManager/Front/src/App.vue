@@ -53,15 +53,24 @@ const handleRefresh = () => {
       <div class="main-layout">
         <Sidebar v-model:active="sidebarActive" @refresh="handleRefresh" />
         <div class="main-content">
-          <MusicList v-show="sidebarActive === 'charts'" ref="musicListRef" />
-          <ResourceManager v-if="sidebarActive === 'resources'" />
-          <GenreManager v-if="sidebarActive === 'genre'" />
-          <ModManager v-if="sidebarActive === 'mods'" />
-          <EmoteManager v-if="sidebarActive === 'emote'" />
-          <MateManager v-if="sidebarActive === 'mate'" />
-          <BatchAction v-if="sidebarActive === 'batch'" />
-          <Tools v-if="sidebarActive === 'tools'" />
-          <Settings v-if="sidebarActive === 'settings'" />
+          <!-- 谱面页用显隐切换而不是销毁重建（保留列表滚动与选中），所以它的淡入淡出走 class -->
+          <MusicList
+            ref="musicListRef"
+            class="view-pane"
+            :class="{ 'view-pane-hidden': sidebarActive !== 'charts' }"
+          />
+          <Transition name="view-fade">
+            <div v-if="sidebarActive !== 'charts'" :key="sidebarActive" class="view-pane">
+              <ResourceManager v-if="sidebarActive === 'resources'" />
+              <GenreManager v-else-if="sidebarActive === 'genre'" />
+              <ModManager v-else-if="sidebarActive === 'mods'" />
+              <EmoteManager v-else-if="sidebarActive === 'emote'" />
+              <MateManager v-else-if="sidebarActive === 'mate'" />
+              <BatchAction v-else-if="sidebarActive === 'batch'" />
+              <Tools v-else-if="sidebarActive === 'tools'" />
+              <Settings v-else-if="sidebarActive === 'settings'" />
+            </div>
+          </Transition>
         </div>
       </div>
       <StatusBar />
@@ -104,4 +113,28 @@ html, body
   min-width: 0
   height: 100%
   overflow: hidden
+  // 所有页面叠在同一格里，切换时才能交叉淡入淡出
+  display: grid
+  grid-template-areas: "pane"
+
+  > *
+    grid-area: pane
+    min-width: 0
+    min-height: 0
+
+.view-pane
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)
+
+.view-pane-hidden
+  opacity: 0
+  pointer-events: none
+
+.view-fade-enter-active,
+.view-fade-leave-active
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)
+
+.view-fade-enter-from,
+.view-fade-leave-to
+  opacity: 0
+  transform: translateY(6px)
 </style>
